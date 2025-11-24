@@ -2,10 +2,11 @@ import React from 'react';
 import { useOSStore } from '../../store/useOSStore';
 import { Browser } from '../apps/Browser';
 import { FileExplorer } from '../apps/FileExplorer';
-import { ControlPanel } from '../apps/ControlPanel'; // Certifique-se que este arquivo existe
-import { Trash2, Monitor, Settings } from 'lucide-react'; // ADICIONADO: Settings
+import { ControlPanel } from '../apps/ControlPanel';
+import { Trash2, Monitor, Settings, Globe } from 'lucide-react';
 
-// Ícone de Computador
+// --- ÍCONES PERSONALIZADOS ---
+
 const ComputerIcon = () => (
     <svg viewBox="0 0 24 24" fill="none" className="w-full h-full">
         <rect x="2" y="4" width="20" height="14" rx="2" fill="#3b82f6" stroke="#1d4ed8"/>
@@ -16,7 +17,6 @@ const ComputerIcon = () => (
     </svg>
 );
 
-// Ícone de Pasta
 const FolderIcon = ({ type }) => (
   <svg viewBox="0 0 24 24" fill="none" className="w-full h-full">
     <path d="M2 6C2 4.89543 2.89543 4 4 4H10L12 6H20C21.1046 6 22 6.89543 22 8V20C22 21.1046 21.1046 22 20 22H4C2.89543 22 2 21.1046 2 20V6Z" fill="#eab308" stroke="#ca8a04" strokeWidth="0.5"/>
@@ -35,35 +35,41 @@ const FolderIcon = ({ type }) => (
   </svg>
 );
 
-// Componente Genérico de Ícone
-const DesktopIcon = ({ label, icon, onDoubleClick }) => (
+// --- COMPONENTE DO ÍCONE DA ÁREA DE TRABALHO ---
+const DesktopIcon = ({ label, icon, onDoubleClick, onContextMenu }) => (
   <div 
     onDoubleClick={onDoubleClick}
+    onContextMenu={onContextMenu}
     className="flex flex-col items-center gap-1 p-2 w-[84px] hover:bg-white/10 hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)] rounded border border-transparent cursor-pointer group transition-all active:scale-95"
   >
     <div className="relative w-12 h-12 flex items-center justify-center filter drop-shadow-[0_2px_3px_rgba(0,0,0,0.6)] transition-transform group-hover:-translate-y-1">
         {icon}
     </div>
     <span 
-        className="text-white text-xs font-medium text-center leading-tight select-none px-1 rounded"
-        style={{ textShadow: '0 1px 2px rgba(0,0,0,0.9)' }}
+        className="text-white text-xs font-medium text-center leading-tight select-none px-1 rounded shadow-black"
+        style={{ textShadow: '0 1px 2px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.5)' }}
     >
         {label}
     </span>
   </div>
 );
 
+// --- DESKTOP PRINCIPAL ---
 export const Desktop = () => {
-  const { openWindow } = useOSStore();
+  const { openWindow, openContextMenu } = useOSStore();
 
   return (
-    <div className="absolute inset-0 p-2 flex flex-col flex-wrap content-start gap-2 z-0 pt-4 pl-4">
+    <div 
+        className="absolute inset-0 p-2 flex flex-col flex-wrap content-start gap-2 z-0 pt-4 pl-4"
+        onContextMenu={(e) => openContextMenu(e, 'desktop')}
+    >
        
        {/* 1. Meu Computador */}
        <DesktopIcon 
           label="Meu Computador" 
           icon={<ComputerIcon />}
           onDoubleClick={() => openWindow('pc', 'Meu Computador', <Monitor size={16}/>, <FileExplorer initialPath="root"/>)}
+          onContextMenu={(e) => openContextMenu(e, 'file', 'pc')}
        />
 
        {/* 2. Meus Documentos */}
@@ -71,6 +77,7 @@ export const Desktop = () => {
           label="Meus Documentos" 
           icon={<FolderIcon type="docs" />}
           onDoubleClick={() => openWindow('docs', 'Meus Documentos', <div className="w-4 h-4 text-yellow-500"><FolderIcon type="docs"/></div>, <FileExplorer initialPath="docs"/>)}
+          onContextMenu={(e) => openContextMenu(e, 'folder', 'docs')}
        />
 
        {/* 3. Minhas Imagens */}
@@ -78,24 +85,27 @@ export const Desktop = () => {
           label="Minhas Imagens" 
           icon={<FolderIcon type="imgs" />}
           onDoubleClick={() => openWindow('imgs', 'Minhas Imagens', <div className="w-4 h-4 text-yellow-500"><FolderIcon type="imgs"/></div>, <FileExplorer initialPath="imgs"/>)}
+          onContextMenu={(e) => openContextMenu(e, 'folder', 'imgs')}
        />
 
-       {/* 4. Configurações (Painel de Controle) */}
+       {/* 4. Painel de Controle (Personalizar) */}
        <DesktopIcon 
           label="Personalizar" 
           icon={
-             <div className="w-10 h-10 bg-slate-200 rounded-md flex items-center justify-center border border-slate-400 shadow-lg">
-                <Settings size={28} className="text-slate-700" />
+             <div className="w-10 h-10 bg-slate-200 rounded-md flex items-center justify-center border-2 border-slate-400 shadow-lg">
+                <Settings size={24} className="text-slate-700" />
              </div>
           } 
           onDoubleClick={() => openWindow('settings', 'Painel de Controle', <Settings size={16}/>, <ControlPanel />)}
+          onContextMenu={(e) => openContextMenu(e, 'file', 'settings')}
        />
 
        {/* 5. Lixeira */}
        <DesktopIcon 
           label="Lixeira" 
           icon={<Trash2 size={40} className="text-slate-300 drop-shadow-lg" />} 
-          onDoubleClick={() => alert('Lixeira vazia!')}
+          onDoubleClick={() => alert('A Lixeira está vazia.')}
+          onContextMenu={(e) => openContextMenu(e, 'file', 'trash')}
        />
 
        {/* 6. Internet Explorer */}
@@ -109,6 +119,7 @@ export const Desktop = () => {
              </div>
           } 
           onDoubleClick={() => openWindow('browser', 'Internet Explorer', <span className="font-bold text-blue-400">e</span>, <Browser />)}
+          onContextMenu={(e) => openContextMenu(e, 'file', 'browser')}
        />
 
     </div>
