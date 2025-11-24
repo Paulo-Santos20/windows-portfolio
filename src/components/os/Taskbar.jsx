@@ -1,25 +1,40 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useOSStore } from '../../store/useOSStore';
-import { Volume2, Volume1, VolumeX, Battery, Power, ChevronRight, LogOut, Search } from 'lucide-react';
+import { GamesExplorer } from '../apps/GamesExplorer'; // Importa a janela de jogos
+import { 
+  Volume2, Volume1, VolumeX, Battery, Power, 
+  ChevronRight, LogOut, Search, Gamepad2 
+} from 'lucide-react';
 import { clsx } from 'clsx';
 
 // --- MENU INICIAR ---
 const StartMenu = ({ isOpen, onClose }) => {
-  const { setBootStatus } = useOSStore(); // Para fazer logoff
+  const { setBootStatus, openWindow } = useOSStore(); // Hooks para Logoff e Abrir Janelas
 
   if (!isOpen) return null;
 
+  // Lógica de Logoff
   const handleLogoff = () => {
     onClose();
-    // Pequeno delay para animação de saída antes de voltar pro login
     setTimeout(() => {
         setBootStatus('login');
     }, 500);
   };
 
+  // Lógica de Desligar
   const handleShutdown = () => {
-      // Recarrega a página para simular reinício
       window.location.reload();
+  };
+
+  // Lógica para Abrir Jogos
+  const handleOpenGames = () => {
+      onClose();
+      openWindow(
+        'games-explorer', 
+        'Jogos', 
+        <Gamepad2 size={16} className="text-green-600"/>, 
+        <GamesExplorer />
+      );
   };
 
   return (
@@ -29,9 +44,9 @@ const StartMenu = ({ isOpen, onClose }) => {
     >
       <div className="flex-1 flex bg-white/95 backdrop-blur-sm">
         
-        {/* Coluna Esquerda (Programas) */}
+        {/* Coluna Esquerda (Programas Recentes) */}
         <div className="w-[60%] bg-white p-2 flex flex-col gap-1 overflow-y-auto">
-           {/* Apps Recentes Mockados */}
+           {/* Lista de Apps Mockada */}
            <div className="flex items-center gap-2 p-2 hover:bg-[#dceafc] hover:shadow-[inset_0_0_0_1px_#7da2ce] rounded-[2px] cursor-pointer group transition-all">
                <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold shadow-sm">W</div>
                <div className="flex flex-col">
@@ -74,10 +89,10 @@ const StartMenu = ({ isOpen, onClose }) => {
            </div>
         </div>
 
-        {/* Coluna Direita (Sistema) */}
+        {/* Coluna Direita (Sistema e Links) */}
         <div className="w-[40%] bg-[#1b2531] text-white p-3 flex flex-col gap-2 shadow-[inset_10px_0_20px_-10px_rgba(0,0,0,0.5)] border-l border-[#536577]">
              
-             {/* FOTO DO PERFIL (Elliot Alderson) */}
+             {/* FOTO DO PERFIL (Elliot) */}
              <div className="flex items-center gap-3 mb-2 cursor-pointer hover:bg-white/10 p-2 rounded transition-colors group">
                 <div className="w-12 h-12 rounded-[4px] border-2 border-white/40 overflow-hidden shadow-lg relative group-hover:border-white/80 transition-colors">
                     <img 
@@ -99,6 +114,14 @@ const StartMenu = ({ isOpen, onClose }) => {
              <span className="text-sm hover:text-white hover:bg-white/10 p-1 rounded text-[#cfd8e6] cursor-pointer transition-colors font-medium">Imagens</span>
              <span className="text-sm hover:text-white hover:bg-white/10 p-1 rounded text-[#cfd8e6] cursor-pointer transition-colors font-medium">Música</span>
              
+             {/* BOTÃO JOGOS (NOVO) */}
+             <button 
+                onClick={handleOpenGames}
+                className="text-left text-sm hover:text-white hover:bg-white/10 p-1 rounded text-[#cfd8e6] cursor-pointer transition-colors font-medium flex items-center gap-2"
+             >
+                Jogos
+             </button>
+
              <div className="h-[1px] bg-white/20 my-1"></div>
 
              <span className="text-sm hover:text-white hover:bg-white/10 p-1 rounded text-[#cfd8e6] cursor-pointer transition-colors font-medium">Computador</span>
@@ -134,12 +157,12 @@ const StartMenu = ({ isOpen, onClose }) => {
   );
 };
 
-// --- CONTROLE DE VOLUME (Slider Vertical) ---
+// --- CONTROLE DE VOLUME (Slider Vertical Windows 7 Style) ---
 const VolumeControl = ({ isOpen, volume, setVolume }) => {
     const trackRef = useRef(null);
     const [isDragging, setIsDragging] = useState(false);
 
-    // Lógica para calcular porcentagem baseada no clique/arrasto
+    // Lógica Física de Slider Vertical
     const handleInteraction = (e) => {
         if (!trackRef.current) return;
         const rect = trackRef.current.getBoundingClientRect();
@@ -157,7 +180,7 @@ const VolumeControl = ({ isOpen, volume, setVolume }) => {
         handleInteraction(e);
     };
 
-    // Listeners globais para arrastar fora do componente
+    // Listeners Globais para arrastar fora da caixa
     useEffect(() => {
         const handleMouseMove = (e) => { if (isDragging) handleInteraction(e); };
         const handleMouseUp = () => { setIsDragging(false); };
@@ -207,7 +230,7 @@ const VolumeControl = ({ isOpen, volume, setVolume }) => {
                         className="absolute bottom-0 left-0 w-full rounded-b-full bg-gradient-to-t from-[#1e8e1e] to-[#55db55] border-t border-white/30 pointer-events-none"
                         style={{ height: `${volume}%`, borderRadius: volume >= 98 ? '999px' : '0 0 999px 999px' }}
                     ></div>
-                    {/* Botão (Thumb) */}
+                    {/* Thumb (Botão) */}
                     <div 
                         className="absolute left-1/2 -translate-x-1/2 w-[26px] h-[14px] rounded-[3px] shadow-[0_1px_3px_rgba(0,0,0,0.6)] transition-none pointer-events-none"
                         style={{ 
@@ -248,7 +271,7 @@ export const Taskbar = () => {
       return <Volume2 size={18}/>;
   };
 
-  // Fecha volume ao clicar fora
+  // Fecha popup de volume ao clicar fora
   useEffect(() => {
     const handleClickOutside = () => setShowVolume(false);
     if (showVolume) window.addEventListener('click', handleClickOutside);
@@ -280,15 +303,15 @@ export const Taskbar = () => {
     return () => clearInterval(i);
   }, []);
 
-  // --- LÓGICA DE ESTILO (DARK VS LIGHT) ---
+  // --- TEMAS (Dark vs Light/Aero) ---
   const taskbarStyle = themeMode === 'dark' 
     ? {
-        background: 'linear-gradient(to bottom, #2b2b2b 0%, #1a1a1a 50%, #000000 100%)', // Preto (Dark)
+        background: 'linear-gradient(to bottom, #2b2b2b 0%, #1a1a1a 50%, #000000 100%)', // Dark
         borderTop: '1px solid rgba(255,255,255,0.1)',
         boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)'
       }
     : {
-        background: 'linear-gradient(to bottom, rgba(28, 55, 76, 0.9) 0%, rgba(20, 30, 48, 0.95) 50%, rgba(0, 0, 0, 0.95) 100%)', // Azul (Aero)
+        background: 'linear-gradient(to bottom, rgba(28, 55, 76, 0.9) 0%, rgba(20, 30, 48, 0.95) 50%, rgba(0, 0, 0, 0.95) 100%)', // Aero Blue
         borderTop: '1px solid rgba(255,255,255,0.3)',
         boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)'
       };
@@ -296,7 +319,6 @@ export const Taskbar = () => {
   const itemStyle = (isActive) => themeMode === 'dark'
     ? (isActive ? "bg-white/20 shadow-[inset_0_0_10px_rgba(255,255,255,0.1)] border-white/20" : "")
     : (isActive ? "bg-gradient-to-b from-white/20 to-white/5 border-white/30 shadow-[inset_0_0_10px_rgba(255,255,255,0.2)]" : "");
-
 
   return (
     <>
@@ -317,17 +339,19 @@ export const Taskbar = () => {
                 boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.5), 0 2px 5px rgba(0,0,0,0.8)'
             }}
            >
+                {/* Logo Windows em CSS */}
                 <div className="grid grid-cols-2 gap-[2px] opacity-90 group-hover:opacity-100">
                     <div className="w-2 h-2 bg-[#f2552e] rounded-tl-[1px]"></div>
                     <div className="w-2 h-2 bg-[#8bc43d] rounded-tr-[1px]"></div>
                     <div className="w-2 h-2 bg-[#2d9fe6] rounded-bl-[1px]"></div>
                     <div className="w-2 h-2 bg-[#fdbd08] rounded-br-[1px]"></div>
                 </div>
+                {/* Efeito de Vidro */}
                 <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/40 to-transparent rounded-t-full pointer-events-none"></div>
            </button>
         </div>
 
-        {/* Lista de Janelas Abertas */}
+        {/* Lista de Janelas */}
         <div className="flex-1 flex items-center gap-1 px-3 pl-4 overflow-x-auto h-full scrollbar-hide">
           {windows.map((win) => (
              <button
@@ -348,7 +372,7 @@ export const Taskbar = () => {
           ))}
         </div>
 
-        {/* Área de Notificação (Tray) */}
+        {/* Bandeja (Tray) */}
         <div className="flex items-center gap-2 px-3 py-1 bg-[#0d161f]/50 rounded-lg border border-white/5 mx-2 shadow-inner h-[34px]">
            <div className="hidden sm:flex gap-1 text-white/80 mr-1">
                <div className="hover:bg-white/10 p-1 rounded cursor-pointer transition-colors" title="Acesso à Internet"><div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-white/80 transform rotate-180 translate-y-[-2px]"></div></div>
@@ -386,9 +410,7 @@ export const Taskbar = () => {
            </div>
         </div>
 
-        {/* Botão Mostrar Área de Trabalho */}
-        <div className="w-3 h-full border-l border-white/30 hover:bg-white/30 hover:shadow-[0_0_10px_rgba(255,255,255,0.5)] transition-all cursor-pointer ml-1 flex items-center justify-center group" title="Mostrar Área de Trabalho">
-        </div>
+        <div className="w-3 h-full border-l border-white/30 hover:bg-white/30 cursor-pointer ml-1" title="Mostrar Área de Trabalho"></div>
       </div>
     </>
   );
