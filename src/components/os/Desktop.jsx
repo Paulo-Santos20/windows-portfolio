@@ -2,11 +2,10 @@ import React from 'react';
 import { useOSStore } from '../../store/useOSStore';
 import { Browser } from '../apps/Browser';
 import { FileExplorer } from '../apps/FileExplorer';
-import { Trash2, Monitor } from 'lucide-react'; // Adicione Monitor aos imports
+import { ControlPanel } from '../apps/ControlPanel'; // Certifique-se que este arquivo existe
+import { Trash2, Monitor, Settings } from 'lucide-react'; // ADICIONADO: Settings
 
-// ... (Mantenha o FolderIcon e DesktopIcon que você já tem) ...
-// Vou repetir apenas a parte do ícone do computador e os chamados da função
-
+// Ícone de Computador
 const ComputerIcon = () => (
     <svg viewBox="0 0 24 24" fill="none" className="w-full h-full">
         <rect x="2" y="4" width="20" height="14" rx="2" fill="#3b82f6" stroke="#1d4ed8"/>
@@ -17,7 +16,7 @@ const ComputerIcon = () => (
     </svg>
 );
 
-// Ícone de Pasta Personalizado (O que você já tem no código anterior)
+// Ícone de Pasta
 const FolderIcon = ({ type }) => (
   <svg viewBox="0 0 24 24" fill="none" className="w-full h-full">
     <path d="M2 6C2 4.89543 2.89543 4 4 4H10L12 6H20C21.1046 6 22 6.89543 22 8V20C22 21.1046 21.1046 22 20 22H4C2.89543 22 2 21.1046 2 20V6Z" fill="#eab308" stroke="#ca8a04" strokeWidth="0.5"/>
@@ -36,6 +35,7 @@ const FolderIcon = ({ type }) => (
   </svg>
 );
 
+// Componente Genérico de Ícone
 const DesktopIcon = ({ label, icon, onDoubleClick }) => (
   <div 
     onDoubleClick={onDoubleClick}
@@ -59,34 +59,46 @@ export const Desktop = () => {
   return (
     <div className="absolute inset-0 p-2 flex flex-col flex-wrap content-start gap-2 z-0 pt-4 pl-4">
        
-       {/* Abre na raiz */}
+       {/* 1. Meu Computador */}
        <DesktopIcon 
           label="Meu Computador" 
           icon={<ComputerIcon />}
           onDoubleClick={() => openWindow('pc', 'Meu Computador', <Monitor size={16}/>, <FileExplorer initialPath="root"/>)}
        />
 
-       {/* Abre na pasta DOCS */}
+       {/* 2. Meus Documentos */}
        <DesktopIcon 
           label="Meus Documentos" 
           icon={<FolderIcon type="docs" />}
           onDoubleClick={() => openWindow('docs', 'Meus Documentos', <div className="w-4 h-4 text-yellow-500"><FolderIcon type="docs"/></div>, <FileExplorer initialPath="docs"/>)}
        />
 
-       {/* Abre na pasta IMGS */}
+       {/* 3. Minhas Imagens */}
        <DesktopIcon 
           label="Minhas Imagens" 
           icon={<FolderIcon type="imgs" />}
           onDoubleClick={() => openWindow('imgs', 'Minhas Imagens', <div className="w-4 h-4 text-yellow-500"><FolderIcon type="imgs"/></div>, <FileExplorer initialPath="imgs"/>)}
        />
 
-       {/* Outros ícones... */}
+       {/* 4. Configurações (Painel de Controle) */}
+       <DesktopIcon 
+          label="Personalizar" 
+          icon={
+             <div className="w-10 h-10 bg-slate-200 rounded-md flex items-center justify-center border border-slate-400 shadow-lg">
+                <Settings size={28} className="text-slate-700" />
+             </div>
+          } 
+          onDoubleClick={() => openWindow('settings', 'Painel de Controle', <Settings size={16}/>, <ControlPanel />)}
+       />
+
+       {/* 5. Lixeira */}
        <DesktopIcon 
           label="Lixeira" 
           icon={<Trash2 size={40} className="text-slate-300 drop-shadow-lg" />} 
           onDoubleClick={() => alert('Lixeira vazia!')}
        />
 
+       {/* 6. Internet Explorer */}
        <DesktopIcon 
           label="Internet Explorer" 
           icon={
@@ -98,6 +110,7 @@ export const Desktop = () => {
           } 
           onDoubleClick={() => openWindow('browser', 'Internet Explorer', <span className="font-bold text-blue-400">e</span>, <Browser />)}
        />
+
     </div>
   );
 };

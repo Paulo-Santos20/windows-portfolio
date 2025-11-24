@@ -2,30 +2,37 @@ import React from 'react';
 import { Desktop } from './components/os/Desktop';
 import { Taskbar } from './components/os/Taskbar';
 import { WindowFrame } from './components/os/WindowFrame';
+import { BootSequence } from './components/os/BootSequence'; // NOVO
 import { useOSStore } from './store/useOSStore';
-// Certifique-se de ter uma imagem em src/assets/wallpaper.jpg
-import desktopBg from './assets/wallpaper.webp'; 
 
 function App() {
-  const { windows } = useOSStore();
+  const { windows, wallpaper, bootStatus } = useOSStore();
 
   return (
     <div 
-      className="h-screen w-screen overflow-hidden relative bg-cover bg-center bg-no-repeat font-sans"
-      style={{ backgroundImage: `url(${desktopBg})`, backgroundColor: '#2d4e66' }}
+      className="h-screen w-screen overflow-hidden relative bg-cover bg-center bg-no-repeat font-sans select-none"
+      style={{ backgroundImage: bootStatus === 'desktop' ? `url(${wallpaper})` : 'none', backgroundColor: '#000' }}
     >
-      <Desktop />
+      {/* Sequência de Boot (Sobrepõe tudo até logar) */}
+      <BootSequence />
 
-      {windows.map((win) => (
-        <WindowFrame 
-          key={win.id}
-          {...win}
-        >
-          {win.component}
-        </WindowFrame>
-      ))}
+      {/* Só renderiza o sistema se estiver no desktop */}
+      {bootStatus === 'desktop' && (
+        <>
+          <Desktop />
 
-      <Taskbar />
+          {windows.map((win) => (
+            <WindowFrame 
+              key={win.id}
+              {...win}
+            >
+              {win.component}
+            </WindowFrame>
+          ))}
+
+          <Taskbar />
+        </>
+      )}
     </div>
   );
 }
