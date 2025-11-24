@@ -1,35 +1,33 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react';
+import { Desktop } from './components/os/Desktop';
+import { Taskbar } from './components/os/Taskbar';
+import { WindowFrame } from './components/os/WindowFrame';
+import { useOSStore } from './store/useOSStore';
+// Certifique-se de ter uma imagem em src/assets/wallpaper.jpg
+import desktopBg from './assets/wallpaper.webp'; 
 
 function App() {
-  const [count, setCount] = useState(0)
+  const { windows } = useOSStore();
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div 
+      className="h-screen w-screen overflow-hidden relative bg-cover bg-center bg-no-repeat font-sans"
+      style={{ backgroundImage: `url(${desktopBg})`, backgroundColor: '#2d4e66' }}
+    >
+      <Desktop />
+
+      {windows.map((win) => (
+        <WindowFrame 
+          key={win.id}
+          {...win}
+        >
+          {win.component}
+        </WindowFrame>
+      ))}
+
+      <Taskbar />
+    </div>
+  );
 }
 
-export default App
+export default App;
