@@ -5,7 +5,7 @@ export const useOSStore = create((set) => ({
   activeWindowId: null,
   zIndexCounter: 100,
 
-  openWindow: (id, title, icon, component) => set((state) => {
+  openWindow: (id, title, icon, component, initialPath = '/') => set((state) => {
     const existingWindow = state.windows.find((w) => w.id === id);
     const newZIndex = state.zIndexCounter + 1;
 
@@ -14,7 +14,7 @@ export const useOSStore = create((set) => ({
         activeWindowId: id,
         zIndexCounter: newZIndex,
         windows: state.windows.map((w) => 
-          w.id === id ? { ...w, isMinimized: false, zIndex: newZIndex, isOpen: true } : w
+          w.id === id ? { ...w, isMinimized: false, zIndex: newZIndex } : w
         ),
       };
     }
@@ -24,7 +24,17 @@ export const useOSStore = create((set) => ({
       zIndexCounter: newZIndex,
       windows: [
         ...state.windows,
-        { id, title, icon, component, isOpen: true, isMinimized: false, zIndex: newZIndex },
+        { 
+            id, 
+            title, 
+            icon, 
+            component, 
+            initialPath, // Para saber em que pasta abrir
+            isOpen: true, 
+            isMinimized: false, 
+            isMaximized: false, // Novo estado
+            zIndex: newZIndex 
+        },
       ],
     };
   }),
@@ -37,6 +47,14 @@ export const useOSStore = create((set) => ({
   minimizeWindow: (id) => set((state) => ({
     activeWindowId: null,
     windows: state.windows.map((w) => w.id === id ? { ...w, isMinimized: true } : w)
+  })),
+
+  // Nova Função: Alternar Maximizar
+  toggleMaximize: (id) => set((state) => ({
+    activeWindowId: id,
+    windows: state.windows.map((w) => 
+      w.id === id ? { ...w, isMaximized: !w.isMaximized } : w
+    )
   })),
 
   restoreWindow: (id) => set((state) => {
