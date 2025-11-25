@@ -1,7 +1,7 @@
 import React from 'react';
 import { useOSStore } from '../../store/useOSStore';
 import { Monitor, Moon, Sun, Check, MousePointer2, Crosshair, Type, MousePointerClick } from 'lucide-react'; // IBeam removido, Type adicionado
-import bugWallpaper from '../../assets/Wallpaper.webp';
+import bugWallpaper from '../../assets/wallpaper.webp';
 
 // Opções de Mouse
 const cursorOptions = [
