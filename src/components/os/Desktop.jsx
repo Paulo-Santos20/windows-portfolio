@@ -10,7 +10,7 @@ import { ControlPanel } from '../apps/ControlPanel';
 import { Notepad } from '../apps/Notepad';
 import { FileExplorer } from '../apps/FileExplorer';
 import { Settings, Gamepad2, Play, Film, User, FileText, Globe, Image as ImageIcon } from 'lucide-react';
-import curriculoPdf from '../../assets/curriculo.pdf';
+import curriculoPdf from '../../assets/Curriculo.pdf';
 
 // --- IMPORTAÇÃO DOS ASSETS WEBP ---
 // Certifique-se de que estes arquivos existem na sua pasta de assets
