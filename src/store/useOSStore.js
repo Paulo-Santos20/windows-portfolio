@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import bugWallpaper from '../assets/Wallpaper.webp';
+import bugWallpaper from '../assets/wallpaper.webp';
 
 const initialFileSystem = {
   'root': { id: 'root', name: 'Computador', type: 'root', children: ['c_drive'] },
