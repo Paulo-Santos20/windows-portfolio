@@ -1,41 +1,26 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, Volume1, VolumeX, List, Repeat, Shuffle } from 'lucide-react';
+import { useOSStore } from '../../store/useOSStore'; // IMPORTANTE: Conectar à Store
+import { 
+  Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, 
+  X, Minimize2, Music, ChevronLeft, Maximize, Square 
+} from 'lucide-react';
 
-// --- PLAYLIST DE AMOSTRA (Estilo Windows 7) ---
 const SAMPLE_PLAYLIST = [
-  {
-    title: "Dream Scapes",
-    artist: "SoundHelix",
-    src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-    cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-  },
-  {
-    title: "Tech House Vibes",
-    artist: "Demo Artist",
-    src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
-    cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-  },
-  {
-    title: "Classic Piano",
-    artist: "Mozart Fake",
-    src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
-    cover: "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-  }
+  { title: "Symphony No. 9 (Scherzo)", artist: "Beethoven", duration: "1:15", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
+  { title: "Sleep Away", artist: "Bob Acri", duration: "3:20", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
+  { title: "Kalimba", artist: "Mr. Scruff", duration: "5:48", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" },
+  { title: "Maid with the Flaxen Hair", artist: "Richard Stoltzman", duration: "2:49", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" },
+  { title: "Highway Blues", artist: "Marc Seales", duration: "1:33", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3" },
 ];
 
-export const MusicPlayer = ({ src: initialSrc, title: initialTitle, artist: initialArtist }) => {
-  const audioRef = useRef(null);
+export const MusicPlayer = ({ src: initialSrc, title: initialTitle, artist: initialArtist, onClose, onMinimize, onMaximize, isMaximized }) => {
+  // CONEXÃO COM O VOLUME GLOBAL
+  const { globalVolume, setGlobalVolume } = useOSStore(); 
   
-  // Estado da Playlist
-  // Se vier uma música do FileExplorer, ela é a primeira. Se não, usa a playlist padrão.
-  const [playlist, setPlaylist] = useState(() => {
-      if (initialSrc) {
-          return [{ 
-              title: initialTitle || "Faixa Selecionada", 
-              artist: initialArtist || "Desconhecido", 
-              src: initialSrc, 
-              cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" 
-          }, ...SAMPLE_PLAYLIST];
+  const audioRef = useRef(null);
+  const [playlist] = useState(() => {
+      if (initialSrc && !SAMPLE_PLAYLIST.find(p => p.src === initialSrc)) {
+          return [{ title: initialTitle, artist: initialArtist, src: initialSrc, duration: "0:00" }, ...SAMPLE_PLAYLIST];
       }
       return SAMPLE_PLAYLIST;
   });
@@ -44,228 +29,139 @@ export const MusicPlayer = ({ src: initialSrc, title: initialTitle, artist: init
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(0.5);
+  
+  // Removemos o 'const [volume, setVolume] = useState(0.5)' local
 
   const currentTrack = playlist[currentIndex];
 
-  // --- CONTROLES DE FAIXA ---
-  
-  const playNext = () => {
-      setCurrentIndex((prev) => (prev + 1) % playlist.length);
-      setIsPlaying(true); // Força play ao trocar
-  };
+  // Sincronizar Volume Global com o Elemento de Áudio
+  useEffect(() => {
+      if (audioRef.current) {
+          audioRef.current.volume = globalVolume;
+      }
+  }, [globalVolume]);
 
-  const playPrev = () => {
-      setCurrentIndex((prev) => (prev - 1 + playlist.length) % playlist.length);
-      setIsPlaying(true);
-  };
-
-  // Efeito para carregar a nova música quando o índice muda
   useEffect(() => {
       if (audioRef.current) {
           audioRef.current.pause();
-          audioRef.current.load(); // Recarrega o source
-          if (isPlaying) {
-              audioRef.current.play().catch(e => console.log("Autoplay prevent:", e));
-          }
+          audioRef.current.load();
+          audioRef.current.volume = globalVolume; // Aplica volume ao carregar
+          if (isPlaying) audioRef.current.play().catch(()=>{});
       }
   }, [currentIndex]);
 
-  // --- UTILITÁRIOS ---
+  const handleTrackClick = (index) => { setCurrentIndex(index); setIsPlaying(true); };
+  const togglePlay = () => { if (isPlaying) audioRef.current.pause(); else audioRef.current.play(); setIsPlaying(!isPlaying); };
+  const handleTimeUpdate = () => setCurrentTime(audioRef.current.currentTime);
+  const handleLoadedMetadata = () => { setDuration(audioRef.current.duration); audioRef.current.volume = globalVolume; };
+  const playNext = () => setCurrentIndex((prev) => (prev + 1) % playlist.length);
+  const playPrev = () => setCurrentIndex((prev) => (prev - 1 + playlist.length) % playlist.length);
+  const formatTime = (time) => { if (isNaN(time)) return "0:00"; const m = Math.floor(time/60); const s = Math.floor(time%60); return `${m}:${s.toString().padStart(2,'0')}`; };
 
-  const formatTime = (time) => {
-    if (isNaN(time)) return "00:00";
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  };
-
-  const togglePlay = () => {
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play();
-    }
-    setIsPlaying(!isPlaying);
-  };
-
-  const handleTimeUpdate = () => {
-    if(audioRef.current) setCurrentTime(audioRef.current.currentTime);
-  };
-
-  const handleLoadedMetadata = () => {
-    if(audioRef.current) {
-        setDuration(audioRef.current.duration);
-        audioRef.current.volume = volume;
-        if(isPlaying) audioRef.current.play();
-    }
-  };
-
-  const handleSeek = (e) => {
-    const time = parseFloat(e.target.value);
-    audioRef.current.currentTime = time;
-    setCurrentTime(time);
-  };
-
+  // Função para mudar volume (atualiza a store global)
   const handleVolumeChange = (e) => {
-    const vol = parseFloat(e.target.value);
-    setVolume(vol);
-    audioRef.current.volume = vol;
+      const newVol = parseFloat(e.target.value);
+      setGlobalVolume(newVol);
+      if(audioRef.current) audioRef.current.volume = newVol;
   };
 
-  // Selecionar música da lista lateral
-  const selectTrack = (index) => {
-      setCurrentIndex(index);
-      setIsPlaying(true);
-  };
+  const sidebarBtnStyle = "w-full text-left px-3 py-1.5 text-[11px] font-bold cursor-pointer border-b border-[#5d8bc6] hover:text-orange-300 transition-colors relative overflow-hidden";
+  const controlBtnStyle = "rounded-full bg-gradient-to-b from-[#ffffff] to-[#dcdcdc] border border-[#808080] shadow-[inset_0_1px_2px_rgba(255,255,255,1),0_2px_2px_rgba(0,0,0,0.3)] hover:brightness-110 active:scale-95 flex items-center justify-center active:shadow-inner";
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-b from-[#daeaf7] to-[#bfdbff] font-sans select-none">
-      <audio
-        ref={audioRef}
-        src={currentTrack.src}
-        onTimeUpdate={handleTimeUpdate}
-        onLoadedMetadata={handleLoadedMetadata}
-        onEnded={playNext} // Toca a próxima automaticamente ao acabar
-      />
+    <div className="flex flex-col h-full font-tahoma select-none overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.5)] rounded-tl-[15px] rounded-tr-[15px] rounded-b-[5px]"
+         style={{ background: '#647b9e', border: '1px solid #3a5075' }}
+    >
+      <audio ref={audioRef} src={currentTrack.src} onTimeUpdate={handleTimeUpdate} onLoadedMetadata={handleLoadedMetadata} onEnded={playNext} />
 
-      {/* Menu Superior */}
-      <div className="flex items-center gap-4 px-2 py-1 text-xs text-slate-600 border-b border-white/30 bg-white/20">
-         <span className="hover:bg-white/40 px-2 rounded cursor-pointer">Reproduzir</span>
-         <span className="hover:bg-white/40 px-2 rounded cursor-pointer">Biblioteca</span>
-         <span className="hover:bg-white/40 px-2 rounded cursor-pointer">Ajuda</span>
+      {/* HEADER WMP9 */}
+      <div className="window-header h-10 flex items-center justify-between px-2 bg-gradient-to-b from-[#dcecff] to-[#9ebcdb] border-b border-[#587395] rounded-t-[14px] cursor-move">
+         <div className="flex items-center gap-2 ml-2">
+             <div className="w-4 h-4 bg-orange-500 rounded-full border border-white shadow-sm flex items-center justify-center">
+                 <div className="w-1 h-1 bg-white rounded-full"></div>
+             </div>
+             <span className="text-[#1d3b67] font-bold text-xs italic">Windows Media Player</span>
+         </div>
+         <div className="flex gap-1 pr-1 no-drag" onMouseDown={(e) => e.stopPropagation()}>
+             <button onClick={onMinimize} className="w-5 h-5 flex items-center justify-center bg-gradient-to-b from-[#fff] to-[#dcecff] hover:brightness-110 rounded border border-[#fff] shadow-sm"><Minimize2 size={10} className="text-[#1d3b67]"/></button>
+             <button onClick={onMaximize} className="w-5 h-5 flex items-center justify-center bg-gradient-to-b from-[#fff] to-[#dcecff] hover:brightness-110 rounded border border-[#fff] shadow-sm">{isMaximized ? <div className="relative w-3 h-3"><div className="absolute top-0 right-0 w-2 h-2 border border-[#1d3b67]"></div><div className="absolute bottom-0 left-0 w-2 h-2 border border-[#1d3b67] bg-[#dcecff] z-10"></div></div> : <Square size={10} className="text-[#1d3b67]" />}</button>
+             <button onClick={onClose} className="w-5 h-5 flex items-center justify-center bg-gradient-to-b from-[#ff9999] to-[#e05e5e] hover:brightness-110 rounded border border-[#ffbaba] shadow-sm group"><X size={12} className="text-white group-hover:scale-110"/></button>
+         </div>
       </div>
 
-      {/* Área Central */}
-      <div className="flex-1 flex relative overflow-hidden">
-          
-          {/* Visualização (Capa) */}
-          <div className="flex-1 flex flex-col items-center justify-center relative z-10 p-4">
-              <div className="w-48 h-48 shadow-2xl border border-white/20 relative group transition-all duration-500 key={currentIndex}">
-                  <img 
-                    src={currentTrack.cover} 
-                    alt="Album Art" 
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-tr from-black/10 to-white/20 pointer-events-none"></div>
-              </div>
-              
-              {/* Reflexo */}
-              <div className="w-48 h-48 mt-1 opacity-30 transform scale-y-[-1]">
-                  <img 
-                    src={currentTrack.cover} 
-                    alt="Reflection" 
-                    className="w-full h-full object-cover"
-                    style={{ maskImage: 'linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0))', WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0))' }}
-                  />
-              </div>
+      {/* CORPO */}
+      <div className="flex-1 flex relative bg-black border-l-[4px] border-r-[4px] border-[#647b9e] overflow-hidden">
+          <div className="w-[110px] flex-shrink-0 flex flex-col bg-[#3b6ea5] border-r border-[#2a4a75] relative z-20">
+              <div className={`${sidebarBtnStyle} bg-gradient-to-r from-[#ffffff] to-[#85a4d0] text-[#1d3b67] shadow-[inset_2px_2px_5px_rgba(0,0,0,0.2)] border-l-4 border-l-[#e59700]`}>Now Playing <div className="absolute right-1 top-1/2 -translate-y-1/2 text-[#1d3b67] text-[9px]">▸</div></div>
+              {['Media Guide', 'Copy from CD', 'Media Library', 'Radio Tuner'].map(i => <div key={i} className={`${sidebarBtnStyle} text-white`}>{i}</div>)}
+              <div className="flex-1 bg-[#3b6ea5]"></div>
+          </div>
 
-              {/* Info da Faixa */}
-              <div className="absolute bottom-10 text-center drop-shadow-md">
-                  <h2 className="text-xl font-bold text-[#1e3e5c]">{currentTrack.title}</h2>
-                  <p className="text-sm text-slate-600">{currentTrack.artist}</p>
+          <div className="flex-1 flex flex-col bg-black relative z-10 min-w-0">
+              <div className="h-8 bg-black text-white px-3 py-1 flex flex-col justify-center border-b border-[#333]">
+                  <span className="text-sm font-bold leading-none truncate w-full">{currentTrack.artist}</span>
+                  <span className="text-xl font-bold leading-none text-white truncate w-full">{currentTrack.title}</span>
+              </div>
+              <div className="flex-1 relative overflow-hidden bg-black">
+                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#ff3399] via-[#440044] to-black opacity-90"></div>
+                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[180%] h-[180%] bg-[conic-gradient(from_0deg,transparent_0deg,#00ff00_40deg,transparent_80deg)] animate-[spin_8s_linear_infinite] opacity-50 mix-blend-screen"></div>
+              </div>
+              <div className="h-6 bg-[#1a1a1a] border-t border-[#333] flex items-center px-2 gap-2">
+                  {isPlaying ? <div className="w-3 h-3 bg-[#00ff00] rounded-full shadow-[0_0_5px_#00ff00] animate-pulse"></div> : <div className="w-3 h-3 bg-red-500 rounded-full"></div>}
+                  <span className="text-[#00ff00] text-[10px] font-mono truncate">Battery : Randomization</span>
               </div>
           </div>
 
-          {/* Lista de Reprodução (Sidebar Direita) */}
-          <div className="w-48 bg-white/40 border-l border-white/30 p-2 text-xs hidden sm:flex flex-col overflow-y-auto">
-              <div className="font-bold text-slate-600 mb-2 border-b border-slate-400/30 pb-1">A Seguir</div>
-              
-              {playlist.map((track, idx) => (
-                  <div 
-                    key={idx}
-                    onClick={() => selectTrack(idx)}
-                    className={`
-                        flex items-center gap-2 p-1.5 rounded cursor-pointer mb-1
-                        ${idx === currentIndex ? 'bg-blue-200/60 border border-blue-300/50 shadow-sm' : 'hover:bg-white/30'}
-                    `}
-                  >
-                      {idx === currentIndex && <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>}
-                      <div className="truncate">
-                          <div className="font-medium truncate">{track.title}</div>
-                          <div className="text-slate-500 text-[10px] truncate">{track.artist}</div>
+          <div className="w-[160px] flex-shrink-0 bg-[#5A5A85] flex flex-col border-l border-[#3b3b55] text-white text-[10px] relative z-20">
+              <div className="h-6 bg-[#7070a0] flex items-center justify-between px-2 border-b border-[#4a4a6a] shadow-md"><span>Find Album Info</span></div>
+              <div className="h-24 bg-gradient-to-b from-[#4a4a6a] to-[#3a3a55] flex flex-col items-center justify-center p-2 border-b border-[#4a4a6a]">
+                  <div className="w-14 h-14 bg-white rounded-sm flex items-center justify-center border border-gray-400 shadow-lg mb-1"><Music size={24} className="text-black/50"/></div>
+                  <span className="text-[9px] text-white/70 truncate w-full text-center">Unknown Album</span>
+              </div>
+              <div className="flex-1 overflow-y-auto bg-[#5A5A85] p-0.5 custom-scrollbar">
+                  {playlist.map((track, index) => (
+                      <div key={index} onClick={() => handleTrackClick(index)} className={`flex items-center justify-between px-2 py-1 cursor-pointer border border-transparent ${index === currentIndex ? 'bg-[#3d3d5c] border-[#7070a0] text-[#00ff00] font-bold' : 'hover:bg-[#6a6a8a] hover:border-[#7070a0] text-white'}`}>
+                          <span className="truncate flex-1">{track.title}</span><span className="ml-1 text-[9px] flex-shrink-0">{track.duration}</span>
                       </div>
-                  </div>
-              ))}
+                  ))}
+              </div>
           </div>
       </div>
 
-      {/* Controles Inferiores */}
-      <div className="h-20 bg-[#daeaf7] border-t border-white/50 relative flex flex-col justify-end pb-2">
-          
-          {/* Barra de Progresso */}
-          <div className="absolute top-[-1px] left-0 w-full h-1 bg-slate-300 cursor-pointer group">
-              <div 
-                className="h-full bg-blue-600 relative" 
-                style={{ width: `${(currentTime / duration) * 100}%` }}
-              >
-                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-blue-600 rounded-full opacity-0 group-hover:opacity-100 shadow-sm transition-opacity"></div>
-              </div>
-              <input 
-                type="range" 
-                min="0" 
-                max={duration || 0} 
-                value={currentTime} 
-                onChange={handleSeek}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              />
+      {/* FOOTER (Controles) */}
+      <div className="h-[70px] flex-shrink-0 bg-gradient-to-b from-[#dcebfb] via-[#a9c5eb] to-[#86a3d6] border-t border-[#6d8cc3] flex flex-col relative z-30 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] border-l-[4px] border-r-[4px] border-b-[4px] border-[#647b9e] rounded-b-[5px]">
+          <div className="absolute top-2 left-4 right-4 h-[4px] bg-[#566d8f] border-b border-white/50 rounded-full overflow-visible cursor-pointer group">
+              <div className="h-full bg-[#00ff00] shadow-[0_0_3px_#00ff00]" style={{ width: `${(currentTime / duration) * 100}%` }}></div>
+              <div className="absolute top-1/2 -translate-y-1/2 w-3 h-4 bg-gradient-to-b from-[#fff] to-[#ccc] border border-gray-500 shadow-md rounded-[2px]" style={{ left: `${(currentTime / duration) * 100}%` }}></div>
+              <input type="range" min="0" max={duration || 0} value={currentTime} onChange={(e) => {audioRef.current.currentTime = e.target.value; setCurrentTime(e.target.value)}} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
           </div>
 
-          {/* Botões */}
-          <div className="flex items-center justify-between px-4 md:px-8">
-              
-              <div className="flex gap-4 text-[#5c7a94]">
-                  <Shuffle size={16} className="cursor-pointer hover:text-blue-600"/>
-                  <Repeat size={16} className="cursor-pointer hover:text-blue-600"/>
+          <div className="flex-1 flex items-center justify-between px-4 mt-4">
+              <div className="flex items-center gap-1">
+                   <button onClick={togglePlay} className={`${controlBtnStyle} w-10 h-10 border-[#555]`}>{isPlaying ? <Pause fill="#1d3b67" size={16} className="text-[#1d3b67]"/> : <Play fill="#1d3b67" size={16} className="text-[#1d3b67] ml-0.5"/>}</button>
+                   <button className={`${controlBtnStyle} w-7 h-7`} onClick={() => { audioRef.current.pause(); audioRef.current.currentTime = 0; setIsPlaying(false); }}><div className="w-2.5 h-2.5 bg-[#1d3b67]"></div></button>
+                   <button onClick={playPrev} className={`${controlBtnStyle} w-7 h-7`}><SkipBack fill="#1d3b67" size={10} className="text-[#1d3b67]"/></button>
+                   <button onClick={playNext} className={`${controlBtnStyle} w-7 h-7`}><SkipForward fill="#1d3b67" size={10} className="text-[#1d3b67]"/></button>
               </div>
 
-              <div className="flex items-center gap-4">
-                  {/* BOTÃO ANTERIOR (FUNCIONAL) */}
-                  <button 
-                    onClick={playPrev}
-                    className="p-2 rounded-full hover:bg-blue-100/50 text-[#1e3e5c] transition-colors active:scale-95"
-                  >
-                      <SkipBack fill="#1e3e5c" size={20} />
+              <div className="flex items-center gap-2 mr-2">
+                  {/* BOTÃO MUTE */}
+                  <button onClick={() => setGlobalVolume(globalVolume === 0 ? 0.5 : 0)}>
+                      {globalVolume === 0 ? <VolumeX size={16} className="text-[#1d3b67]"/> : <Volume2 size={16} className="text-[#1d3b67]"/>}
                   </button>
                   
-                  <button 
-                    onClick={togglePlay}
-                    className="w-12 h-12 rounded-full bg-gradient-to-b from-[#ebf4fc] to-[#cce5ff] border border-[#a3c8e6] shadow-[0_2px_5px_rgba(0,0,0,0.1)] flex items-center justify-center hover:brightness-105 active:scale-95 transition-all"
-                  >
-                      {isPlaying ? (
-                          <Pause fill="#1e3e5c" className="text-[#1e3e5c]" size={24} />
-                      ) : (
-                          <Play fill="#1e3e5c" className="text-[#1e3e5c] ml-1" size={24} />
-                      )}
-                  </button>
-
-                  {/* BOTÃO PRÓXIMO (FUNCIONAL) */}
-                  <button 
-                    onClick={playNext}
-                    className="p-2 rounded-full hover:bg-blue-100/50 text-[#1e3e5c] transition-colors active:scale-95"
-                  >
-                      <SkipForward fill="#1e3e5c" size={20} />
-                  </button>
+                  {/* SLIDER VOLUME (VERDE) - CONTROLADO PELO GLOBAL */}
+                  <div className="w-16 h-3 bg-[#333] border border-gray-500 relative rounded-sm overflow-hidden">
+                      <div className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#006600] to-[#00ff00]" style={{ width: `${globalVolume * 100}%` }}></div>
+                      <div className="absolute inset-0 flex justify-between px-1">{[1,2,3,4,5].map(i => <div key={i} className="w-[1px] h-full bg-black/20"></div>)}</div>
+                      <input 
+                        type="range" min="0" max="1" step="0.01" 
+                        value={globalVolume} // Usa globalVolume
+                        onChange={handleVolumeChange} // Usa handler global
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
+                  </div>
               </div>
-
-              <div className="flex items-center gap-2 w-32">
-                  <button onClick={() => setVolume(volume === 0 ? 0.5 : 0)} className="text-[#5c7a94]">
-                      {volume === 0 ? <VolumeX size={18}/> : <Volume2 size={18}/>}
-                  </button>
-                  <input 
-                    type="range" 
-                    min="0" 
-                    max="1" 
-                    step="0.01" 
-                    value={volume}
-                    onChange={handleVolumeChange}
-                    className="w-full h-1 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                  />
-              </div>
-          </div>
-
-          <div className="absolute bottom-1 right-4 text-[10px] text-slate-500">
-              {formatTime(currentTime)} / {formatTime(duration)}
           </div>
       </div>
     </div>

@@ -1,151 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useOSStore } from '../../store/useOSStore';
-import { GamesExplorer } from '../apps/GamesExplorer'; // Certifique-se de que este arquivo existe
+import { GamesExplorer } from '../apps/GamesExplorer';
 import { 
   Volume2, Volume1, VolumeX, Battery, Power, 
-  ChevronRight, LogOut, Search, Gamepad2 
+  ChevronRight, LogOut, Search, Gamepad2, Monitor, Folder, Settings, Globe, Play, FileText, Image as ImageIcon, Music, HardDrive 
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
-// --- MENU INICIAR ---
-const StartMenu = ({ isOpen, onClose }) => {
-  const { setBootStatus, openWindow, currentUser } = useOSStore();
-
-  if (!isOpen) return null;
-
-  const handleLogoff = () => {
-    onClose();
-    setTimeout(() => setBootStatus('login'), 500);
-  };
-
-  const handleShutdown = () => {
-      window.location.reload();
-  };
-
-  const handleOpenGames = () => {
-      onClose();
-      openWindow(
-        'games-explorer', 
-        'Jogos', 
-        <Gamepad2 size={16} className="text-green-600"/>, 
-        <GamesExplorer />
-      );
-  };
-
-  return (
-    <div 
-      className="absolute bottom-10 left-0 w-[400px] h-[550px] rounded-t-lg flex flex-col shadow-[0_0_20px_rgba(0,0,0,0.5)] z-50 overflow-hidden font-sans border border-[#536577] animate-in slide-in-from-bottom-2 fade-in duration-200"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <div className="flex-1 flex bg-white/95 backdrop-blur-sm">
-        
-        {/* Coluna Esquerda (Programas) */}
-        <div className="w-[60%] bg-white p-2 flex flex-col gap-1 overflow-y-auto">
-           <div className="flex items-center gap-2 p-2 hover:bg-[#dceafc] hover:shadow-[inset_0_0_0_1px_#7da2ce] rounded-[2px] cursor-pointer group transition-all">
-               <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold shadow-sm">W</div>
-               <div className="flex flex-col">
-                   <span className="text-sm font-bold text-slate-800 group-hover:text-black">Microsoft Word</span>
-                   <span className="text-[10px] text-slate-500">Editor de Texto</span>
-               </div>
-           </div>
-           <div className="flex items-center gap-2 p-2 hover:bg-[#dceafc] hover:shadow-[inset_0_0_0_1px_#7da2ce] rounded-[2px] cursor-pointer group transition-all">
-               <div className="w-8 h-8 bg-green-600 rounded flex items-center justify-center text-white font-bold shadow-sm">X</div>
-               <div className="flex flex-col">
-                   <span className="text-sm font-bold text-slate-800 group-hover:text-black">Microsoft Excel</span>
-                   <span className="text-[10px] text-slate-500">Planilhas</span>
-               </div>
-           </div>
-           <div className="flex items-center gap-2 p-2 hover:bg-[#dceafc] hover:shadow-[inset_0_0_0_1px_#7da2ce] rounded-[2px] cursor-pointer group transition-all">
-               <div className="w-8 h-8 bg-orange-500 rounded flex items-center justify-center text-white font-bold shadow-sm">C</div>
-               <div className="flex flex-col">
-                   <span className="text-sm font-bold text-slate-800 group-hover:text-black">Google Chrome</span>
-                   <span className="text-[10px] text-slate-500">Internet</span>
-               </div>
-           </div>
-           
-           <div className="flex-1"></div>
-           <div className="h-[1px] bg-gradient-to-r from-transparent via-slate-300 to-transparent my-1"></div>
-
-           <button className="flex items-center gap-2 p-2 hover:bg-[#dceafc] text-slate-700 font-bold text-sm group rounded-[2px]">
-             <span>Todos os programas</span>
-             <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform"/>
-           </button>
-           
-           <div className="mt-1 relative">
-               <div className="bg-white border border-[#536577] rounded-[2px] flex items-center px-2 py-1 shadow-inner italic text-slate-400 text-xs">
-                   <Search size={12} className="mr-2"/>
-                   Pesquisar programas e arquivos
-               </div>
-           </div>
-        </div>
-
-        {/* Coluna Direita (Sistema) */}
-        <div className="w-[40%] bg-[#1b2531] text-white p-3 flex flex-col gap-2 shadow-[inset_10px_0_20px_-10px_rgba(0,0,0,0.5)] border-l border-[#536577]">
-             
-             {/* FOTO E NOME DO USUÁRIO (DINÂMICO DA STORE) */}
-             <div className="flex items-center gap-3 mb-2 cursor-pointer hover:bg-white/10 p-2 rounded transition-colors group">
-                <div className="w-12 h-12 rounded-[4px] border-2 border-white/40 overflow-hidden shadow-lg relative group-hover:border-white/80 transition-colors">
-                    <img 
-                        src={currentUser?.avatar || "https://i.pravatar.cc/150"} 
-                        alt="User" 
-                        className="w-full h-full object-cover" 
-                    />
-                    <div className="absolute inset-0 shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]"></div>
-                </div>
-                <div className="flex flex-col overflow-hidden">
-                    <span className="font-bold text-sm text-white group-hover:text-[#dceafc] truncate">
-                        {currentUser?.name || "Usuário"}
-                    </span>
-                    <span className="text-[10px] text-white/50">Administrador</span>
-                </div>
-             </div>
-
-             <div className="h-[1px] bg-white/20 my-1"></div>
-
-             <span className="text-sm hover:text-white hover:bg-white/10 p-1 rounded text-[#cfd8e6] cursor-pointer transition-colors font-medium">Documentos</span>
-             <span className="text-sm hover:text-white hover:bg-white/10 p-1 rounded text-[#cfd8e6] cursor-pointer transition-colors font-medium">Imagens</span>
-             <span className="text-sm hover:text-white hover:bg-white/10 p-1 rounded text-[#cfd8e6] cursor-pointer transition-colors font-medium">Música</span>
-             
-             {/* BOTÃO JOGOS */}
-             <button 
-                onClick={handleOpenGames}
-                className="text-left text-sm hover:text-white hover:bg-white/10 p-1 rounded text-[#cfd8e6] cursor-pointer transition-colors font-medium flex items-center gap-2"
-             >
-                Jogos
-             </button>
-
-             <div className="h-[1px] bg-white/20 my-1"></div>
-
-             <span className="text-sm hover:text-white hover:bg-white/10 p-1 rounded text-[#cfd8e6] cursor-pointer transition-colors font-medium">Computador</span>
-             <span className="text-sm hover:text-white hover:bg-white/10 p-1 rounded text-[#cfd8e6] cursor-pointer transition-colors font-medium">Painel de Controle</span>
-             <span className="text-sm hover:text-white hover:bg-white/10 p-1 rounded text-[#cfd8e6] cursor-pointer transition-colors font-medium">Dispositivos e Impressoras</span>
-             <span className="text-sm hover:text-white hover:bg-white/10 p-1 rounded text-[#cfd8e6] cursor-pointer transition-colors font-medium">Ajuda e Suporte</span>
-        </div>
-      </div>
-
-      {/* Rodapé */}
-      <div className="h-12 bg-gradient-to-b from-[#2f4256] to-[#16212d] flex items-center justify-end px-4 gap-2 border-t border-[#536577]">
-          <button 
-            onClick={handleLogoff}
-            className="flex items-center gap-1 text-[#cfd8e6] text-xs hover:bg-white/10 px-2 py-1 rounded-[2px] transition-colors border border-transparent hover:border-white/10 font-medium"
-          >
-             <LogOut size={12} />
-             Fazer Logoff
-          </button>
-
-          <button 
-            onClick={handleShutdown} 
-            className="flex items-center gap-1 text-white text-xs font-bold bg-[#7e5c5c] hover:bg-[#9e6c6c] px-3 py-1 rounded-[3px] border border-[#2e1a1a] shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] transition-colors hover:shadow-[inset_0_0_5px_rgba(255,200,200,0.5)]"
-          >
-             Desligar <Power size={12} />
-          </button>
-      </div>
-    </div>
-  );
-};
-
-// --- VOLUME SLIDER ---
-const VolumeControl = ({ isOpen, volume, setVolume }) => {
+const VolumeControl = ({ isOpen }) => {
+    // Conectado ao Volume Global
+    const { globalVolume, setGlobalVolume } = useOSStore();
     const trackRef = useRef(null);
     const [isDragging, setIsDragging] = useState(false);
 
@@ -155,10 +19,10 @@ const VolumeControl = ({ isOpen, volume, setVolume }) => {
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         const heightFromBottom = rect.bottom - clientY;
         const totalHeight = rect.height;
-        let percentage = (heightFromBottom / totalHeight) * 100;
+        let percentage = (heightFromBottom / totalHeight) * 1; // Normalizado 0-1
         if (percentage < 0) percentage = 0;
-        if (percentage > 100) percentage = 100;
-        setVolume(Math.round(percentage));
+        if (percentage > 1) percentage = 1;
+        setGlobalVolume(percentage);
     };
 
     const handleMouseDown = (e) => { setIsDragging(true); handleInteraction(e); };
@@ -169,14 +33,10 @@ const VolumeControl = ({ isOpen, volume, setVolume }) => {
         if (isDragging) {
             window.addEventListener('mousemove', handleMouseMove);
             window.addEventListener('mouseup', handleMouseUp);
-            window.addEventListener('touchmove', handleMouseMove);
-            window.addEventListener('touchend', handleMouseUp);
         }
         return () => {
             window.removeEventListener('mousemove', handleMouseMove);
             window.removeEventListener('mouseup', handleMouseUp);
-            window.removeEventListener('touchmove', handleMouseMove);
-            window.removeEventListener('touchend', handleMouseUp);
         };
     }, [isDragging]);
 
@@ -184,135 +44,148 @@ const VolumeControl = ({ isOpen, volume, setVolume }) => {
 
     return (
         <div 
-            className="absolute bottom-10 right-0 mb-2 w-[100px] h-[300px] rounded-lg flex flex-col shadow-[0_0_15px_rgba(0,0,0,0.6)] z-50 select-none animate-in fade-in slide-in-from-bottom-2 duration-150"
+            className="absolute bottom-8 right-0 mb-1 w-[80px] h-[200px] bg-[#ece9d8] border border-[#aca899] shadow-[2px_2px_5px_rgba(0,0,0,0.5)] z-[100] select-none flex flex-col items-center pt-2 pb-2 rounded-t-md"
             onClick={(e) => e.stopPropagation()}
-            style={{ background: 'rgba(20, 30, 40, 0.95)', backdropFilter: 'blur(15px)', border: '1px solid rgba(255,255,255,0.2)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)' }}
         >
-            <div className="p-4 pb-2 flex flex-col items-center border-b border-white/10 mb-4">
-                <Volume2 size={24} className="text-slate-300 mb-2 drop-shadow-md" />
-                <span className="text-white text-xs font-medium drop-shadow">Alto-falantes</span>
-            </div>
-            <div className="flex-1 flex justify-center pb-4">
-                <div 
-                    ref={trackRef}
-                    onMouseDown={handleMouseDown}
-                    onTouchStart={handleMouseDown}
-                    className="relative w-[14px] h-[180px] bg-[#dcdcdc] rounded-full border border-[#888] shadow-inner cursor-pointer group"
-                    style={{ boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.4)' }}
-                >
-                    <div className="absolute bottom-0 left-0 w-full rounded-b-full bg-gradient-to-t from-[#1e8e1e] to-[#55db55] border-t border-white/30 pointer-events-none" style={{ height: `${volume}%`, borderRadius: volume >= 98 ? '999px' : '0 0 999px 999px' }}></div>
-                    <div className="absolute left-1/2 -translate-x-1/2 w-[26px] h-[14px] rounded-[3px] shadow-[0_1px_3px_rgba(0,0,0,0.6)] transition-none pointer-events-none" style={{ bottom: `calc(${volume}% - 7px)`, background: 'linear-gradient(to bottom, #f2f2f2 0%, #d4d4d4 50%, #bebebe 51%, #e0e0e0 100%)', border: '1px solid #666' }}>
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-[2px] border-t border-b border-gray-400"></div>
+            <span className="text-[10px] text-black mb-2 font-tahoma">Volume</span>
+            <div className="flex-1 flex justify-center py-2">
+                <div ref={trackRef} onMouseDown={handleMouseDown} className="relative w-[4px] h-full bg-[#dcdcdc] border border-[#808080] shadow-[inset_1px_1px_0_#fff] cursor-pointer">
+                    <div 
+                        className="absolute left-1/2 -translate-x-1/2 w-[20px] h-[10px] bg-[#ece9d8] border-t border-l border-white border-b border-r border-[#aca899] shadow-sm"
+                        style={{ bottom: `calc(${globalVolume * 100}% - 5px)` }}
+                    >
+                        <div className="w-full h-full border border-[#aca899] opacity-50"></div>
                     </div>
                 </div>
             </div>
-            <div className="p-2 flex justify-center">
-                 <button onClick={() => setVolume(volume === 0 ? 50 : 0)} className="hover:bg-white/10 p-2 rounded transition-colors">
-                    {volume === 0 ? <VolumeX size={20} className="text-red-400"/> : <Volume2 size={20} className="text-blue-200"/>}
-                 </button>
+            <div className="mt-2 flex items-center gap-1">
+                <div className="w-3 h-3 border border-[#1c5180] bg-white flex items-center justify-center cursor-pointer" onClick={() => setGlobalVolume(globalVolume === 0 ? 0.5 : 0)}>
+                    {globalVolume === 0 && <div className="w-2 h-2 bg-black"></div>}
+                </div>
+                <span className="text-[9px] text-black">Mute</span>
             </div>
         </div>
     );
 };
 
-// --- TASKBAR PRINCIPAL ---
+const StartMenu = ({ isOpen, onClose }) => {
+  const { setBootStatus, openWindow, currentUser } = useOSStore();
+  if (!isOpen) return null;
+
+  const handleLogoff = () => { onClose(); setTimeout(() => setBootStatus('login'), 500); };
+  const handleShutdown = () => window.location.reload();
+  const handleOpenGames = () => { onClose(); openWindow('games-explorer', 'Jogos', <Gamepad2 size={16} className="text-green-600"/>, <GamesExplorer />); };
+
+  const MenuItem = ({ icon, label, subLabel, bold, onClick }) => (
+    <div onClick={onClick} className="flex items-center gap-2 p-1.5 hover:bg-[#316ac5] hover:text-white text-slate-800 rounded-[3px] cursor-pointer group transition-colors">
+        <div className="flex-shrink-0">{icon}</div>
+        <div className="flex flex-col leading-tight">
+            <span className={`text-xs ${bold ? 'font-bold' : ''}`}>{label}</span>
+            {subLabel && <span className="text-[9px] text-slate-500 group-hover:text-blue-100">{subLabel}</span>}
+        </div>
+    </div>
+  );
+  const SystemItem = ({ icon, label, bold, onClick }) => (
+    <div onClick={onClick} className="flex items-center gap-2 p-1.5 hover:bg-[#316ac5] hover:text-white rounded-[3px] cursor-pointer group transition-colors">
+        <div className="opacity-80 group-hover:opacity-100">{icon}</div>
+        <span className={`${bold ? 'font-bold' : ''} leading-none`}>{label}</span>
+    </div>
+  );
+
+  return (
+    <div className="absolute bottom-0 left-0 w-[380px] h-[480px] rounded-tr-lg rounded-tl-lg overflow-hidden font-sans shadow-[4px_4px_10px_rgba(0,0,0,0.5)] z-50 flex flex-col animate-in slide-in-from-bottom-2 origin-bottom-left" onClick={(e) => e.stopPropagation()} style={{ border: '2px solid #003399', borderBottom: 'none', fontFamily: 'Tahoma, sans-serif' }}>
+      <div className="h-16 bg-gradient-to-b from-[#1c5eb8] to-[#2470d6] flex items-center px-3 gap-3 border-b border-[#003399] shadow-md relative z-20">
+          <div className="w-12 h-12 rounded-[4px] border-2 border-white bg-[#d3e5fa] overflow-hidden shadow-sm p-0.5"><img src={currentUser?.avatar || "https://i.pravatar.cc/150"} alt="" className="w-full h-full object-cover rounded-[2px]"/></div>
+          <span className="text-white font-bold text-xl drop-shadow-[1px_1px_1px_rgba(0,0,0,0.5)]">{currentUser?.name || "Administrador"}</span>
+      </div>
+      <div className="flex-1 flex relative bg-white">
+          <div className="absolute top-0 left-0 w-full h-[2px] bg-[#e59700] z-10"></div>
+          <div className="w-1/2 p-2 flex flex-col gap-1 border-r border-[#95bdee]">
+              <div className="flex flex-col gap-1 pb-2">
+                  <MenuItem icon={<div className="w-8 h-8 bg-blue-100 rounded-full border border-blue-500 flex items-center justify-center text-blue-700 font-bold text-lg">e</div>} label="Internet Explorer" subLabel="Internet" bold />
+                  <MenuItem icon={<div className="w-8 h-8 bg-slate-700 rounded-sm text-white flex items-center justify-center font-serif font-bold text-xs border border-slate-500">cmd</div>} label="Prompt de Comando" subLabel="Sistema" bold />
+              </div>
+              <div className="h-[1px] bg-gray-200 w-[90%] self-center my-1"></div>
+              <div className="flex flex-col gap-1">
+                  <MenuItem icon={<FileText size={24} className="text-blue-600"/>} label="Notepad" />
+                  <MenuItem icon={<div className="w-6 h-6 bg-orange-500 rounded-full border border-white shadow-sm flex items-center justify-center"><Play size={12} className="text-white fill-white ml-0.5"/></div>} label="Windows Media Player" />
+                  <MenuItem icon={<Gamepad2 size={24} className="text-green-600"/>} label="Jogos" onClick={handleOpenGames} />
+              </div>
+              <div className="flex-1"></div>
+              <div className="h-[1px] bg-gray-200 w-full my-1"></div>
+              <div className="flex items-center justify-center p-2 hover:bg-[#2f71cd] hover:text-white cursor-pointer gap-2 text-xs font-bold text-slate-700 bg-blue-50"><span>All Programs</span><div className="bg-[#2f8935] text-white rounded-full p-0.5 group-hover:bg-white group-hover:text-[#2f71cd]"><ChevronRight size={10} strokeWidth={4}/></div></div>
+          </div>
+          <div className="w-1/2 bg-[#d3e5fa] p-2 flex flex-col gap-1 text-[#1e395b] text-xs border-l border-white/50">
+              <SystemItem icon={<Folder size={16} className="text-yellow-500 fill-yellow-500"/>} label="My Documents" bold />
+              <SystemItem icon={<ImageIcon size={16} className="text-blue-500"/>} label="My Pictures" bold />
+              <SystemItem icon={<Music size={16} className="text-orange-500"/>} label="My Music" bold />
+              <SystemItem icon={<Monitor size={16} className="text-slate-600"/>} label="My Computer" bold />
+              <div className="h-[1px] bg-[#aebdd1] my-1 shadow-[0_1px_0_white]"></div>
+              <SystemItem icon={<Settings size={16} className="text-slate-600"/>} label="Control Panel" />
+              <SystemItem icon={<Globe size={16} className="text-blue-600"/>} label="Network Connect..." />
+              <div className="h-[1px] bg-[#aebdd1] my-1 shadow-[0_1px_0_white]"></div>
+              <SystemItem icon={<Search size={16} className="text-slate-600"/>} label="Search" />
+              <SystemItem icon={<div className="w-4 h-4 border border-slate-500 bg-white text-[8px] flex items-center justify-center font-mono">R</div>} label="Run..." />
+          </div>
+      </div>
+      <div className="h-12 bg-gradient-to-b from-[#1c5eb8] to-[#2470d6] flex items-center justify-end px-4 gap-4 border-t border-[#003399] shadow-[inset_0_2px_2px_rgba(255,255,255,0.2)]">
+          <button onClick={handleLogoff} className="flex items-center gap-1 text-white text-[11px] hover:brightness-110 transition-all group"><div className="bg-[#e6a020] p-1 rounded-[3px] border border-white/30 shadow-sm group-hover:shadow-md"><LogOut size={14} className="text-white" strokeWidth={2.5}/></div><span>Log Off</span></button>
+          <button onClick={handleShutdown} className="flex items-center gap-1 text-white text-[11px] hover:brightness-110 transition-all group"><div className="bg-[#e0422e] p-1 rounded-[3px] border border-white/30 shadow-sm group-hover:shadow-md"><Power size={14} className="text-white" strokeWidth={2.5}/></div><span>Turn Off Computer</span></button>
+      </div>
+    </div>
+  );
+};
+
 export const Taskbar = () => {
-  const { windows, activeWindowId, focusWindow, restoreWindow, minimizeWindow, themeMode } = useOSStore();
+  const { windows, activeWindowId, focusWindow, restoreWindow, minimizeWindow, globalVolume } = useOSStore();
   const [startOpen, setStartOpen] = useState(false);
-  const [timeData, setTimeData] = useState({ time: '', date: '' });
-  const [volume, setVolume] = useState(70);
   const [showVolume, setShowVolume] = useState(false);
+  const [time, setTime] = useState(new Date());
 
   const getVolumeIcon = () => {
-      if (volume === 0) return <VolumeX size={18} className="text-red-400"/>;
-      if (volume < 50) return <Volume1 size={18}/>;
-      return <Volume2 size={18}/>;
+      if (globalVolume === 0) return <VolumeX size={14}/>;
+      if (globalVolume < 0.5) return <Volume1 size={14}/>;
+      return <Volume2 size={14}/>;
   };
 
-  useEffect(() => {
-    const handleClickOutside = () => setShowVolume(false);
-    if (showVolume) window.addEventListener('click', handleClickOutside);
-    return () => window.removeEventListener('click', handleClickOutside);
-  }, [showVolume]);
+  useEffect(() => { const t = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(t); }, []);
 
   useEffect(() => {
-    const handleClickOutsideStart = (e) => {
-        if (startOpen && !e.target.closest('.start-button-area') && !e.target.closest('.start-menu-container')) {
-            setStartOpen(false);
-        }
-    }
-    window.addEventListener('click', handleClickOutsideStart);
-    return () => window.removeEventListener('click', handleClickOutsideStart);
-  }, [startOpen]);
-
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      setTimeData({
-        time: new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Recife', hour: '2-digit', minute: '2-digit' }).format(now),
-        date: new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Recife', day: '2-digit', month: '2-digit', year: 'numeric' }).format(now)
-      });
+    const handleClick = (e) => {
+        if (startOpen && !e.target.closest('.start-menu-container')) setStartOpen(false);
+        if (showVolume && !e.target.closest('.volume-container')) setShowVolume(false);
     };
-    updateTime();
-    const i = setInterval(updateTime, 1000);
-    return () => clearInterval(i);
-  }, []);
-
-  const taskbarStyle = themeMode === 'dark' 
-    ? { background: 'linear-gradient(to bottom, #2b2b2b 0%, #1a1a1a 50%, #000000 100%)', borderTop: '1px solid rgba(255,255,255,0.1)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)' }
-    : { background: 'linear-gradient(to bottom, rgba(28, 55, 76, 0.9) 0%, rgba(20, 30, 48, 0.95) 50%, rgba(0, 0, 0, 0.95) 100%)', borderTop: '1px solid rgba(255,255,255,0.3)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)' };
-
-  const itemStyle = (isActive) => themeMode === 'dark'
-    ? (isActive ? "bg-white/20 shadow-[inset_0_0_10px_rgba(255,255,255,0.1)] border-white/20" : "")
-    : (isActive ? "bg-gradient-to-b from-white/20 to-white/5 border-white/30 shadow-[inset_0_0_10px_rgba(255,255,255,0.2)]" : "");
+    window.addEventListener('click', handleClick);
+    return () => window.removeEventListener('click', handleClick);
+  }, [startOpen, showVolume]);
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 z-50 start-menu-container">
-         <StartMenu isOpen={startOpen} onClose={() => setStartOpen(false)} />
-      </div>
-      
-      <div className="fixed bottom-0 w-full h-10 flex items-center justify-between z-[9999] px-1 select-none backdrop-blur-md transition-all duration-300" style={taskbarStyle}>
-        <div className="relative -top-[2px] z-50 ml-1 start-button-area">
-           <button onClick={(e) => { e.stopPropagation(); setStartOpen(!startOpen); }} className="w-10 h-10 rounded-full transition-all hover:brightness-110 active:scale-95 flex items-center justify-center group relative shadow-[0_0_10px_rgba(0,100,255,0.5)]" style={{ background: 'radial-gradient(circle at center, #1f508a 0%, #153864 45%, #0d2138 100%)', boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.5), 0 2px 5px rgba(0,0,0,0.8)' }}>
-                <div className="grid grid-cols-2 gap-[2px] opacity-90 group-hover:opacity-100">
-                    <div className="w-2 h-2 bg-[#f2552e] rounded-tl-[1px]"></div>
-                    <div className="w-2 h-2 bg-[#8bc43d] rounded-tr-[1px]"></div>
-                    <div className="w-2 h-2 bg-[#2d9fe6] rounded-bl-[1px]"></div>
-                    <div className="w-2 h-2 bg-[#fdbd08] rounded-br-[1px]"></div>
-                </div>
-                <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/40 to-transparent rounded-t-full pointer-events-none"></div>
+      <div className="fixed bottom-[30px] left-0 z-[100] start-menu-container"><StartMenu isOpen={startOpen} onClose={() => setStartOpen(false)} /></div>
+      <div className="fixed bottom-0 w-full h-[30px] flex items-center justify-between z-[9999] select-none" style={{ background: 'linear-gradient(to bottom, #245db5 0%, #3d78d6 5%, #3d78d6 80%, #1941a5 100%)', borderTop: '1px solid #649cec', fontFamily: 'Tahoma, sans-serif' }}>
+        <div className="relative start-menu-container z-50">
+           <button onClick={(e) => { e.stopPropagation(); setStartOpen(!startOpen); }} className="h-[30px] w-auto pr-3 pl-0 rounded-r-[14px] flex items-center gap-1 transition-all hover:brightness-110 active:brightness-90 overflow-visible relative" style={{ background: 'linear-gradient(to bottom, #3c8e2f 0%, #4fba32 8%, #4fba32 80%, #2d6921 100%)', boxShadow: '2px 2px 2px rgba(0,0,0,0.4)', border: '1px solid #2b5c22', borderLeft: 'none', borderTopRightRadius: '14px', borderBottomRightRadius: '14px' }}>
+                <div className="w-6 h-6 ml-1 italic font-bold text-white bg-gradient-to-br from-white/40 to-transparent rounded-full flex items-center justify-center border border-white/30 shadow-sm"><div className="grid grid-cols-2 gap-[1px] transform -rotate-12 scale-75"><div className="w-2 h-2 bg-[#f2552e] rounded-tl-sm"></div><div className="w-2 h-2 bg-[#8bc43d] rounded-tr-sm"></div><div className="w-2 h-2 bg-[#2d9fe6] rounded-bl-sm"></div><div className="w-2 h-2 bg-[#fdbd08] rounded-br-sm"></div></div></div>
+                <span className="text-white font-bold italic text-lg drop-shadow-[1px_1px_1px_rgba(0,0,0,0.5)] pr-1" style={{fontFamily: 'Trebuchet MS, sans-serif'}}>start</span>
            </button>
         </div>
-
-        <div className="flex-1 flex items-center gap-1 px-3 pl-4 overflow-x-auto h-full scrollbar-hide">
-          {windows.map((win) => (
-             <button key={win.id} onClick={() => { if (win.isMinimized) restoreWindow(win.id); else if (activeWindowId === win.id) minimizeWindow(win.id); else focusWindow(win.id); }} className={clsx("relative h-[34px] px-3 min-w-[140px] max-w-[180px] rounded-[3px] flex items-center gap-2 border border-transparent hover:shadow-[inset_0_0_5px_rgba(255,255,255,0.4)] hover:bg-white/10 transition-all text-shadow overflow-hidden", activeWindowId === win.id && !win.isMinimized ? itemStyle(true) : "")}>
-               <span className="drop-shadow-md flex-shrink-0">{win.icon}</span>
-               <span className="text-xs text-white truncate drop-shadow-md font-sans">{win.title}</span>
-             </button>
-          ))}
+        <div className="flex-1 flex items-center gap-1 px-1 overflow-x-auto h-full">
+          {windows.map((win) => {
+             const isActive = activeWindowId === win.id && !win.isMinimized;
+             return (<button key={win.id} onClick={() => { if (win.isMinimized) restoreWindow(win.id); else if (isActive) minimizeWindow(win.id); else focusWindow(win.id); }} className={clsx("relative h-[24px] px-2 w-40 rounded-[2px] flex items-center gap-2 text-shadow overflow-hidden transition-colors", isActive ? "bg-[#1e52b7] shadow-[inset_1px_1px_2px_rgba(0,0,0,0.5)] text-white border border-[#103375]" : "bg-[#3c81f0] hover:bg-[#5394f7] text-white border-t border-l border-[#6eb0f8] border-b border-r border-[#1941a5] shadow-[1px_1px_0_rgba(0,0,0,0.2)]")}><span className="drop-shadow-md flex-shrink-0 scale-75">{win.icon}</span><span className="text-[11px] truncate font-sans">{win.title}</span></button>);
+          })}
         </div>
-
-        <div className="flex items-center gap-2 px-3 py-1 bg-[#0d161f]/50 rounded-lg border border-white/5 mx-2 shadow-inner h-[34px]">
-           <div className="hidden sm:flex gap-1 text-white/80 mr-1">
-               <div className="hover:bg-white/10 p-1 rounded cursor-pointer transition-colors" title="Acesso à Internet"><div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-white/80 transform rotate-180 translate-y-[-2px]"></div></div>
-               <div className="hover:bg-white/10 p-1 rounded cursor-pointer transition-colors" title="Energia"><Battery size={16} className="rotate-90" /></div>
+        <div className="flex items-center gap-2 px-3 h-[30px] bg-[#1293e8] border-l border-[#103375] shadow-[inset_2px_0_5px_rgba(0,0,0,0.2)] relative volume-container">
+           <div className="w-4 h-4 bg-[#1c5eb8] rounded-full flex items-center justify-center shadow-sm border border-white/30 cursor-pointer hover:brightness-110"><ChevronRight size={10} className="text-white transform rotate-180"/></div>
+           <div className="flex gap-2 text-white drop-shadow-md mx-1 items-center relative">
+               <div onClick={(e) => { e.stopPropagation(); setShowVolume(!showVolume); }} className="cursor-pointer hover:text-slate-200">{getVolumeIcon()}</div>
+               <VolumeControl isOpen={showVolume} volume={globalVolume * 100} setVolume={(v) => { const { setGlobalVolume } = useOSStore.getState(); setGlobalVolume(v / 100); }} />
+               <HardDrive size={14} className="cursor-pointer hover:text-slate-200 animate-pulse"/>
+               <div className="w-3 h-3 bg-red-500 rounded-full border border-white shadow-sm"></div>
            </div>
-           <div className="relative">
-               <button onClick={(e) => { e.stopPropagation(); setShowVolume(!showVolume); }} className={clsx("hover:bg-white/10 p-1 rounded cursor-pointer text-white transition-colors flex items-center justify-center w-7 h-7", showVolume && "bg-white/20 shadow-inner")} title={`Alto-falantes: ${volume}%`}>
-                  {getVolumeIcon()}
-               </button>
-               <div className="absolute bottom-8 right-0 cursor-default">
-                 <VolumeControl isOpen={showVolume} volume={volume} setVolume={setVolume} />
-               </div>
-           </div>
-           <div className="flex flex-col items-center justify-center text-white text-[11px] leading-tight w-[60px] cursor-default pl-2 border-l border-white/10">
-               <span>{timeData.time}</span>
-               <span>{timeData.date}</span>
-           </div>
+           <div className="text-white text-[11px] font-sans px-1 cursor-default">{time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
         </div>
-        <div className="w-3 h-full border-l border-white/30 hover:bg-white/30 hover:shadow-[0_0_10px_rgba(255,255,255,0.5)] transition-all cursor-pointer ml-1 flex items-center justify-center group" title="Mostrar Área de Trabalho"></div>
+        <div className="w-3 h-full border-l border-white/30 hover:bg-white/30 cursor-pointer ml-1"></div>
       </div>
     </>
   );

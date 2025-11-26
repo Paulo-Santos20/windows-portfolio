@@ -1,21 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useOSStore } from '../../store/useOSStore';
-import { ArrowRight, Power, Accessibility } from 'lucide-react';
+import { ArrowRight, Power, HelpCircle } from 'lucide-react';
 
-// --- CONFIGURAÇÃO DOS USUÁRIOS ---
+// Usuários
 const USERS = [
   { 
-    id: 'paulo', 
-    name: 'Paulo Cardoso', 
+    id: 'paulo', name: 'Paulo Cardoso', 
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80', 
-    password: '', 
+    password: '', // Sem senha
     isAdmin: true
   },
   { 
-    id: 'robot', 
-    name: 'Mr. Robot', 
+    id: 'robot', name: 'Mr. Robot', 
     avatar: 'https://i.pinimg.com/736x/8f/c9/2c/8fc92c7304192408c6902dc9eb4c5147.jpg', 
-    password: 'fsociety', // COM SENHA
+    password: 'fsociety', 
     isAdmin: true
   }
 ];
@@ -25,10 +23,10 @@ export const BootSequence = () => {
   
   const [selectedUser, setSelectedUser] = useState(null);
   const [passwordInput, setPasswordInput] = useState('');
-  const [error, setError] = useState('');
-  const [loginStatus, setLoginStatus] = useState('idle'); 
+  const [error, setError] = useState(false);
+  const [loginStatus, setLoginStatus] = useState('idle');
 
-  const startupAudio = new Audio('https://www.myinstants.com/media/sounds/windows-7-startup.mp3');
+  const startupAudio = new Audio('https://www.myinstants.com/media/sounds/windows-xp-startup.mp3');
 
   useEffect(() => {
     if (bootStatus === 'booting') {
@@ -41,7 +39,7 @@ export const BootSequence = () => {
       if (bootStatus === 'login') {
           setSelectedUser(null);
           setPasswordInput('');
-          setError('');
+          setError(false);
           setLoginStatus('idle');
       }
   }, [bootStatus]);
@@ -51,160 +49,202 @@ export const BootSequence = () => {
       setCurrentUser(user.name, user.avatar);
       startupAudio.volume = 0.5;
       startupAudio.play().catch(() => {});
-      setTimeout(() => setBootStatus('desktop'), 2000);
+      setTimeout(() => setBootStatus('desktop'), 1500);
   };
 
   const handleUserClick = (user) => {
+      if (loginStatus === 'logging_in') return;
+      if (selectedUser?.id === user.id && user.password) return; // Já selecionado
+
       setSelectedUser(user);
-      setError('');
       setPasswordInput('');
-      // Se não tem senha, loga direto ao clicar
+      setError(false);
+
       if (!user.password) executeLogin(user);
   };
 
   const handleSubmitPassword = (e) => {
       e.preventDefault();
-      if (!selectedUser) return;
       if (passwordInput === selectedUser.password) executeLogin(selectedUser);
-      else { setError('Senha incorreta'); setPasswordInput(''); }
+      else { setError(true); setPasswordInput(''); }
   };
 
   if (bootStatus === 'desktop') return null;
 
+  // --- BOOT LOADING ---
   if (bootStatus === 'booting') {
     return (
       <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-[99999]">
-        <div className="mb-8 relative w-20 h-20 animate-pulse">
-           <div className="absolute top-0 left-0 w-9 h-9 bg-[#f2552e] rounded-sm animate-bounce" style={{ animationDelay: '0s' }}></div>
-           <div className="absolute top-0 right-0 w-9 h-9 bg-[#8bc43d] rounded-sm animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-           <div className="absolute bottom-0 left-0 w-9 h-9 bg-[#2d9fe6] rounded-sm animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-           <div className="absolute bottom-0 right-0 w-9 h-9 bg-[#fdbd08] rounded-sm animate-bounce" style={{ animationDelay: '0.6s' }}></div>
+        <div className="flex flex-col items-center gap-8">
+            {/* Logo Simplificado */}
+            <div className="flex gap-1">
+                <div className="flex flex-col gap-1">
+                    <div className="w-8 h-8 bg-[#f2552e] rounded-tl-sm"></div>
+                    <div className="w-8 h-8 bg-[#2d9fe6] rounded-bl-sm"></div>
+                </div>
+                <div className="flex flex-col gap-1">
+                    <div className="w-8 h-8 bg-[#8bc43d] rounded-tr-sm"></div>
+                    <div className="w-8 h-8 bg-[#fdbd08] rounded-br-sm"></div>
+                </div>
+            </div>
+            <h1 className="text-white font-sans text-2xl font-bold tracking-tighter">
+                Microsoft <span className="text-4xl font-extrabold italic">Windows</span><span className="text-orange-500 text-xl align-top">XP Dev Edition</span>
+            </h1>
+            <div className="w-48 h-4 border border-gray-500 rounded-[3px] p-0.5 mt-10 relative overflow-hidden">
+                <div className="h-full w-16 bg-gradient-to-r from-blue-900 via-blue-500 to-blue-900 rounded-[2px] animate-[slide-right_1.5s_linear_infinite]"></div>
+            </div>
+            <style>{`@keyframes slide-right { 0% { margin-left: -40px; } 100% { margin-left: 100%; } }`}</style>
         </div>
-        <h1 className="text-white font-sans text-xl tracking-wider">Iniciando o Windows</h1>
-        <p className="text-gray-500 text-xs mt-2">© 2025 Microsoft Corporation</p>
       </div>
     );
   }
 
-  // --- TELA DE LOGIN ---
+  // --- LOGIN SCREEN XP (PIXEL PERFECT) ---
   return (
-    <div className="fixed inset-0 z-[99999] flex flex-col items-center justify-center font-sans select-none"
-         style={{
-            backgroundImage: 'url(https://wallpapers.com/images/hd/minimalistic-blue-windows-7-screen-y1f3lbswydb71soy.webp)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-         }}
+    <div className="fixed inset-0 z-[99999] flex flex-col select-none overflow-hidden"
+         style={{ fontFamily: 'Tahoma, sans-serif', backgroundColor: '#5A7EDC' }}
     >
-      <div className="flex flex-col items-center w-full max-w-md relative z-10">
-         
-         {/* LISTA DE USUÁRIOS */}
-         {!selectedUser && (
-             <div className="flex flex-col gap-6 w-full items-center animate-in fade-in zoom-in duration-300">
-                 {USERS.map(user => (
-                     <div 
-                        key={user.id}
-                        onClick={() => handleUserClick(user)}
-                        className="flex flex-col items-center gap-3 cursor-pointer group hover:scale-105 transition-transform"
-                     >
-                         <div className="w-32 h-32 p-1 rounded-[14px] shadow-[0_0_15px_rgba(0,0,0,0.3)] border border-white/30 relative overflow-hidden bg-gradient-to-b from-white/50 to-white/10 backdrop-blur-sm group-hover:bg-white/40 transition-colors">
-                             <img src={user.avatar} alt={user.name} className="w-full h-full object-cover rounded-[10px] border border-black/10" />
-                         </div>
-                         <span className="text-white text-2xl font-light text-shadow-lg tracking-wide">{user.name}</span>
-                     </div>
-                 ))}
-             </div>
-         )}
+        {/* Top Bar (Gradient) */}
+        <div className="h-[80px] w-full border-b-2 border-[#F26D08] relative overflow-hidden bg-[#003399]">
+             <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-[#003399] via-[#003399] to-[#5A7EDC] opacity-50"></div>
+        </div>
 
-         {/* USUÁRIO SELECIONADO (SENHA) */}
-         {selectedUser && (
-             <div className="flex flex-col items-center gap-5 animate-in fade-in duration-300">
-                 
-                 {/* Avatar Grande */}
-                 <div 
-                    className="w-40 h-40 p-1.5 rounded-[16px] shadow-[0_0_20px_rgba(0,0,0,0.4)] border border-white/30 relative overflow-hidden bg-gradient-to-b from-white/50 to-white/10 cursor-pointer"
-                    onClick={() => loginStatus !== 'logging_in' && handleUserClick(selectedUser)}
-                 >
-                     <img src={selectedUser.avatar} alt={selectedUser.name} className="w-full h-full object-cover rounded-[12px] border border-black/10" />
-                 </div>
+        {/* Main Area */}
+        <div className="flex-1 flex items-center justify-center relative bg-gradient-to-r from-[#5A7EDC] via-[#638ADD] to-[#5A7EDC]">
+            
+            {/* Container Central Dividido */}
+            <div className="w-[800px] flex h-[350px]">
+                
+                {/* ESQUERDA: LOGO E INSTRUÇÕES */}
+                <div className="w-1/2 flex flex-col items-end justify-center pr-8 border-r border-white/30">
+                    <div className="flex flex-col items-end mb-8">
+                        <div className="flex gap-[2px] mb-2 transform -rotate-3 scale-90">
+                            <div className="flex flex-col gap-[2px]">
+                                <div className="w-6 h-6 bg-[#f2552e] rounded-tl-sm"></div>
+                                <div className="w-6 h-6 bg-[#2d9fe6] rounded-bl-sm"></div>
+                            </div>
+                            <div className="flex flex-col gap-[2px]">
+                                <div className="w-6 h-6 bg-[#8bc43d] rounded-tr-sm"></div>
+                                <div className="w-6 h-6 bg-[#fdbd08] rounded-br-sm"></div>
+                            </div>
+                        </div>
+                        <div className="flex flex-col items-end leading-none">
+                            <span className="text-white text-sm font-bold drop-shadow-md">Microsoft</span>
+                            <span className="text-white text-[42px] font-extrabold italic drop-shadow-md leading-[0.8] tracking-tighter">
+                                Windows<span className="text-[#F26D08] text-[28px] align-top ml-1">xp Dev Edition</span>
+                            </span>
+                        </div>
+                    </div>
+                    <span className="text-white text-[19px] font-medium drop-shadow-md text-right leading-tight opacity-90 w-64">
+                        To begin, click your user name
+                    </span>
+                </div>
 
-                 <h2 className="text-white text-3xl font-normal tracking-wide text-shadow-lg mb-1">{selectedUser.name}</h2>
+                {/* DIREITA: LISTA DE USUÁRIOS */}
+                <div className="w-1/2 flex flex-col justify-center pl-8 gap-3">
+                    {USERS.map(user => {
+                        const isSelected = selectedUser?.id === user.id;
+                        
+                        // Se logando, mostra apenas o usuário atual
+                        if (loginStatus === 'logging_in' && !isSelected) return null;
 
-                 {loginStatus === 'logging_in' ? (
-                     <div className="flex flex-col items-center gap-3">
-                         <div className="w-8 h-8 border-4 border-t-white border-r-white/50 border-b-white/20 border-l-white/20 rounded-full animate-spin"></div>
-                         <span className="text-white text-sm font-medium text-shadow">Bem-vindo</span>
-                     </div>
-                 ) : (
-                     <div className="flex flex-col items-center w-full gap-3">
-                         
-                         {/* FORMULÁRIO IDÊNTICO AO WIN7 */}
-                         <form onSubmit={handleSubmitPassword} className="flex items-center relative">
-                            <input 
-                                type="password" 
-                                placeholder="Senha"
-                                // Estilo Exato do Input Win7: Borda cinza-azulada, sombra interna suave, foco brilhante
-                                className="pl-3 pr-2 py-1.5 w-60 text-sm outline-none rounded-[3px] font-sans placeholder:text-slate-400 text-black transition-all
-                                           border border-[#8e9bb3] 
-                                           shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)]
-                                           focus:border-[#5899d0] focus:shadow-[inset_0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(88,153,208,0.5)]"
-                                value={passwordInput}
-                                onChange={(e) => { setPasswordInput(e.target.value); setError(''); }}
-                                autoFocus
-                            />
-                            
-                            {/* Botão "Ir" (Seta) IDÊNTICO AO WIN7 */}
-                            <button 
-                                type="submit" 
-                                // Gradiente dividido (Split Gradient) + Borda Azul Escura + Sombra Branca Interna
-                                className="ml-2 w-7 h-7 rounded-[3px] border border-[#003c74] flex items-center justify-center shadow-md hover:brightness-110 active:brightness-90
-                                           bg-[linear-gradient(to_bottom,#89b8dd_0%,#5992c4_50%,#2e679f_51%,#286096_100%)]
-                                           group overflow-hidden relative"
-                            >
-                                {/* Brilho interno no topo do botão */}
-                                <div className="absolute top-0 left-0 w-full h-[1px] bg-white/40"></div>
-                                <ArrowRight size={16} className="text-white drop-shadow-sm" strokeWidth={3} />
-                            </button>
-                         </form>
+                        return (
+                            <div key={user.id} className="flex flex-col items-start relative">
+                                <div 
+                                    onClick={() => handleUserClick(user)}
+                                    className={`
+                                        flex items-start gap-3 p-2 rounded-xl cursor-pointer transition-all duration-150
+                                        ${isSelected ? 'bg-none' : 'hover:bg-white/10'}
+                                    `}
+                                >
+                                    {/* AVATAR COM BORDA DE OURO */}
+                                    <div className={`
+                                        w-[50px] h-[50px] rounded-[3px] bg-white overflow-hidden shadow-md relative flex-shrink-0 border-[2px]
+                                        ${isSelected ? 'border-[#FEEfae]' : 'border-[#FFFFFF]/60'}
+                                    `}>
+                                        <img src={user.avatar} alt="" className="w-full h-full object-cover" />
+                                    </div>
 
-                         {error && <span className="text-white text-xs bg-black/30 px-2 py-1 rounded border border-white/20">{error}</span>}
+                                    <div className="flex flex-col justify-center min-h-[50px]">
+                                        <span className="text-white text-[20px] font-normal drop-shadow-md leading-none mb-1">
+                                            {user.name}
+                                        </span>
+                                        
+                                        {/* INPUT DE SENHA (APARECE AO CLICAR) */}
+                                        {isSelected && user.password ? (
+                                            <div className="animate-in fade-in duration-200">
+                                                <div className="text-white/80 text-[11px] mb-1 ml-0.5">Type your password</div>
+                                                <form onSubmit={handleSubmitPassword} className="flex items-center gap-2 relative">
+                                                    <input 
+                                                        type="password" 
+                                                        autoFocus
+                                                        className={`
+                                                            w-40 h-7 px-1.5 text-sm border-none outline-none rounded-[2px] shadow-[inset_1px_1px_2px_rgba(0,0,0,0.3)]
+                                                            ${error ? 'bg-[#fff5f5]' : 'bg-white'}
+                                                        `}
+                                                        value={passwordInput}
+                                                        onChange={(e) => {setPasswordInput(e.target.value); setError(false)}}
+                                                    />
+                                                    
+                                                    {/* BOTÃO VERDE (SETINHA) */}
+                                                    <button 
+                                                        type="submit" 
+                                                        className="w-7 h-7 rounded-[3px] bg-gradient-to-b from-[#60b259] to-[#2a7924] border border-[#185214] flex items-center justify-center shadow-md hover:brightness-110 active:brightness-95"
+                                                    >
+                                                        <ArrowRight size={16} className="text-white drop-shadow-md" strokeWidth={3} />
+                                                    </button>
+                                                    
+                                                    {/* BOTÃO DE AJUDA (INTERROGAÇÃO) */}
+                                                    <button 
+                                                        type="button"
+                                                        className="w-7 h-7 rounded-[3px] bg-gradient-to-b from-[#4679bd] to-[#1a4b86] border border-[#103057] flex items-center justify-center shadow-md hover:brightness-110"
+                                                    >
+                                                        <span className="text-white font-bold text-sm italic">?</span>
+                                                    </button>
+                                                </form>
+                                                
+                                                {/* MENSAGEM DE ERRO (BALÃO) */}
+                                                {error && (
+                                                    <div className="absolute left-0 top-16 bg-[#ffffe1] text-black text-xs p-2 border border-black rounded shadow-lg z-50 w-48">
+                                                        Did you forget your password? Please type it again.
+                                                        <div className="absolute -top-2 left-4 w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[8px] border-b-black"></div>
+                                                        <div className="absolute -top-[7px] left-4 w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[8px] border-b-[#ffffe1]"></div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            // Status do login (loading)
+                                            loginStatus === 'logging_in' && isSelected && (
+                                                <span className="text-white/80 text-xs">Loading your personal settings...</span>
+                                            )
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        </div>
 
-                         <button 
-                            onClick={() => { setSelectedUser(null); setError(''); }}
-                            className="mt-1 px-4 py-1 text-white/80 hover:text-white text-xs rounded hover:bg-white/10 transition-colors"
-                         >
-                             Trocar usuário
-                         </button>
-                     </div>
-                 )}
-             </div>
-         )}
-      </div>
+        {/* Footer */}
+        <div className="h-16 w-full bg-[#003399] border-t-2 border-[#F89B00] flex items-center justify-between px-12 relative">
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-[#003399] to-[#5A7EDC] opacity-30 pointer-events-none"></div>
+            
+            {/* Botão Desligar */}
+            <button className="flex items-center gap-3 group relative z-10 cursor-pointer">
+                <div className="w-8 h-8 bg-gradient-to-b from-[#E98B64] to-[#D22E04] border border-white/40 rounded-[3px] flex items-center justify-center shadow-lg group-hover:brightness-110 transition-all">
+                    <Power size={18} className="text-white drop-shadow-md" />
+                </div>
+                <span className="text-white text-[15px] font-bold shadow-black drop-shadow-md group-hover:underline">Turn off computer</span>
+            </button>
 
-      {/* RODAPÉ COM BOTÃO VERMELHO CORRETO */}
-      <div className="absolute bottom-0 w-full h-20 flex items-end justify-between px-8 pb-6 pointer-events-none">
-          
-          <button className="pointer-events-auto flex items-center justify-center w-9 h-9 bg-gradient-to-b from-[#4679bd] to-[#1a4b86] border border-[#103057] rounded-[4px] shadow-lg hover:brightness-110 active:scale-95 transition-all">
-              <Accessibility size={20} className="text-white drop-shadow-md" />
-          </button>
-
-          <div className="flex flex-col items-center mb-2 opacity-90">
-              <div className="flex items-center gap-2 text-shadow-lg">
-                  <span className="text-white text-2xl font-sans tracking-tight"><span className="font-bold">Windows</span> 7</span>
-                  <span className="text-white text-sm self-end mb-1 ml-1">Dev Edition</span>
-              </div>
-          </div>
-
-          {/* Botão Desligar Vermelho Dividido */}
-          <div className="flex items-center pointer-events-auto shadow-lg rounded-[4px] overflow-hidden border border-[#630608]">
-              <button className="flex items-center justify-center w-8 h-8 bg-[linear-gradient(to_bottom,#d45555_0%,#b52d2d_50%,#960d0d_51%,#a31616_100%)] hover:brightness-110 active:brightness-90 border-r border-[#630608]/50">
-                  <Power size={16} className="text-white drop-shadow-md" />
-              </button>
-              <button className="flex items-center justify-center w-5 h-8 bg-[linear-gradient(to_bottom,#d45555_0%,#b52d2d_50%,#960d0d_51%,#a31616_100%)] hover:brightness-110 active:brightness-90">
-                  <div className="w-0 h-0 border-l-[4px] border-l-white border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent ml-0.5"></div>
-              </button>
-          </div>
-
-      </div>
+            {/* Ajuda */}
+            <div className="relative z-10 text-white/90 text-[11px] max-w-md text-right leading-snug drop-shadow-md">
+                After you log on, you can add or change accounts.<br/>
+                Just go to Control Panel and click User Accounts.
+            </div>
+        </div>
     </div>
   );
 };
