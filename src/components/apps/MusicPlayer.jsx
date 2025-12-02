@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useOSStore } from '../../store/useOSStore'; // IMPORTANTE: Conectar à Store
+import { useOSStore } from '../../store/useOSStore';
 import { 
   Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, 
-  X, Minimize2, Music, ChevronLeft, Maximize, Square 
+  X, Minimize2, Maximize, ChevronLeft, Square 
 } from 'lucide-react';
 
 const SAMPLE_PLAYLIST = [
@@ -14,10 +14,9 @@ const SAMPLE_PLAYLIST = [
 ];
 
 export const MusicPlayer = ({ src: initialSrc, title: initialTitle, artist: initialArtist, onClose, onMinimize, onMaximize, isMaximized }) => {
-  // CONEXÃO COM O VOLUME GLOBAL
-  const { globalVolume, setGlobalVolume } = useOSStore(); 
-  
+  const { globalVolume, setGlobalVolume } = useOSStore();
   const audioRef = useRef(null);
+  
   const [playlist] = useState(() => {
       if (initialSrc && !SAMPLE_PLAYLIST.find(p => p.src === initialSrc)) {
           return [{ title: initialTitle, artist: initialArtist, src: initialSrc, duration: "0:00" }, ...SAMPLE_PLAYLIST];
@@ -29,12 +28,10 @@ export const MusicPlayer = ({ src: initialSrc, title: initialTitle, artist: init
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  
-  // Removemos o 'const [volume, setVolume] = useState(0.5)' local
 
   const currentTrack = playlist[currentIndex];
 
-  // Sincronizar Volume Global com o Elemento de Áudio
+  // Sincroniza o volume do elemento de áudio com o global
   useEffect(() => {
       if (audioRef.current) {
           audioRef.current.volume = globalVolume;
@@ -45,10 +42,20 @@ export const MusicPlayer = ({ src: initialSrc, title: initialTitle, artist: init
       if (audioRef.current) {
           audioRef.current.pause();
           audioRef.current.load();
-          audioRef.current.volume = globalVolume; // Aplica volume ao carregar
-          if (isPlaying) audioRef.current.play().catch(()=>{});
+          audioRef.current.volume = globalVolume;
+          if (isPlaying) {
+              audioRef.current.play().catch((e) => console.warn("Autoplay bloqueado ou erro de fonte:", e));
+          }
       }
   }, [currentIndex]);
+
+  // --- FUNÇÃO QUE FALTAVA (CORREÇÃO DO ERRO) ---
+  const handleVolumeChange = (e) => {
+      const newVol = parseFloat(e.target.value);
+      setGlobalVolume(newVol);
+      if(audioRef.current) audioRef.current.volume = newVol;
+  };
+  // ---------------------------------------------
 
   const handleTrackClick = (index) => { setCurrentIndex(index); setIsPlaying(true); };
   const togglePlay = () => { if (isPlaying) audioRef.current.pause(); else audioRef.current.play(); setIsPlaying(!isPlaying); };
@@ -58,45 +65,45 @@ export const MusicPlayer = ({ src: initialSrc, title: initialTitle, artist: init
   const playPrev = () => setCurrentIndex((prev) => (prev - 1 + playlist.length) % playlist.length);
   const formatTime = (time) => { if (isNaN(time)) return "0:00"; const m = Math.floor(time/60); const s = Math.floor(time%60); return `${m}:${s.toString().padStart(2,'0')}`; };
 
-  // Função para mudar volume (atualiza a store global)
-  const handleVolumeChange = (e) => {
-      const newVol = parseFloat(e.target.value);
-      setGlobalVolume(newVol);
-      if(audioRef.current) audioRef.current.volume = newVol;
-  };
-
   const sidebarBtnStyle = "w-full text-left px-3 py-1.5 text-[11px] font-bold cursor-pointer border-b border-[#5d8bc6] hover:text-orange-300 transition-colors relative overflow-hidden";
   const controlBtnStyle = "rounded-full bg-gradient-to-b from-[#ffffff] to-[#dcdcdc] border border-[#808080] shadow-[inset_0_1px_2px_rgba(255,255,255,1),0_2px_2px_rgba(0,0,0,0.3)] hover:brightness-110 active:scale-95 flex items-center justify-center active:shadow-inner";
 
   return (
-    <div className="flex flex-col h-full font-tahoma select-none overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.5)] rounded-tl-[15px] rounded-tr-[15px] rounded-b-[5px]"
+    <div className="flex flex-col h-full font-tahoma select-none overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.5)] rounded-tl-[15px] rounded-tr-[15px] rounded-b-[5px] pointer-events-auto"
          style={{ background: '#647b9e', border: '1px solid #3a5075' }}
     >
-      <audio ref={audioRef} src={currentTrack.src} onTimeUpdate={handleTimeUpdate} onLoadedMetadata={handleLoadedMetadata} onEnded={playNext} />
+      <audio 
+        ref={audioRef} 
+        src={currentTrack.src} 
+        onTimeUpdate={handleTimeUpdate} 
+        onLoadedMetadata={handleLoadedMetadata} 
+        onEnded={playNext}
+        onError={(e) => console.error("Erro ao carregar áudio (404 ou formato inválido):", currentTrack.src)}
+      />
 
       {/* HEADER WMP9 */}
       <div className="window-header h-10 flex items-center justify-between px-2 bg-gradient-to-b from-[#dcecff] to-[#9ebcdb] border-b border-[#587395] rounded-t-[14px] cursor-move">
-         <div className="flex items-center gap-2 ml-2">
-             <div className="w-4 h-4 bg-orange-500 rounded-full border border-white shadow-sm flex items-center justify-center">
-                 <div className="w-1 h-1 bg-white rounded-full"></div>
-             </div>
+         <div className="flex items-center gap-2 ml-2 pointer-events-none">
+             <div className="w-4 h-4 bg-orange-500 rounded-full border border-white shadow-sm flex items-center justify-center"><div className="w-1 h-1 bg-white rounded-full"></div></div>
              <span className="text-[#1d3b67] font-bold text-xs italic">Windows Media Player</span>
          </div>
-         <div className="flex gap-1 pr-1 no-drag" onMouseDown={(e) => e.stopPropagation()}>
-             <button onClick={onMinimize} className="w-5 h-5 flex items-center justify-center bg-gradient-to-b from-[#fff] to-[#dcecff] hover:brightness-110 rounded border border-[#fff] shadow-sm"><Minimize2 size={10} className="text-[#1d3b67]"/></button>
-             <button onClick={onMaximize} className="w-5 h-5 flex items-center justify-center bg-gradient-to-b from-[#fff] to-[#dcecff] hover:brightness-110 rounded border border-[#fff] shadow-sm">{isMaximized ? <div className="relative w-3 h-3"><div className="absolute top-0 right-0 w-2 h-2 border border-[#1d3b67]"></div><div className="absolute bottom-0 left-0 w-2 h-2 border border-[#1d3b67] bg-[#dcecff] z-10"></div></div> : <Square size={10} className="text-[#1d3b67]" />}</button>
-             <button onClick={onClose} className="w-5 h-5 flex items-center justify-center bg-gradient-to-b from-[#ff9999] to-[#e05e5e] hover:brightness-110 rounded border border-[#ffbaba] shadow-sm group"><X size={12} className="text-white group-hover:scale-110"/></button>
+         <div className="flex gap-1 pr-1 no-drag pointer-events-auto" onMouseDown={(e) => e.stopPropagation()}>
+             <button onClick={onMinimize} className="w-5 h-5 flex items-center justify-center bg-gradient-to-b from-[#fff] to-[#dcecff] hover:brightness-110 rounded border border-[#fff] shadow-sm cursor-pointer"><Minimize2 size={10} className="text-[#1d3b67]"/></button>
+             <button onClick={onMaximize} className="w-5 h-5 flex items-center justify-center bg-gradient-to-b from-[#fff] to-[#dcecff] hover:brightness-110 rounded border border-[#fff] shadow-sm cursor-pointer">{isMaximized ? <div className="relative w-3 h-3"><div className="absolute top-0 right-0 w-2 h-2 border border-[#1d3b67]"></div><div className="absolute bottom-0 left-0 w-2 h-2 border border-[#1d3b67] bg-[#dcecff] z-10"></div></div> : <Square size={10} className="text-[#1d3b67]" />}</button>
+             <button onClick={onClose} className="w-5 h-5 flex items-center justify-center bg-gradient-to-b from-[#ff9999] to-[#e05e5e] hover:brightness-110 rounded border border-[#ffbaba] shadow-sm group cursor-pointer"><X size={12} className="text-white group-hover:scale-110"/></button>
          </div>
       </div>
 
       {/* CORPO */}
       <div className="flex-1 flex relative bg-black border-l-[4px] border-r-[4px] border-[#647b9e] overflow-hidden">
+          {/* Sidebar */}
           <div className="w-[110px] flex-shrink-0 flex flex-col bg-[#3b6ea5] border-r border-[#2a4a75] relative z-20">
-              <div className={`${sidebarBtnStyle} bg-gradient-to-r from-[#ffffff] to-[#85a4d0] text-[#1d3b67] shadow-[inset_2px_2px_5px_rgba(0,0,0,0.2)] border-l-4 border-l-[#e59700]`}>Now Playing <div className="absolute right-1 top-1/2 -translate-y-1/2 text-[#1d3b67] text-[9px]">▸</div></div>
-              {['Media Guide', 'Copy from CD', 'Media Library', 'Radio Tuner'].map(i => <div key={i} className={`${sidebarBtnStyle} text-white`}>{i}</div>)}
+              <div className={`${sidebarBtnStyle} bg-gradient-to-r from-[#ffffff] to-[#85a4d0] text-[#1d3b67] shadow-[inset_2px_2px_5px_rgba(0,0,0,0.2)] border-l-4 border-l-[#e59700]`}>Now Playing</div>
+              {['Media Guide', 'Copy from CD', 'Media Library', 'Radio Tuner'].map(item => <div key={item} className={`${sidebarBtnStyle} text-white`}>{item}</div>)}
               <div className="flex-1 bg-[#3b6ea5]"></div>
           </div>
 
+          {/* Visualizer */}
           <div className="flex-1 flex flex-col bg-black relative z-10 min-w-0">
               <div className="h-8 bg-black text-white px-3 py-1 flex flex-col justify-center border-b border-[#333]">
                   <span className="text-sm font-bold leading-none truncate w-full">{currentTrack.artist}</span>
@@ -112,30 +119,26 @@ export const MusicPlayer = ({ src: initialSrc, title: initialTitle, artist: init
               </div>
           </div>
 
+          {/* Playlist */}
           <div className="w-[160px] flex-shrink-0 bg-[#5A5A85] flex flex-col border-l border-[#3b3b55] text-white text-[10px] relative z-20">
               <div className="h-6 bg-[#7070a0] flex items-center justify-between px-2 border-b border-[#4a4a6a] shadow-md"><span>Find Album Info</span></div>
-              <div className="h-24 bg-gradient-to-b from-[#4a4a6a] to-[#3a3a55] flex flex-col items-center justify-center p-2 border-b border-[#4a4a6a]">
-                  <div className="w-14 h-14 bg-white rounded-sm flex items-center justify-center border border-gray-400 shadow-lg mb-1"><Music size={24} className="text-black/50"/></div>
-                  <span className="text-[9px] text-white/70 truncate w-full text-center">Unknown Album</span>
-              </div>
               <div className="flex-1 overflow-y-auto bg-[#5A5A85] p-0.5 custom-scrollbar">
                   {playlist.map((track, index) => (
                       <div key={index} onClick={() => handleTrackClick(index)} className={`flex items-center justify-between px-2 py-1 cursor-pointer border border-transparent ${index === currentIndex ? 'bg-[#3d3d5c] border-[#7070a0] text-[#00ff00] font-bold' : 'hover:bg-[#6a6a8a] hover:border-[#7070a0] text-white'}`}>
-                          <span className="truncate flex-1">{track.title}</span><span className="ml-1 text-[9px] flex-shrink-0">{track.duration}</span>
+                          <div className="flex-1 min-w-0"><div className="truncate">{track.title}</div></div>
+                          <span className="ml-1 text-[9px] flex-shrink-0">{track.duration}</span>
                       </div>
                   ))}
               </div>
           </div>
       </div>
 
-      {/* FOOTER (Controles) */}
+      {/* Footer */}
       <div className="h-[70px] flex-shrink-0 bg-gradient-to-b from-[#dcebfb] via-[#a9c5eb] to-[#86a3d6] border-t border-[#6d8cc3] flex flex-col relative z-30 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] border-l-[4px] border-r-[4px] border-b-[4px] border-[#647b9e] rounded-b-[5px]">
           <div className="absolute top-2 left-4 right-4 h-[4px] bg-[#566d8f] border-b border-white/50 rounded-full overflow-visible cursor-pointer group">
               <div className="h-full bg-[#00ff00] shadow-[0_0_3px_#00ff00]" style={{ width: `${(currentTime / duration) * 100}%` }}></div>
-              <div className="absolute top-1/2 -translate-y-1/2 w-3 h-4 bg-gradient-to-b from-[#fff] to-[#ccc] border border-gray-500 shadow-md rounded-[2px]" style={{ left: `${(currentTime / duration) * 100}%` }}></div>
               <input type="range" min="0" max={duration || 0} value={currentTime} onChange={(e) => {audioRef.current.currentTime = e.target.value; setCurrentTime(e.target.value)}} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
           </div>
-
           <div className="flex-1 flex items-center justify-between px-4 mt-4">
               <div className="flex items-center gap-1">
                    <button onClick={togglePlay} className={`${controlBtnStyle} w-10 h-10 border-[#555]`}>{isPlaying ? <Pause fill="#1d3b67" size={16} className="text-[#1d3b67]"/> : <Play fill="#1d3b67" size={16} className="text-[#1d3b67] ml-0.5"/>}</button>
@@ -143,23 +146,12 @@ export const MusicPlayer = ({ src: initialSrc, title: initialTitle, artist: init
                    <button onClick={playPrev} className={`${controlBtnStyle} w-7 h-7`}><SkipBack fill="#1d3b67" size={10} className="text-[#1d3b67]"/></button>
                    <button onClick={playNext} className={`${controlBtnStyle} w-7 h-7`}><SkipForward fill="#1d3b67" size={10} className="text-[#1d3b67]"/></button>
               </div>
-
               <div className="flex items-center gap-2 mr-2">
-                  {/* BOTÃO MUTE */}
-                  <button onClick={() => setGlobalVolume(globalVolume === 0 ? 0.5 : 0)}>
-                      {globalVolume === 0 ? <VolumeX size={16} className="text-[#1d3b67]"/> : <Volume2 size={16} className="text-[#1d3b67]"/>}
-                  </button>
-                  
-                  {/* SLIDER VOLUME (VERDE) - CONTROLADO PELO GLOBAL */}
+                  <button onClick={() => setGlobalVolume(globalVolume === 0 ? 0.5 : 0)}>{globalVolume === 0 ? <VolumeX size={16} className="text-[#1d3b67]"/> : <Volume2 size={16} className="text-[#1d3b67]"/>}</button>
                   <div className="w-16 h-3 bg-[#333] border border-gray-500 relative rounded-sm overflow-hidden">
                       <div className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#006600] to-[#00ff00]" style={{ width: `${globalVolume * 100}%` }}></div>
-                      <div className="absolute inset-0 flex justify-between px-1">{[1,2,3,4,5].map(i => <div key={i} className="w-[1px] h-full bg-black/20"></div>)}</div>
-                      <input 
-                        type="range" min="0" max="1" step="0.01" 
-                        value={globalVolume} // Usa globalVolume
-                        onChange={handleVolumeChange} // Usa handler global
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      />
+                      {/* AQUI ESTAVA O ERRO: Chamando handleVolumeChange que não existia. Agora existe. */}
+                      <input type="range" min="0" max="1" step="0.01" value={globalVolume} onChange={handleVolumeChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
                   </div>
               </div>
           </div>

@@ -7,8 +7,8 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
+// --- CONTROLE DE VOLUME (MANTIDO) ---
 const VolumeControl = ({ isOpen }) => {
-    // Conectado ao Volume Global
     const { globalVolume, setGlobalVolume } = useOSStore();
     const trackRef = useRef(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -19,7 +19,7 @@ const VolumeControl = ({ isOpen }) => {
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         const heightFromBottom = rect.bottom - clientY;
         const totalHeight = rect.height;
-        let percentage = (heightFromBottom / totalHeight) * 1; // Normalizado 0-1
+        let percentage = (heightFromBottom / totalHeight) * 1;
         if (percentage < 0) percentage = 0;
         if (percentage > 1) percentage = 1;
         setGlobalVolume(percentage);
@@ -68,6 +68,7 @@ const VolumeControl = ({ isOpen }) => {
     );
 };
 
+// --- MENU INICIAR (MANTIDO IGUAL) ---
 const StartMenu = ({ isOpen, onClose }) => {
   const { setBootStatus, openWindow, currentUser } = useOSStore();
   if (!isOpen) return null;
@@ -136,6 +137,7 @@ const StartMenu = ({ isOpen, onClose }) => {
   );
 };
 
+// --- BARRA DE TAREFAS PRINCIPAL ---
 export const Taskbar = () => {
   const { windows, activeWindowId, focusWindow, restoreWindow, minimizeWindow, globalVolume } = useOSStore();
   const [startOpen, setStartOpen] = useState(false);
@@ -162,24 +164,51 @@ export const Taskbar = () => {
   return (
     <>
       <div className="fixed bottom-[30px] left-0 z-[100] start-menu-container"><StartMenu isOpen={startOpen} onClose={() => setStartOpen(false)} /></div>
+      
+      {/* Barra Principal */}
       <div className="fixed bottom-0 w-full h-[30px] flex items-center justify-between z-[9999] select-none" style={{ background: 'linear-gradient(to bottom, #245db5 0%, #3d78d6 5%, #3d78d6 80%, #1941a5 100%)', borderTop: '1px solid #649cec', fontFamily: 'Tahoma, sans-serif' }}>
+        
+        {/* Botão Iniciar */}
         <div className="relative start-menu-container z-50">
            <button onClick={(e) => { e.stopPropagation(); setStartOpen(!startOpen); }} className="h-[30px] w-auto pr-3 pl-0 rounded-r-[14px] flex items-center gap-1 transition-all hover:brightness-110 active:brightness-90 overflow-visible relative" style={{ background: 'linear-gradient(to bottom, #3c8e2f 0%, #4fba32 8%, #4fba32 80%, #2d6921 100%)', boxShadow: '2px 2px 2px rgba(0,0,0,0.4)', border: '1px solid #2b5c22', borderLeft: 'none', borderTopRightRadius: '14px', borderBottomRightRadius: '14px' }}>
                 <div className="w-6 h-6 ml-1 italic font-bold text-white bg-gradient-to-br from-white/40 to-transparent rounded-full flex items-center justify-center border border-white/30 shadow-sm"><div className="grid grid-cols-2 gap-[1px] transform -rotate-12 scale-75"><div className="w-2 h-2 bg-[#f2552e] rounded-tl-sm"></div><div className="w-2 h-2 bg-[#8bc43d] rounded-tr-sm"></div><div className="w-2 h-2 bg-[#2d9fe6] rounded-bl-sm"></div><div className="w-2 h-2 bg-[#fdbd08] rounded-br-sm"></div></div></div>
                 <span className="text-white font-bold italic text-lg drop-shadow-[1px_1px_1px_rgba(0,0,0,0.5)] pr-1" style={{fontFamily: 'Trebuchet MS, sans-serif'}}>start</span>
            </button>
         </div>
+
+        {/* --- LISTA DE JANELAS (CORRIGIDO PARA MOSTRAR ÍCONE) --- */}
         <div className="flex-1 flex items-center gap-1 px-1 overflow-x-auto h-full">
           {windows.map((win) => {
              const isActive = activeWindowId === win.id && !win.isMinimized;
-             return (<button key={win.id} onClick={() => { if (win.isMinimized) restoreWindow(win.id); else if (isActive) minimizeWindow(win.id); else focusWindow(win.id); }} className={clsx("relative h-[24px] px-2 w-40 rounded-[2px] flex items-center gap-2 text-shadow overflow-hidden transition-colors", isActive ? "bg-[#1e52b7] shadow-[inset_1px_1px_2px_rgba(0,0,0,0.5)] text-white border border-[#103375]" : "bg-[#3c81f0] hover:bg-[#5394f7] text-white border-t border-l border-[#6eb0f8] border-b border-r border-[#1941a5] shadow-[1px_1px_0_rgba(0,0,0,0.2)]")}><span className="drop-shadow-md flex-shrink-0 scale-75">{win.icon}</span><span className="text-[11px] truncate font-sans">{win.title}</span></button>);
+             return (
+                 <button 
+                    key={win.id} 
+                    onClick={() => { if (win.isMinimized) restoreWindow(win.id); else if (isActive) minimizeWindow(win.id); else focusWindow(win.id); }} 
+                    className={clsx(
+                        "relative h-[24px] px-2 min-w-[150px] w-[160px] rounded-[2px] flex items-center justify-start gap-2 text-shadow overflow-hidden transition-colors font-sans",
+                        // Estilo "Afundado" (Ativo) vs "Saltado" (Inativo/Minimizado)
+                        isActive 
+                            ? "bg-[#1e52b7] shadow-[inset_1px_1px_2px_rgba(0,0,0,0.6)] text-white border border-[#103375] opacity-90" 
+                            : "bg-[#3c81f0] hover:bg-[#5394f7] text-white border-t border-l border-[#6eb0f8] border-b border-r border-[#1941a5] shadow-[1px_1px_0_rgba(0,0,0,0.2)]"
+                    )}
+                 >
+                   {/* Ícone Forçado a 16px para não sumir/estourar */}
+                   <div className="w-4 h-4 min-w-[16px] flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>img]:w-full [&>img]:h-full drop-shadow-md">
+                       {win.icon}
+                   </div>
+                   
+                   <span className="text-[11px] truncate">{win.title}</span>
+                 </button>
+             );
           })}
         </div>
+
+        {/* Tray / Relógio */}
         <div className="flex items-center gap-2 px-3 h-[30px] bg-[#1293e8] border-l border-[#103375] shadow-[inset_2px_0_5px_rgba(0,0,0,0.2)] relative volume-container">
            <div className="w-4 h-4 bg-[#1c5eb8] rounded-full flex items-center justify-center shadow-sm border border-white/30 cursor-pointer hover:brightness-110"><ChevronRight size={10} className="text-white transform rotate-180"/></div>
            <div className="flex gap-2 text-white drop-shadow-md mx-1 items-center relative">
                <div onClick={(e) => { e.stopPropagation(); setShowVolume(!showVolume); }} className="cursor-pointer hover:text-slate-200">{getVolumeIcon()}</div>
-               <VolumeControl isOpen={showVolume} volume={globalVolume * 100} setVolume={(v) => { const { setGlobalVolume } = useOSStore.getState(); setGlobalVolume(v / 100); }} />
+               <VolumeControl isOpen={showVolume} />
                <HardDrive size={14} className="cursor-pointer hover:text-slate-200 animate-pulse"/>
                <div className="w-3 h-3 bg-red-500 rounded-full border border-white shadow-sm"></div>
            </div>

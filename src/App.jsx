@@ -1,49 +1,76 @@
 import React from 'react';
+import { useOSStore } from './store/useOSStore';
+import { BootSequence } from './components/os/BootSequence';
 import { Desktop } from './components/os/Desktop';
 import { Taskbar } from './components/os/Taskbar';
 import { WindowFrame } from './components/os/WindowFrame';
-import { BootSequence } from './components/os/BootSequence';
-import { ContextMenu } from './components/os/ContextMenu';
-import { useOSStore } from './store/useOSStore';
+import { ContextMenu } from './components/os/ContextMenu'; // <--- IMPORTANTE
 
-function App() {
-  const { windows, wallpaper, bootStatus, closeContextMenu, cursorType } = useOSStore(); // Importe cursorType
+const App = () => {
+  const { wallpaper, bootStatus, windows, cursorType, displaySettings } = useOSStore();
 
-  // Mapa de classes Tailwind para os cursores
-  const cursorClass = {
-      'default': 'cursor-default',
-      'pointer': 'cursor-pointer',
-      'crosshair': 'cursor-crosshair',
-      'text': 'cursor-text',
-      'wait': 'cursor-wait'
-  }[cursorType] || 'cursor-default';
+  const getFontSize = () => {
+      switch(displaySettings.fontSize) {
+          case 'small': return '10px';
+          case 'large': return '14px';
+          default: return '12px';
+      }
+  };
+
+  const getCursorStyle = () => {
+      switch (cursorType) {
+          case 'pointer': return 'pointer';
+          case 'crosshair': return 'crosshair';
+          case 'text': return 'text';
+          case 'wait': return 'wait';
+          default: return 'default';
+      }
+  };
 
   return (
     <div 
-      // APLICA O CURSOR AQUI
-      className={`h-screen w-screen overflow-hidden relative bg-cover bg-center bg-no-repeat font-sans select-none ${cursorClass}`}
-      style={{ backgroundImage: bootStatus === 'desktop' ? `url(${wallpaper})` : 'none', backgroundColor: '#000' }}
-      onClick={() => closeContextMenu()}
-      onContextMenu={(e) => e.preventDefault()}
+      className={`h-screen w-screen overflow-hidden relative select-none font-tahoma bg-black`}
+      style={{ cursor: getCursorStyle() }}
     >
       <BootSequence />
 
       {bootStatus === 'desktop' && (
-        <>
+        <div 
+            className="w-full h-full relative origin-top-left transition-all duration-300 ease-in-out"
+            style={{ 
+                transform: `scale(${displaySettings.scale})`,
+                width: `${100 / displaySettings.scale}%`,
+                height: `${100 / displaySettings.scale}%`,
+                fontSize: getFontSize() 
+            }}
+        >
+          <div className="absolute inset-0 bg-cover bg-center z-0" style={{ backgroundImage: `url(${wallpaper})` }} />
+
           <Desktop />
 
           {windows.map((win) => (
-            <WindowFrame key={win.id} {...win}>
+            <WindowFrame
+              key={win.id}
+              id={win.id}
+              title={win.title}
+              icon={win.icon}
+              zIndex={win.zIndex}
+              isMinimized={win.isMinimized}
+              isMaximized={win.isMaximized}
+              isSkin={win.isSkin}
+            >
               {win.component}
             </WindowFrame>
           ))}
 
-          <Taskbar />
+          {/* MENU DE CONTEXTO ADICIONADO AQUI */}
           <ContextMenu />
-        </>
+
+          <Taskbar />
+        </div>
       )}
     </div>
   );
-}
+};
 
 export default App;

@@ -1,5 +1,8 @@
 import { create } from 'zustand';
-import bugWallpaper from '../assets/wallpaper.webp';
+import bugWallpaper from '../assets/Wallpaper.webp';
+
+// Link estável para o Bliss
+export const BLISS_URL = 'https://web.archive.org/web/20230607062923if_/https://upload.wikimedia.org/wikipedia/pt/2/2d/Bliss_%28Windows_XP%29.png';
 
 const initialFileSystem = {
   'root': { id: 'root', name: 'Computador', type: 'root', children: ['c_drive'] },
@@ -9,60 +12,67 @@ const initialFileSystem = {
   'system32': { id: 'system32', name: 'System32', type: 'folder', parent: 'windows', children: [] },
   'users': { id: 'users', name: 'Usuários', type: 'folder', parent: 'c_drive', children: ['paulo'] },
   'paulo': { id: 'paulo', name: 'Paulo', type: 'folder', parent: 'users', children: ['desktop_folder', 'downloads', 'docs', 'imgs', 'videos', 'musics'] },
+  
   'desktop_folder': { id: 'desktop_folder', name: 'Área de Trabalho', type: 'folder', parent: 'paulo', children: [] }, 
   'downloads': { id: 'downloads', name: 'Downloads', type: 'folder', parent: 'paulo', children: [] },
   'docs': { id: 'docs', name: 'Documentos', type: 'folder', parent: 'paulo', children: ['cv', 'notes', 'techs'] },
   'imgs': { id: 'imgs', name: 'Imagens', type: 'folder', parent: 'paulo', children: ['perfil', 'wallpaper'] },
   'videos': { id: 'videos', name: 'Vídeos', type: 'folder', parent: 'paulo', children: ['video_demo'] },
   'musics': { id: 'musics', name: 'Músicas', type: 'folder', parent: 'paulo', children: ['song1'] },
-  'cv': { id: 'cv', name: 'Curriculo.pdf', type: 'pdf', parent: 'docs', src: 'data:application/pdf;base64,JVBERi0xLjcKCjEgMCBvYmoKICA8PCAvVHlwZSAvQ2F0YWxvZwogICAgIC9QYWdlcyAyIDAgUgogID4+CmVuZG9iagoKMiAwIG9iagogIDw8IC9UeXBlIC9QYWdlcwogICAgIC9LaWRzIFszIDAgUl0KICAgICAvQ291bnQgMQogICAgIC9NZWRpYUJveCBbMCAwIDU5NSA4NDJdCiAgPj4KZW5kb2JqCgozIDAgb2JqCiAgPDwgIC9UeXBlIC9QYWdlCiAgICAgIC9QYXJlbnQgMiAwIFIKICAgICAgL1Jlc291cmNlcwogICAgICAgPDwgL0ZvbnQKICAgICAgICAgIDw8IC9GMQogICAgICAgICAgICAgPDwgL1R5cGUgL0ZvbnQKICAgICAgICAgICAgICAgIC9TdWJ0eXBlIC9UeXBlMQogICAgICAgICAgICAgICAgL0Jhc2VGb250IC9IZWx2ZXRpY2EKICAgICAgICAgICAgID4+CiAgICAgICAgICA+PgogICAgICAgPj4KICAgICAgL0NvbnRlbnRzIDQgMCBSCiAgPj4KZW5kb2JqCgo0IDAgb2JqCiAgPDwgL0xlbmd0aCA1NQogID4+CnN0cmVhbQogIEJUKC9GMSAxMiBUZikgMTAwIDcwMCBUZCAoSGVsbG8hIEVzdGUgZSB1bSBQREYgZGUgVGVzdGUgbm8gc2V1IFBvcnRmb2xpbyBXaW5kb3dzIDcpIFRqIEVVCmVuZHN0cmVhbQplbmRvYmoKCnhyZWYKMCA1CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxMCAwMDAwMCBuIAowMDAwMDAwMDYwIDAwMDAwIG4gCjAwMDAwMDAxNTcgMDAwMDAgbiAKMDAwMDAwMDMwNiAwMDAwMCBuIAp0cmFpbGVyCiAgPDwgL1Jvb3QgMSAwIFIKICAgICAvU2l6ZSA1CiAgPj4Kc3RhcnR4cmVmCjQxMQolJUVPRgo=' },
-  'notes': { id: 'notes', name: 'Bem_Vindo.txt', type: 'txt', parent: 'docs', content: 'Bem vindo ao meu portfólio estilo Windows XP!' },
-  'techs': { id: 'techs', name: 'Stack.txt', type: 'txt', parent: 'docs', content: 'React, Tailwind, Zustand, Vite.' },
-  'perfil': { id: 'perfil', name: 'Foto_Perfil.jpg', type: 'img', parent: 'imgs', src: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' },
-  'wallpaper': { id: 'wallpaper', name: 'Wallpaper.jpg', type: 'img', parent: 'imgs', src: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80' },
-  'video_demo': { id: 'video_demo', name: 'Nature_Sample.mp4', type: 'video', parent: 'videos', src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4' },
+
+  // ARQUIVOS
+  'cv': { id: 'cv', name: 'Meu Currículo', type: 'pdf', parent: 'docs', src: 'data:application/pdf;base64,JVBERi0xLjcKCjEgMCBvYmoKICA8PCAvVHlwZSAvQ2F0YWxvZwogICAgIC9QYWdlcyAyIDAgUgogID4+CmVuZG9iagoKMiAwIG9iagogIDw8IC9UeXBlIC9QYWdlcwogICAgIC9LaWRzIFszIDAgUl0KICAgICAvQ291bnQgMQogICAgIC9NZWRpYUJveCBbMCAwIDU5NSA4NDJdCiAgPj4KZW5kb2JqCgozIDAgb2JqCiAgPDwgIC9UeXBlIC9QYWdlCiAgICAgIC9QYXJlbnQgMiAwIFIKICAgICAgL1Jlc291cmNlcwogICAgICAgPDwgL0ZvbnQKICAgICAgICAgIDw8IC9GMQogICAgICAgICAgICAgPDwgL1R5cGUgL0ZvbnQKICAgICAgICAgICAgICAgIC9TdWJ0eXBlIC9UeXBlMQogICAgICAgICAgICAgICAgL0Jhc2VGb250IC9IZWx2ZXRpY2EKICAgICAgICAgICAgID4+CiAgICAgICAgICA+PgogICAgICAgPj4KICAgICAgL0NvbnRlbnRzIDQgMCBSCiAgPj4KZW5kb2JqCgo0IDAgb2JqCiAgPDwgL0xlbmd0aCA1NQogID4+CnN0cmVhbQogIEJUKC9GMSAxMiBUZikgMTAwIDcwMCBUZCAoSGVsbG8hIEVzdGUgZSB1bSBQREYgZGUgVGVzdGUgbm8gc2V1IFBvcnRmb2xpbyBXaW5kb3dzIDcpIFRqIEVVCmVuZHN0cmVhbQplbmRvYmoKCnhyZWYKMCA1CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxMCAwMDAwMCBuIAowMDAwMDAwMDYwIDAwMDAwIG4gCjAwMDAwMDAxNTcgMDAwMDAgbiAKMDAwMDAwMDMwNiAwMDAwMCBuIAp0cmFpbGVyCiAgPDwgL1Jvb3QgMSAwIFIKICAgICAvU2l6ZSA1CiAgPj4Kc3RhcnR4cmVmCjQxMQolJUVPRgo=' },
+  'about': { id: 'about', name: 'Sobre Mim', type: 'app' },
+  'browser': { id: 'browser', name: 'Internet Explorer', type: 'app' },
+  'wmp': { id: 'wmp', name: 'Media Player', type: 'app' },
+  'video_demo': { id: 'video_demo', name: 'Vídeo Demo', type: 'video', parent: 'videos', src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4' },
+  'games_folder': { id: 'games_folder', name: 'Jogos', type: 'folder' },
+  'settings': { id: 'settings', name: 'Personalizar', type: 'app' },
+  'my_projects': { id: 'my_projects', name: 'Meus Projetos', type: 'app' },
+  'notes': { id: 'notes', name: 'Bem_Vindo.txt', type: 'txt', parent: 'docs', content: 'Bem vindo ao meu portfólio!' },
+  'techs': { id: 'techs', name: 'Stack.txt', type: 'txt', parent: 'docs', content: 'React, Tailwind, Zustand.' },
+  'perfil': { id: 'perfil', name: 'Foto_Perfil.jpg', type: 'img', parent: 'imgs', src: '' },
+  'wallpaper': { id: 'wallpaper', name: 'Wallpaper.jpg', type: 'img', parent: 'imgs', src: '' },
   'shortcut_game': { id: 'shortcut_game', name: 'Steam_Setup.exe', type: 'exe', parent: 'desktop_folder' },
   'song1': { id: 'song1', name: 'Dream_Scapes.mp3', type: 'mp3', parent: 'musics', src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', title: 'Dream Scapes', artist: 'SoundHelix' },
 };
 
 export const useOSStore = create((set, get) => ({
+  // --- CONFIGURAÇÕES DE VÍDEO ---
+  displaySettings: {
+      scale: 0.85, // PADRÃO: Alta Resolução (Menor Zoom)
+      fontSize: 'normal', 
+  },
+  setDisplaySettings: (newSettings) => set((state) => ({ 
+      displaySettings: { ...state.displaySettings, ...newSettings } 
+  })),
+
+  // --- TEMA E WALLPAPER ---
+  wallpaper: bugWallpaper, // PADRÃO: Bug Edition
+  themeMode: 'xp',
+  
+  // --- RESTO DA STORE ---
   windows: [],
   activeWindowId: null,
   zIndexCounter: 100,
   bootStatus: 'booting',
-  wallpaper: bugWallpaper,
-  themeMode: 'xp',
   cursorType: 'default',
+  setCursorType: (type) => set({ cursorType: type }),
   currentUser: { name: 'Convidado', avatar: '' },
-  
-  // --- VOLUME GLOBAL ---
-  globalVolume: 0.5, // 0 a 1
+  globalVolume: 0.5,
   setGlobalVolume: (vol) => set({ globalVolume: vol }),
-
-  // ... Resto do sistema (FileSystem, Janelas, etc.) ...
   setCurrentUser: (name, avatar) => set({ currentUser: { name, avatar } }),
   fileSystem: initialFileSystem,
   refreshKey: 0,
-  createItem: (parentId, type, nameBase) => set((state) => {
-    const id = `new_${Date.now()}`;
-    const newItem = { id, parent: parentId, type, name: `${nameBase} ${Math.floor(Math.random() * 100)}`, ...(type === 'txt' ? { content: '' } : {}), ...(type === 'folder' ? { children: [] } : {}) };
-    const parent = state.fileSystem[parentId];
-    const newParent = { ...parent, children: [...parent.children, id] };
-    return { refreshKey: state.refreshKey + 1, fileSystem: { ...state.fileSystem, [parentId]: newParent, [id]: newItem } };
-  }),
+  createItem: (parentId, type, nameBase) => set((state) => { const id = `new_${Date.now()}`; const newItem = { id, parent: parentId, type, name: `${nameBase} ${Math.floor(Math.random() * 100)}`, ...(type === 'txt' ? { content: '' } : {}), ...(type === 'folder' ? { children: [] } : {}) }; const parent = state.fileSystem[parentId]; const newParent = { ...parent, children: [...parent.children, id] }; return { refreshKey: state.refreshKey + 1, fileSystem: { ...state.fileSystem, [parentId]: newParent, [id]: newItem } }; }),
   updateFileContent: (id, newContent) => set((state) => ({ fileSystem: { ...state.fileSystem, [id]: { ...state.fileSystem[id], content: newContent } } })),
   renamingId: null,
   setRenamingId: (id) => set({ renamingId: id }),
-  renameItem: (id, newName) => set((state) => { if (!newName.trim()) return { renamingId: null }; return { renamingId: null, fileSystem: { ...state.fileSystem, [id]: { ...state.fileSystem[id], name: newName } } }; }),
+  renameItem: (id, newName) => set((state) => { if (!newName.trim() || !state.fileSystem[id]) return { renamingId: null }; return { renamingId: null, fileSystem: { ...state.fileSystem, [id]: { ...state.fileSystem[id], name: newName } } }; }),
   desktopSort: 'name',
   setDesktopSort: (sortType) => set({ desktopSort: sortType }),
   triggerRefresh: () => set((state) => ({ refreshKey: state.refreshKey + 1 })),
-  openWindow: (id, title, icon, component, initialPath = '/', options = {}) => set((state) => {
-    const existingWindow = state.windows.find((w) => w.id === id);
-    const newZIndex = state.zIndexCounter + 1;
-    if (existingWindow) return { activeWindowId: id, zIndexCounter: newZIndex, windows: state.windows.map((w) => w.id === id ? { ...w, isMinimized: false, zIndex: newZIndex } : w) };
-    return { activeWindowId: id, zIndexCounter: newZIndex, windows: [...state.windows, { id, title, icon, component, initialPath, isOpen: true, isMinimized: false, isMaximized: false, zIndex: newZIndex, isSkin: options.isSkin || false }] };
-  }),
+  openWindow: (id, title, icon, component, initialPath = '/', options = {}) => set((state) => { const existingWindow = state.windows.find((w) => w.id === id); const newZIndex = state.zIndexCounter + 1; if (existingWindow) return { activeWindowId: id, zIndexCounter: newZIndex, windows: state.windows.map((w) => w.id === id ? { ...w, isMinimized: false, zIndex: newZIndex } : w) }; return { activeWindowId: id, zIndexCounter: newZIndex, windows: [...state.windows, { id, title, icon, component, initialPath, isOpen: true, isMinimized: false, isMaximized: false, zIndex: newZIndex, isSkin: options.isSkin || false }] }; }),
   closeWindow: (id) => set((state) => ({ windows: state.windows.filter((w) => w.id !== id), activeWindowId: state.activeWindowId === id ? null : state.activeWindowId })),
   minimizeWindow: (id) => set((state) => ({ activeWindowId: null, windows: state.windows.map((w) => w.id === id ? { ...w, isMinimized: true } : w) })),
   toggleMaximize: (id) => set((state) => ({ activeWindowId: id, windows: state.windows.map((w) => w.id === id ? { ...w, isMaximized: !w.isMaximized } : w) })),
@@ -74,5 +84,4 @@ export const useOSStore = create((set, get) => ({
   setBootStatus: (status) => set({ bootStatus: status }),
   setWallpaper: (url) => set({ wallpaper: url }),
   setThemeMode: (mode) => set({ themeMode: mode }),
-  setCursorType: (type) => set({ cursorType: type }),
 }));
