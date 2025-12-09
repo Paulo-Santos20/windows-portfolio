@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Rnd } from 'react-rnd';
 import { useOSStore } from '../../store/useOSStore';
 
+// --- BOTÃO ESTILO XP (MANTIDO IGUAL) ---
 const XPButton = ({ type, onClick, isMaximized }) => {
   const isClose = type === 'close';
   const bgStyle = isClose
@@ -36,6 +37,20 @@ export const WindowFrame = ({ id, title, icon, children, zIndex, isMinimized, is
   const rndRef = useRef(null);
   const isActive = activeWindowId === id;
 
+  // --- LÓGICA DE CENTRALIZAÇÃO ---
+  // Define tamanho padrão
+  const defaultW = isSkin ? 600 : 800;
+  const defaultH = isSkin ? 400 : 600;
+
+  // Calcula o centro da tela (com um leve deslocamento baseado no zIndex para não empilhar 100%)
+  // window.innerWidth pode variar com o zoom do navegador, mas funciona bem para centralizar inicialmente.
+  const screenW = typeof window !== 'undefined' ? window.innerWidth : 1024;
+  const screenH = typeof window !== 'undefined' ? window.innerHeight : 768;
+
+  // Cálculo: (Tela - Janela) / 2 + Pequeno Offset para cascata
+  const centerX = (screenW - defaultW) / 2 + (zIndex % 5) * 20;
+  const centerY = (screenH - defaultH) / 2 + (zIndex % 5) * 20 - 30; // -30px para subir um pouco e fugir da taskbar
+
   useEffect(() => {
     if (isMaximized && rndRef.current) {
       rndRef.current.updatePosition({ x: 0, y: 0 });
@@ -56,7 +71,12 @@ export const WindowFrame = ({ id, title, icon, children, zIndex, isMinimized, is
   return (
     <Rnd
       ref={rndRef}
-      default={{ x: 50 + (zIndex % 10) * 20, y: 50 + (zIndex % 10) * 20, width: isSkin ? 600 : 800, height: isSkin ? 400 : 600 }}
+      default={{ 
+          x: centerX > 0 ? centerX : 50, // Fallback se a tela for muito pequena
+          y: centerY > 0 ? centerY : 50, 
+          width: defaultW, 
+          height: defaultH 
+      }}
       minWidth={300} minHeight={200}
       bounds="parent"
       disableDragging={isMaximized} 
@@ -65,7 +85,7 @@ export const WindowFrame = ({ id, title, icon, children, zIndex, isMinimized, is
       onDragStart={() => { setIsDragging(true); focusWindow(id); }}
       onDragStop={() => setIsDragging(false)}
       onMouseDown={() => focusWindow(id)}
-      className={`flex flex-col overflow-hidden ${isActive ? 'z-50' : 'z-0'} ${isSkin ? 'pointer-events-none' : ''}`} // Fix: pointer-events
+      className={`flex flex-col overflow-hidden ${isActive ? 'z-50' : 'z-0'} ${isSkin ? 'pointer-events-none' : ''}`}
       style={{ 
         zIndex: zIndex || 1, display: 'flex',
         background: isSkin ? 'transparent' : borderColor, 
@@ -96,7 +116,6 @@ export const WindowFrame = ({ id, title, icon, children, zIndex, isMinimized, is
       )}
 
       <div className={`flex-1 flex flex-col relative overflow-hidden`} style={{ backgroundColor: isSkin ? 'transparent' : bodyBg, border: isSkin ? 'none' : `1px solid ${borderColor}` }}>
-         {/* AQUI ESTÁ A MÁGICA: Passamos windowId para os filhos */}
          {isSkin ? React.cloneElement(children, { 
              onClose: () => closeWindow(id), 
              onMinimize: () => minimizeWindow(id), 
@@ -104,14 +123,12 @@ export const WindowFrame = ({ id, title, icon, children, zIndex, isMinimized, is
              isMaximized: isMaximized, 
              isWindowActive: isActive,
              windowId: id,
-             style: { pointerEvents: 'auto' } // Reativa cliques em skins
+             style: { pointerEvents: 'auto' }
          }) : (
              <div className="flex-1 bg-white overflow-auto relative select-text pointer-events-auto">
-                 {/* Barra de Menus */}
                  <div style={{ backgroundColor: bodyBg }} className="border-b border-[#d1d1d1] px-2 py-0.5 text-[11px] flex gap-3 select-none shrink-0" >
                      {['File', 'Edit', 'View', 'Favorites', 'Tools', 'Help'].map(m => <span key={m} className={`px-1 cursor-default ${isDark ? 'text-white hover:bg-gray-600' : 'text-black hover:bg-[#316ac5] hover:text-white'}`}>{m}</span>)}
                  </div>
-                 {/* Conteúdo com WindowId injetado */}
                  <div className="w-full h-full overflow-auto">
                     {React.isValidElement(children) ? React.cloneElement(children, { windowId: id }) : children}
                  </div>
