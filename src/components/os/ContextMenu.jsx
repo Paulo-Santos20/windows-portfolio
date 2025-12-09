@@ -33,13 +33,19 @@ export const ContextMenu = () => {
       closeContextMenu(); 
   };
   
-  const handleCreate = (type, name) => { const parentId = contextMenu.type === 'desktop' ? 'desktop_folder' : contextMenu.contextId; if (parentId) createItem(parentId, type, name); closeContextMenu(); };
+  const handleCreate = (type, name) => { 
+      const parentId = contextMenu.type === 'desktop' ? 'desktop_folder' : contextMenu.contextId; 
+      if (parentId) createItem(parentId, type, name); 
+      closeContextMenu(); 
+  };
+  
   const handlePersonalize = () => { openWindow('settings', 'Painel de Controle', <Settings size={16}/>, <ControlPanel />); closeContextMenu(); };
   const handleRename = () => { if (contextMenu.targetId) setRenamingId(contextMenu.targetId); closeContextMenu(); };
-  const handleDelete = () => { alert("Simulação de Exclusão."); closeContextMenu(); };
+  const handleDelete = () => { alert("Função de excluir (Simulação)."); closeContextMenu(); };
 
   const handleOpen = () => {
     const item = fileSystem[contextMenu.targetId];
+    // ... (mesma lógica de abrir de antes) ...
     if (item) {
         if (item.type === 'folder') openWindow(`folder-${item.id}`, item.name, <Folder size={16} className="text-yellow-500 fill-yellow-500"/>, <FileExplorer initialPath={item.id}/>);
         else if (item.type === 'txt') openWindow(`notepad-${item.id}`, item.name, <FileText size={16} className="text-blue-500"/>, <Notepad id={item.id} content={item.content} fileName={item.name} />);
@@ -65,14 +71,14 @@ export const ContextMenu = () => {
         className="absolute left-[98%] -top-1 w-48 bg-white border border-gray-400 shadow-[2px_2px_5px_rgba(0,0,0,0.4)] py-1 z-[100000]"
         onMouseEnter={() => setShowNewSubmenu(true)}
       >
-          <div className="menu-item group" onClick={() => handleCreate('folder', 'Nova Pasta')}>
-             {/* Ícone com cor fixa */}
-             <span className="w-4 flex justify-center"><FolderPlus size={14} className="text-yellow-600 group-hover:text-white"/></span> 
-             <span className="text-black group-hover:text-white">Pasta</span>
+          {/* Força texto preto e hover azul/branco */}
+          <div className="menu-item text-black hover:text-white" onClick={() => handleCreate('folder', 'Nova Pasta')}>
+             <span className="w-4 flex justify-center"><FolderPlus size={14} className="text-yellow-600"/></span> 
+             <span>Pasta</span>
           </div>
-          <div className="menu-item group" onClick={() => handleCreate('txt', 'Documento de Texto')}>
-             <span className="w-4 flex justify-center"><FileText size={14} className="text-gray-500 group-hover:text-white"/></span> 
-             <span className="text-black group-hover:text-white">Documento de Texto</span>
+          <div className="menu-item text-black hover:text-white" onClick={() => handleCreate('txt', 'Documento de Texto')}>
+             <span className="w-4 flex justify-center"><FileText size={14} className="text-gray-500"/></span> 
+             <span>Documento de Texto</span>
           </div>
       </div>
   );
@@ -81,13 +87,13 @@ export const ContextMenu = () => {
     if (contextMenu.type === 'desktop' || contextMenu.type === 'folder-bg') {
       return (
         <>
-          <div className="menu-item" onClick={handleRefresh}>
+          <div className="menu-item text-black" onClick={handleRefresh}>
              <span className="w-4 flex justify-center"><RefreshCw size={14}/></span> Atualizar
           </div>
           <div className="h-[1px] bg-gray-300 my-1 mx-1"></div>
           
           <div 
-            className="menu-item relative flex justify-between items-center" 
+            className="menu-item text-black relative flex justify-between items-center" 
             onMouseEnter={() => setShowNewSubmenu(true)}
             onMouseLeave={() => setShowNewSubmenu(false)}
           >
@@ -100,7 +106,7 @@ export const ContextMenu = () => {
           </div>
 
           <div className="h-[1px] bg-gray-300 my-1 mx-1"></div>
-          <div className="menu-item font-bold" onClick={handlePersonalize}>
+          <div className="menu-item font-bold text-black" onClick={handlePersonalize}>
              <span className="w-4 flex justify-center"><Settings size={14}/></span> Personalizar
           </div>
         </>
@@ -110,11 +116,11 @@ export const ContextMenu = () => {
     if (contextMenu.type === 'file' || contextMenu.type === 'folder') {
       return (
         <>
-          <div className="menu-item font-bold" onClick={handleOpen}>
+          <div className="menu-item font-bold text-black" onClick={handleOpen}>
              <span className="w-4 flex justify-center"><ExternalLink size={14}/></span> Abrir
           </div>
           <div className="h-[1px] bg-gray-300 my-1 mx-1"></div>
-          <div className="menu-item" onClick={handleRename}>
+          <div className="menu-item text-black" onClick={handleRename}>
              <span className="w-4"></span> Renomear
           </div>
           <div className="h-[1px] bg-gray-300 my-1 mx-1"></div>
@@ -130,7 +136,7 @@ export const ContextMenu = () => {
   return (
     <div 
       ref={menuRef}
-      className="fixed z-[99999] bg-white border border-gray-400 shadow-[2px_2px_5px_rgba(0,0,0,0.4)] py-1 w-56 rounded-[2px] text-[11px] text-black font-tahoma select-none"
+      className="fixed z-[99999] bg-white border border-gray-400 shadow-[2px_2px_5px_rgba(0,0,0,0.4)] py-1 w-56 rounded-[2px] text-[11px] font-tahoma select-none text-black" // Force text-black
       style={{ top: contextMenu.y, left: contextMenu.x }}
       onClick={(e) => e.stopPropagation()}
     >
@@ -140,7 +146,8 @@ export const ContextMenu = () => {
       <style>{`
         .menu-item { display: flex; align-items: center; gap: 8px; padding: 3px 12px 3px 8px; cursor: default; }
         .menu-item:hover { background-color: #316ac5; color: white !important; }
-        .menu-item:hover svg { stroke: white; }
+        .menu-item:hover svg { stroke: white; fill: white; } /* Força ícones brancos no hover */
+        .menu-item:hover span { color: white !important; }
       `}</style>
     </div>
   );

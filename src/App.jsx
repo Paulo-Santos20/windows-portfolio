@@ -4,7 +4,6 @@ import { BootSequence } from './components/os/BootSequence';
 import { Desktop } from './components/os/Desktop';
 import { Taskbar } from './components/os/Taskbar';
 import { WindowFrame } from './components/os/WindowFrame';
-import { ContextMenu } from './components/os/ContextMenu'; // <--- IMPORTANTE
 
 const App = () => {
   const { wallpaper, bootStatus, windows, cursorType, displaySettings } = useOSStore();
@@ -58,13 +57,15 @@ const App = () => {
               isMinimized={win.isMinimized}
               isMaximized={win.isMaximized}
               isSkin={win.isSkin}
+              // --- NOVAS PROPS FALTANTES ---
+              initialWidth={win.initialWidth}
+              initialHeight={win.initialHeight}
+              hasMenuBar={win.hasMenuBar}
+              resizable={win.resizable}
             >
               {win.component}
             </WindowFrame>
           ))}
-
-          {/* MENU DE CONTEXTO ADICIONADO AQUI */}
-          <ContextMenu />
 
           <Taskbar />
         </div>
