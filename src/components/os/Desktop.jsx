@@ -18,7 +18,7 @@ import { Paint } from '../apps/Paint'; // NOVO: Paint
 
 // --- ÍCONES E ASSETS ---
 import { Settings, Gamepad2, Play, Film, User, FileText, Globe, Briefcase, Calculator as CalcIcon, Terminal as TermIcon, Palette } from 'lucide-react';
-import curriculoPdf from '../../assets/curriculo.pdf';
+import curriculoPdf from '../../assets/Curriculo.pdf';
 
 // Assets WebP
 import folderWebp from '../../assets/icons/folder.ico';
