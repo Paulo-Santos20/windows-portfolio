@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useOSStore } from '../../store/useOSStore';
-import { GamesExplorer } from '../apps/GamesExplorer';
 import { 
-  Volume2, Volume1, VolumeX, 
-  ChevronRight, LogOut, Power, Search, Gamepad2, Monitor, Folder, Settings, Globe, Play, FileText, Image as ImageIcon, Music, HardDrive 
+  Volume2, Volume1, VolumeX, ChevronRight, LogOut, Power, 
+  HardDrive, Atom, Database, Layout, Smartphone, Code2, Layers, Cpu, 
+  FileCode, Github, GitBranch 
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -70,68 +70,111 @@ const VolumeControl = ({ isOpen }) => {
 
 // --- MENU INICIAR ---
 const StartMenu = ({ isOpen, onClose }) => {
-  const { setBootStatus, openWindow, currentUser } = useOSStore();
+  const { setBootStatus, currentUser } = useOSStore();
   if (!isOpen) return null;
 
   const handleLogoff = () => { onClose(); setTimeout(() => setBootStatus('login'), 500); };
   const handleShutdown = () => window.location.reload();
-  const handleOpenGames = () => { onClose(); openWindow('games-explorer', 'Jogos', <Gamepad2 size={16} className="text-green-600"/>, <GamesExplorer />); };
 
-  const MenuItem = ({ icon, label, subLabel, bold, onClick }) => (
-    <div onClick={onClick} className="flex items-center gap-2 p-1.5 hover:bg-[#316ac5] hover:text-white text-slate-800 rounded-[3px] cursor-pointer group transition-colors">
-        <div className="flex-shrink-0">{icon}</div>
+  // Componente para a coluna esquerda (Tech Stack Principal)
+  const TechItem = ({ icon, label, subLabel }) => (
+    <div className="flex items-center gap-2 p-2 hover:bg-[#316ac5] hover:text-white text-slate-800 rounded-[3px] cursor-default group transition-colors mb-1">
+        <div className={`flex-shrink-0 w-8 h-8 rounded-sm flex items-center justify-center border border-gray-300 shadow-sm bg-white`}>
+            {icon}
+        </div>
         <div className="flex flex-col leading-tight">
-            <span className={`text-xs ${bold ? 'font-bold' : ''}`}>{label}</span>
-            {subLabel && <span className="text-[9px] text-slate-500 group-hover:text-blue-100">{subLabel}</span>}
+            <span className="text-xs font-bold">{label}</span>
+            <span className="text-[9px] text-slate-500 group-hover:text-blue-100">{subLabel}</span>
         </div>
     </div>
   );
-  const SystemItem = ({ icon, label, bold, onClick }) => (
-    <div onClick={onClick} className="flex items-center gap-2 p-1.5 hover:bg-[#316ac5] hover:text-white rounded-[3px] cursor-pointer group transition-colors">
-        <div className="opacity-80 group-hover:opacity-100">{icon}</div>
-        <span className={`${bold ? 'font-bold' : ''} leading-none`}>{label}</span>
+
+  // Componente para a coluna direita (Conceitos/Ferramentas)
+  const ConceptItem = ({ icon, label }) => (
+    <div className="flex items-center gap-2 p-1.5 hover:bg-[#316ac5] hover:text-white rounded-[3px] cursor-default group transition-colors text-[#1e395b]">
+        <div className="opacity-80 group-hover:opacity-100 group-hover:text-white text-[#1e395b]">{icon}</div>
+        <span className="text-xs group-hover:text-white">{label}</span>
     </div>
   );
 
   return (
-    <div className="absolute bottom-0 left-0 w-[380px] h-[480px] rounded-tr-lg rounded-tl-lg overflow-hidden font-sans shadow-[4px_4px_10px_rgba(0,0,0,0.5)] z-50 flex flex-col animate-in slide-in-from-bottom-2 origin-bottom-left cursor-default" onClick={(e) => e.stopPropagation()} style={{ border: '2px solid #003399', borderBottom: 'none', fontFamily: 'Tahoma, sans-serif' }}>
+    <div 
+        className="absolute bottom-0 left-0 w-[380px] h-[450px] rounded-tr-lg rounded-tl-lg overflow-hidden font-sans shadow-[4px_4px_10px_rgba(0,0,0,0.5)] z-50 flex flex-col animate-in slide-in-from-bottom-2 origin-bottom-left cursor-default" 
+        onClick={(e) => e.stopPropagation()} 
+        style={{ border: '2px solid #003399', borderBottom: 'none', fontFamily: 'Tahoma, sans-serif' }}
+    >
+      {/* HEADER: Usuário */}
       <div className="h-16 bg-gradient-to-b from-[#1c5eb8] to-[#2470d6] flex items-center px-3 gap-3 border-b border-[#003399] shadow-md relative z-20">
-          <div className="w-12 h-12 rounded-[4px] border-2 border-white bg-[#d3e5fa] overflow-hidden shadow-sm p-0.5"><img src={currentUser?.avatar || "https://i.pravatar.cc/150"} alt="" className="w-full h-full object-cover rounded-[2px]"/></div>
-          <span className="text-white font-bold text-xl drop-shadow-[1px_1px_1px_rgba(0,0,0,0.5)]">{currentUser?.name || "Administrador"}</span>
+          <div className="w-12 h-12 rounded-[4px] border-2 border-white bg-[#d3e5fa] overflow-hidden shadow-sm p-0.5 relative">
+             <img src={currentUser?.avatar || "https://i.pravatar.cc/150"} alt="" className="w-full h-full object-cover rounded-[2px]"/>
+          </div>
+          <span className="text-white font-bold text-xl drop-shadow-[1px_1px_1px_rgba(0,0,0,0.5)]">{currentUser?.name || "Visitante"}</span>
       </div>
+
+      {/* CORPO DO MENU */}
       <div className="flex-1 flex relative bg-white">
           <div className="absolute top-0 left-0 w-full h-[2px] bg-[#e59700] z-10"></div>
-          <div className="w-1/2 p-2 flex flex-col gap-1 border-r border-[#95bdee]">
-              <div className="flex flex-col gap-1 pb-2">
-                  <MenuItem icon={<div className="w-8 h-8 bg-blue-100 rounded-full border border-blue-500 flex items-center justify-center text-blue-700 font-bold text-lg">e</div>} label="Internet Explorer" subLabel="Internet" bold />
-                  <MenuItem icon={<div className="w-8 h-8 bg-slate-700 rounded-sm text-white flex items-center justify-center font-serif font-bold text-xs border border-slate-500">cmd</div>} label="Prompt de Comando" subLabel="Sistema" bold />
-              </div>
-              <div className="h-[1px] bg-gray-200 w-[90%] self-center my-1"></div>
-              <div className="flex flex-col gap-1">
-                  <MenuItem icon={<FileText size={24} className="text-blue-600"/>} label="Notepad" />
-                  <MenuItem icon={<div className="w-6 h-6 bg-orange-500 rounded-full border border-white shadow-sm flex items-center justify-center"><Play size={12} className="text-white fill-white ml-0.5"/></div>} label="Windows Media Player" />
-                  <MenuItem icon={<Gamepad2 size={24} className="text-green-600"/>} label="Jogos" onClick={handleOpenGames} />
-              </div>
-              <div className="flex-1"></div>
-              <div className="h-[1px] bg-gray-200 w-full my-1"></div>
-              <div className="flex items-center justify-center p-2 hover:bg-[#2f71cd] hover:text-white cursor-pointer gap-2 text-xs font-bold text-slate-700 bg-blue-50"><span>All Programs</span><div className="bg-[#2f8935] text-white rounded-full p-0.5 group-hover:bg-white group-hover:text-[#2f71cd]"><ChevronRight size={10} strokeWidth={4}/></div></div>
+          
+          {/* COLUNA ESQUERDA: STACK PRINCIPAL */}
+          <div className="w-[60%] p-2 flex flex-col border-r border-[#95bdee]">
+              <span className="text-[10px] font-bold text-gray-400 mb-2 pl-1">CORE STACK</span>
+              
+              <TechItem 
+                icon={<Atom size={20} className="text-[#61DAFB]"/>} 
+                label="React" 
+                subLabel="Frontend Library" 
+              />
+              <TechItem 
+                icon={<Code2 size={20} className="text-[#F7DF1E]"/>} 
+                label="JavaScript" 
+                subLabel="ES6+ Development" 
+              />
+              <TechItem 
+                icon={<FileCode size={20} className="text-[#3776AB]"/>} 
+                label="Python" 
+                subLabel="Backend & Scripting" 
+              />
+              <TechItem 
+                icon={<Database size={20} className="text-[#00758F]"/>} 
+                label="SQL" 
+                subLabel="Database Management" 
+              />
+              
+              <div className="h-[1px] bg-gray-200 w-[95%] self-center my-2"></div>
           </div>
-          <div className="w-1/2 bg-[#d3e5fa] p-2 flex flex-col gap-1 text-[#1e395b] text-xs border-l border-white/50">
-              <SystemItem icon={<Folder size={16} className="text-yellow-500 fill-yellow-500"/>} label="My Documents" bold />
-              <SystemItem icon={<ImageIcon size={16} className="text-blue-500"/>} label="My Pictures" bold />
-              <SystemItem icon={<Music size={16} className="text-orange-500"/>} label="My Music" bold />
-              <SystemItem icon={<Monitor size={16} className="text-slate-600"/>} label="My Computer" bold />
-              <div className="h-[1px] bg-[#aebdd1] my-1 shadow-[0_1px_0_white]"></div>
-              <SystemItem icon={<Settings size={16} className="text-slate-600"/>} label="Control Panel" />
-              <SystemItem icon={<Globe size={16} className="text-blue-600"/>} label="Network Connect..." />
-              <div className="h-[1px] bg-[#aebdd1] my-1 shadow-[0_1px_0_white]"></div>
-              <SystemItem icon={<Search size={16} className="text-slate-600"/>} label="Search" />
-              <SystemItem icon={<div className="w-4 h-4 border border-slate-500 bg-white text-[8px] flex items-center justify-center font-mono">R</div>} label="Run..." />
+
+          {/* COLUNA DIREITA: ARQUITETURA E FERRAMENTAS */}
+          <div className="w-[40%] bg-[#d3e5fa] p-2 flex flex-col gap-1 border-l border-white/50 pt-3">
+              <span className="text-[10px] font-bold text-[#1e395b]/50 mb-1 pl-1">ARCHITECTURE</span>
+              
+              <ConceptItem icon={<Layout size={16}/>} label="Responsive Design" />
+              <ConceptItem icon={<Layers size={16}/>} label="Scalable Arch." />
+              <ConceptItem icon={<Smartphone size={16}/>} label="Mobile First" />
+              <ConceptItem icon={<Cpu size={16}/>} label="Performance" />
+              
+              <div className="h-[1px] bg-[#aebdd1] my-2 shadow-[0_1px_0_white]"></div>
+              
+              <span className="text-[10px] font-bold text-[#1e395b]/50 mb-1 pl-1">TOOLS</span>
+              <ConceptItem icon={<Github size={16}/>} label="GitHub" />
+              <ConceptItem icon={<GitBranch size={16}/>} label="Git / Versioning" />
           </div>
       </div>
+
+      {/* FOOTER: AÇÕES */}
       <div className="h-12 bg-gradient-to-b from-[#1c5eb8] to-[#2470d6] flex items-center justify-end px-4 gap-4 border-t border-[#003399] shadow-[inset_0_2px_2px_rgba(255,255,255,0.2)]">
-          <button onClick={handleLogoff} className="flex items-center gap-1 text-white text-[11px] hover:brightness-110 transition-all group cursor-pointer"><div className="bg-[#e6a020] p-1 rounded-[3px] border border-white/30 shadow-sm group-hover:shadow-md"><LogOut size={14} className="text-white" strokeWidth={2.5}/></div><span>Log Off</span></button>
-          <button onClick={handleShutdown} className="flex items-center gap-1 text-white text-[11px] hover:brightness-110 transition-all group cursor-pointer"><div className="bg-[#e0422e] p-1 rounded-[3px] border border-white/30 shadow-sm group-hover:shadow-md"><Power size={14} className="text-white" strokeWidth={2.5}/></div><span>Turn Off Computer</span></button>
+          <button onClick={handleLogoff} className="flex items-center gap-1 text-white text-[11px] hover:brightness-110 transition-all group cursor-pointer">
+              <div className="bg-[#e6a020] p-1 rounded-[3px] border border-white/30 shadow-sm group-hover:shadow-md">
+                  <LogOut size={14} className="text-white" strokeWidth={2.5}/>
+              </div>
+              <span>Log Off</span>
+          </button>
+          
+          <button onClick={handleShutdown} className="flex items-center gap-1 text-white text-[11px] hover:brightness-110 transition-all group cursor-pointer">
+              <div className="bg-[#e0422e] p-1 rounded-[3px] border border-white/30 shadow-sm group-hover:shadow-md">
+                  <Power size={14} className="text-white" strokeWidth={2.5}/>
+              </div>
+              <span>Turn Off Computer</span>
+          </button>
       </div>
     </div>
   );
@@ -165,7 +208,9 @@ export const Taskbar = () => {
 
   return (
     <>
-      <div className="fixed bottom-[30px] left-0 z-[100] start-menu-container"><StartMenu isOpen={startOpen} onClose={() => setStartOpen(false)} /></div>
+      <div className="fixed bottom-[30px] left-0 z-[100] start-menu-container">
+          <StartMenu isOpen={startOpen} onClose={() => setStartOpen(false)} />
+      </div>
       
       <div 
         className="fixed bottom-0 w-full h-[30px] flex items-center justify-between z-[9999] select-none" 
@@ -177,8 +222,26 @@ export const Taskbar = () => {
       >
         {/* Botão Iniciar */}
         <div className="relative start-menu-container z-50">
-           <button onClick={(e) => { e.stopPropagation(); setStartOpen(!startOpen); }} className="h-[30px] w-auto pr-3 pl-0 rounded-r-[14px] flex items-center gap-1 transition-all hover:brightness-110 active:brightness-90 overflow-visible relative cursor-pointer" style={{ background: 'linear-gradient(to bottom, #3c8e2f 0%, #4fba32 8%, #4fba32 80%, #2d6921 100%)', boxShadow: '2px 2px 2px rgba(0,0,0,0.4)', border: '1px solid #2b5c22', borderLeft: 'none', borderTopRightRadius: '14px', borderBottomRightRadius: '14px' }}>
-                <div className="w-6 h-6 ml-1 italic font-bold text-white bg-gradient-to-br from-white/40 to-transparent rounded-full flex items-center justify-center border border-white/30 shadow-sm"><div className="grid grid-cols-2 gap-[1px] transform -rotate-12 scale-75"><div className="w-2 h-2 bg-[#f2552e] rounded-tl-sm"></div><div className="w-2 h-2 bg-[#8bc43d] rounded-tr-sm"></div><div className="w-2 h-2 bg-[#2d9fe6] rounded-bl-sm"></div><div className="w-2 h-2 bg-[#fdbd08] rounded-br-sm"></div></div></div>
+           <button 
+                onClick={(e) => { e.stopPropagation(); setStartOpen(!startOpen); }} 
+                className="h-[30px] w-auto pr-3 pl-0 rounded-r-[14px] flex items-center gap-1 transition-all hover:brightness-110 active:brightness-90 overflow-visible relative cursor-pointer" 
+                style={{ 
+                    background: 'linear-gradient(to bottom, #3c8e2f 0%, #4fba32 8%, #4fba32 80%, #2d6921 100%)', 
+                    boxShadow: '2px 2px 2px rgba(0,0,0,0.4)', 
+                    border: '1px solid #2b5c22', 
+                    borderLeft: 'none', 
+                    borderTopRightRadius: '14px', 
+                    borderBottomRightRadius: '14px' 
+                }}
+            >
+                <div className="w-6 h-6 ml-1 italic font-bold text-white bg-gradient-to-br from-white/40 to-transparent rounded-full flex items-center justify-center border border-white/30 shadow-sm">
+                    <div className="grid grid-cols-2 gap-[1px] transform -rotate-12 scale-75">
+                        <div className="w-2 h-2 bg-[#f2552e] rounded-tl-sm"></div>
+                        <div className="w-2 h-2 bg-[#8bc43d] rounded-tr-sm"></div>
+                        <div className="w-2 h-2 bg-[#2d9fe6] rounded-bl-sm"></div>
+                        <div className="w-2 h-2 bg-[#fdbd08] rounded-br-sm"></div>
+                    </div>
+                </div>
                 <span className="text-white font-bold italic text-lg drop-shadow-[1px_1px_1px_rgba(0,0,0,0.5)] pr-1" style={{fontFamily: 'Trebuchet MS, sans-serif'}}>start</span>
            </button>
         </div>

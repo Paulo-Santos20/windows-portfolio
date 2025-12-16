@@ -11,13 +11,8 @@ const XPButton = ({ type, onClick, isMaximized }) => {
   return (
     <button 
       onClick={(e) => { e.stopPropagation(); onClick(); }}
-      className="group relative flex items-center justify-center cursor-pointer" // Mudado de cursor-default para cursor-pointer
-      style={{
-        width: '21px', height: '21px', marginLeft: '2px',
-        borderRadius: '3px', border: '1px solid white',
-        boxShadow: '0px 0px 1px 0px rgba(0,0,0,0.7)',
-        ...bgStyle
-      }}
+      className="group relative flex items-center justify-center cursor-pointer"
+      style={{ width: '21px', height: '21px', marginLeft: '2px', borderRadius: '3px', border: '1px solid white', boxShadow: '0px 0px 1px 0px rgba(0,0,0,0.7)', ...bgStyle }}
     >
       <div style={{ position: 'absolute', inset: 0, borderRadius: '2px', boxShadow: 'inset 1px 1px 0 rgba(255,255,255,0.4)' }}></div>
       <div style={{ filter: 'drop-shadow(0px 1px 0px rgba(0,0,0,0.3))', position: 'relative', zIndex: 10 }}>
@@ -35,15 +30,13 @@ const XPButton = ({ type, onClick, isMaximized }) => {
   );
 };
 
-// ... O restante do WindowFrame permanece igual ao anterior, apenas a alteração acima é necessária ...
-// Para facilitar, aqui está o resto do componente se precisar copiar tudo de novo:
-
 export const WindowFrame = ({ id, title, icon, children, zIndex, isMinimized, isMaximized, isSkin, initialWidth, initialHeight, hasMenuBar = true, resizable = true }) => {
   const { closeWindow, minimizeWindow, toggleMaximize, focusWindow, activeWindowId, themeMode } = useOSStore();
   const [isDragging, setIsDragging] = useState(false);
   const rndRef = useRef(null);
   const isActive = activeWindowId === id;
 
+  // Calcula Posição Inicial
   const defaultW = initialWidth || (isSkin ? 600 : 800);
   const defaultH = initialHeight || (isSkin ? 400 : 600);
   const screenW = typeof window !== 'undefined' ? window.innerWidth : 1024;
@@ -51,12 +44,41 @@ export const WindowFrame = ({ id, title, icon, children, zIndex, isMinimized, is
   const centerX = (screenW / 0.85 - defaultW) / 2 + (zIndex % 5) * 20;
   const centerY = (screenH / 0.85 - defaultH) / 2 + (zIndex % 5) * 20 - 30;
 
+  // --- 1. MEMÓRIA DE POSIÇÃO (Para Restaurar) ---
+  const lastBounds = useRef({ x: centerX, y: centerY, width: defaultW, height: defaultH });
+
+  // --- 2. EFEITO DE MAXIMIZAR / RESTAURAR ---
   useEffect(() => {
-    if (isMaximized && rndRef.current) {
+    if (!rndRef.current) return;
+
+    if (isMaximized) {
+      // Se maximizou, força ocupar tudo (mas não salva isso como lastBounds)
       rndRef.current.updatePosition({ x: 0, y: 0 });
       rndRef.current.updateSize({ width: '100%', height: '100%' });
+    } else {
+      // Se restaurou, volta para os valores salvos em lastBounds
+      rndRef.current.updatePosition({ x: lastBounds.current.x, y: lastBounds.current.y });
+      rndRef.current.updateSize({ width: lastBounds.current.width, height: lastBounds.current.height });
     }
   }, [isMaximized]);
+
+  // Callbacks para salvar posição quando o usuário mexe na janela
+  const handleDragStop = (e, d) => {
+      setIsDragging(false);
+      if (!isMaximized) {
+          lastBounds.current.x = d.x;
+          lastBounds.current.y = d.y;
+      }
+  };
+
+  const handleResizeStop = (e, direction, ref, delta, position) => {
+      if (!isMaximized) {
+          lastBounds.current.width = ref.style.width;
+          lastBounds.current.height = ref.style.height;
+          lastBounds.current.x = position.x;
+          lastBounds.current.y = position.y;
+      }
+  };
 
   if (isMinimized) return null;
 
@@ -71,21 +93,27 @@ export const WindowFrame = ({ id, title, icon, children, zIndex, isMinimized, is
     <Rnd
       ref={rndRef}
       default={{ x: centerX > 0 ? centerX : 50, y: centerY > 0 ? centerY : 50, width: defaultW, height: defaultH }}
-      minWidth={isSkin ? defaultW : 200} minHeight={isSkin ? defaultH : 150}
+      minWidth={resizable ? 300 : defaultW} 
+      minHeight={resizable ? 200 : defaultH}
       bounds="parent"
+      
+      // --- LÓGICA DE INTERAÇÃO ---
       disableDragging={isMaximized} 
-      enableResizing={!isMaximized && !isSkin && resizable} 
+      enableResizing={!isMaximized && resizable} // Libera redimensionamento se não estiver maximizado e for permitido
       dragHandleClassName="window-header"
+      
       onDragStart={() => { setIsDragging(true); focusWindow(id); }}
-      onDragStop={() => setIsDragging(false)}
+      onDragStop={handleDragStop} // Salva posição
+      onResizeStop={handleResizeStop} // Salva tamanho
       onMouseDown={() => focusWindow(id)}
+      
       className={`flex flex-col overflow-hidden ${isActive ? 'z-50' : 'z-0'} ${isSkin ? 'pointer-events-none' : ''}`}
       style={{ zIndex: zIndex || 1, display: 'flex', background: isSkin ? 'transparent' : borderColor, borderRadius: isMaximized || isSkin ? '0' : '8px 8px 0 0', padding: (isSkin || isMaximized) ? '0' : '3px', paddingTop: 0, boxShadow: isSkin ? 'none' : '2px 2px 10px rgba(0,0,0,0.5)' }}
     >
       {!isSkin && (
           <div 
             className="window-header h-[30px] flex-shrink-0 flex items-center justify-between px-2 cursor-default relative overflow-hidden select-none"
-            onDoubleClick={() => toggleMaximize(id)}
+            onDoubleClick={() => resizable && toggleMaximize(id)} // Só maximiza se for resizable
             style={{ background: headerBg, borderRadius: isMaximized ? 0 : '6px 6px 0 0', borderBottom: `1px solid ${borderColor}` }}
           >
             <div className="flex items-center gap-2 text-white font-bold text-[13px] pointer-events-none truncate" style={{ textShadow: '1px 1px 1px black', fontFamily: 'Tahoma' }}>

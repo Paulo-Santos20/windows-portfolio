@@ -9,41 +9,6 @@ const PIECES = {
 
 const PIECE_VALUES = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 20000 };
 
-// Tabelas de Posição (PST) - Refinadas para encorajar centro e avanço
-const PST = {
-  p: [
-    [0,  0,  0,  0,  0,  0,  0,  0],
-    [50, 50, 50, 50, 50, 50, 50, 50],
-    [10, 10, 20, 30, 30, 20, 10, 10],
-    [5,  5, 10, 25, 25, 10,  5,  5],
-    [0,  0,  0, 20, 20,  0,  0,  0],
-    [5, -5,-10,  0,  0,-10, -5,  5],
-    [5, 10, 10,-20,-20, 10, 10,  5],
-    [0,  0,  0,  0,  0,  0,  0,  0]
-  ],
-  n: [
-    [-50,-40,-30,-30,-30,-30,-40,-50],
-    [-40,-20,  0,  0,  0,  0,-20,-40],
-    [-30,  0, 10, 15, 15, 10,  0,-30],
-    [-30,  5, 15, 20, 20, 15,  5,-30],
-    [-30,  0, 15, 20, 20, 15,  0,-30],
-    [-30,  5, 10, 15, 15, 10,  5,-30],
-    [-40,-20,  0,  5,  5,  0,-20,-40],
-    [-50,-40,-30,-30,-30,-30,-40,-50]
-  ],
-  // Genérico para peças maiores (prefira o centro)
-  DEFAULT: [
-    [-20,-10,-10,-10,-10,-10,-10,-20],
-    [-10,  0,  0,  0,  0,  0,  0,-10],
-    [-10,  0,  5, 10, 10,  5,  0,-10],
-    [-10,  5,  5, 10, 10,  5,  5,-10],
-    [-10,  0, 10, 10, 10, 10,  0,-10],
-    [-10, 10, 10, 10, 10, 10, 10,-10],
-    [-10,  5,  0,  0,  0,  0,  5,-10],
-    [-20,-10,-10,-10,-10,-10,-10,-20]
-  ]
-};
-
 const INITIAL_BOARD = [
   ['br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br'],
   ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp'],
@@ -54,7 +19,7 @@ const INITIAL_BOARD = [
 
 const INITIAL_CASTLING = { w: { k: true, q: true }, b: { k: true, q: true } };
 
-// --- ENGINE OTIMIZADA ---
+// --- ENGINE LÓGICA ---
 const ChessEngine = {
   isValidPos: (r, c) => r >= 0 && r < 8 && c >= 0 && c < 8,
   cloneBoard: (board) => board.map(row => [...row]),
@@ -68,22 +33,27 @@ const ChessEngine = {
       return null;
   },
 
+  // Verifica se a casa (r, c) está sendo atacada pelo inimigo
   isSquareAttacked: (board, r, c, defenderColor) => {
       const enemyColor = defenderColor === 'w' ? 'b' : 'w';
-      const pawnDir = defenderColor === 'w' ? -1 : 1;
+      
+      // 1. Ataque de Peões Inimigos
+      // Se sou Branco (defensor), inimigo Preto (vem de cima, r menor).
+      // Um peão preto em [r-1][c±1] ataca [r][c].
+      const pawnRow = defenderColor === 'w' ? r - 1 : r + 1;
+      if (ChessEngine.isValidPos(pawnRow, c - 1) && board[pawnRow][c - 1] === enemyColor + 'p') return true;
+      if (ChessEngine.isValidPos(pawnRow, c + 1) && board[pawnRow][c + 1] === enemyColor + 'p') return true;
 
-      // Otimização: Verifica ataques comuns primeiro (Peões e Cavalos)
-      if (ChessEngine.isValidPos(r - pawnDir, c - 1) && board[r - pawnDir][c - 1] === enemyColor + 'p') return true;
-      if (ChessEngine.isValidPos(r - pawnDir, c + 1) && board[r - pawnDir][c + 1] === enemyColor + 'p') return true;
-
+      // 2. Cavalos
       const knightMoves = [[2,1], [2,-1], [-2,1], [-2,-1], [1,2], [1,-2], [-1,2], [-1,-2]];
       for(let [dr, dc] of knightMoves) {
           if(ChessEngine.isValidPos(r + dr, c + dc) && board[r + dr][c + dc] === enemyColor + 'n') return true;
       }
 
+      // 3. Peças Deslizantes (Torre, Bispo, Rainha)
       const rays = [
-          { dirs: [[0,1],[0,-1],[1,0],[-1,0]], pieces: ['r', 'q'] },
-          { dirs: [[1,1],[1,-1],[-1,1],[-1,-1]], pieces: ['b', 'q'] }
+          { dirs: [[0,1],[0,-1],[1,0],[-1,0]], pieces: ['r', 'q'] }, // Linhas
+          { dirs: [[1,1],[1,-1],[-1,1],[-1,-1]], pieces: ['b', 'q'] } // Diagonais
       ];
       for(let { dirs, pieces } of rays) {
           for(let [dr, dc] of dirs) {
@@ -92,14 +62,14 @@ const ChessEngine = {
                   const p = board[nr][nc];
                   if(p) {
                       if(p[0] === enemyColor && pieces.includes(p[1])) return true;
-                      break;
+                      break; // Bloqueado por qualquer peça
                   }
                   nr += dr; nc += dc;
               }
           }
       }
       
-      // Rei Inimigo (para evitar rei colar em rei)
+      // 4. Rei Inimigo (raio de 1)
       for(let x=-1; x<=1; x++){
           for(let y=-1; y<=1; y++){
               if(x===0 && y===0) continue;
@@ -122,13 +92,13 @@ const ChessEngine = {
             const target = board[nr][nc];
             if (!target) {
                 moves.push({ r: nr, c: nc, capture: false });
-                return true;
+                return true; // Continua deslizando
             } else if (target[0] !== color) {
                 moves.push({ r: nr, c: nc, capture: true });
-                return false;
+                return false; // Captura e para
             }
         }
-        return false;
+        return false; // Bloqueado ou fora
     };
 
     if (['r', 'b', 'q'].includes(type)) {
@@ -142,65 +112,71 @@ const ChessEngine = {
         dirs.forEach(([dr, dc]) => addMove(r + dr, c + dc));
     } else if (type === 'p') {
         const dir = color === 'w' ? -1 : 1;
+        // Movimento frontal (só se vazio)
         if (ChessEngine.isValidPos(r + dir, c) && !board[r + dir][c]) {
             moves.push({ r: r + dir, c, capture: false });
+            // Movimento duplo inicial
             if ((color === 'w' && r === 6) || (color === 'b' && r === 1)) {
                 if (!board[r + (dir * 2)][c]) moves.push({ r: r + (dir * 2), c, capture: false });
             }
         }
+        // Capturas Diagonais (só se tiver inimigo)
         [[dir, 1], [dir, -1]].forEach(([dr, dc]) => {
             if (ChessEngine.isValidPos(r + dr, c + dc)) {
                 const target = board[r + dr][c + dc];
-                if (target && target[0] !== color) moves.push({ r: r + dr, c: c + dc, capture: true });
+                if (target && target[0] !== color) {
+                    moves.push({ r: r + dr, c: c + dc, capture: true });
+                }
             }
         });
     }
     return moves;
   },
 
-  getCastlingMoves: (board, color, castlingRights) => {
-      const moves = [];
-      if (!castlingRights) return moves;
-      const row = color === 'w' ? 7 : 0;
-      
-      if (board[row][4] !== color + 'k' || ChessEngine.isSquareAttacked(board, row, 4, color)) return moves;
-
-      if (castlingRights[color].k) {
-          if (!board[row][5] && !board[row][6]) {
-              if (!ChessEngine.isSquareAttacked(board, row, 5, color) && !ChessEngine.isSquareAttacked(board, row, 6, color)) {
-                  moves.push({ r: row, c: 6, capture: false, isCastle: 'king' });
-              }
-          }
-      }
-      if (castlingRights[color].q) {
-          if (!board[row][1] && !board[row][2] && !board[row][3]) {
-              if (!ChessEngine.isSquareAttacked(board, row, 3, color) && !ChessEngine.isSquareAttacked(board, row, 2, color)) {
-                  moves.push({ r: row, c: 2, capture: false, isCastle: 'queen' });
-              }
-          }
-      }
-      return moves;
-  },
-
   getValidMoves: (board, r, c, castlingRights = null) => {
       const piece = board[r][c];
       if (!piece) return [];
+      
+      // 1. Pega movimentos brutos (padrão da peça)
       const rawMoves = ChessEngine.getRawMoves(board, r, c);
       
-      if (piece[1] === 'k' && castlingRights) {
-          rawMoves.push(...ChessEngine.getCastlingMoves(board, piece[0], castlingRights));
+      // 2. Adiciona Roque se for Rei
+      if (piece[1] === 'k' && castlingRights && castlingRights[piece[0]]) {
+          const row = piece[0] === 'w' ? 7 : 0;
+          if (r === row && c === 4 && !ChessEngine.isSquareAttacked(board, row, 4, piece[0])) { // Rei não pode estar em xeque
+              if (castlingRights[piece[0]].k && !board[row][5] && !board[row][6] && !ChessEngine.isSquareAttacked(board, row, 5, piece[0]) && !ChessEngine.isSquareAttacked(board, row, 6, piece[0])) {
+                  rawMoves.push({ r: row, c: 6, capture: false, isCastle: 'king' });
+              }
+              if (castlingRights[piece[0]].q && !board[row][1] && !board[row][2] && !board[row][3] && !ChessEngine.isSquareAttacked(board, row, 3, piece[0]) && !ChessEngine.isSquareAttacked(board, row, 2, piece[0])) {
+                  rawMoves.push({ r: row, c: 2, capture: false, isCastle: 'queen' });
+              }
+          }
       }
 
+      // 3. Filtra movimentos que deixam o rei em xeque
       return rawMoves.filter(move => {
           const tempBoard = ChessEngine.cloneBoard(board);
-          tempBoard[move.r][move.c] = tempBoard[r][c];
+          tempBoard[move.r][move.c] = tempBoard[r][c]; // Executa movimento simulado
           tempBoard[r][c] = null;
           
-          // Se for roque, a posição do rei é o destino. Se não, busca o rei.
           const kingPos = move.isCastle ? {r: move.r, c: move.c} : ChessEngine.findKing(tempBoard, piece[0]);
+          if (!kingPos) return false; // Segurança
           
-          return !kingPos || !ChessEngine.isSquareAttacked(tempBoard, kingPos.r, kingPos.c, piece[0]);
+          return !ChessEngine.isSquareAttacked(tempBoard, kingPos.r, kingPos.c, piece[0]);
       });
+  },
+
+  evaluateBoard: (board) => {
+      let score = 0;
+      for(let r=0; r<8; r++) {
+          for(let c=0; c<8; c++) {
+              const p = board[r][c];
+              if(!p) continue;
+              const val = PIECE_VALUES[p[1]] + (p[1] === 'p' ? (p[0]==='w' ? (7-r)*10 : r*10) : 0); // Bonus por avançar peão
+              score += p[0] === 'w' ? val : -val;
+          }
+      }
+      return score;
   },
 
   getAllValidMoves: (board, color, castlingRights) => {
@@ -216,43 +192,21 @@ const ChessEngine = {
       return moves;
   },
 
-  evaluateBoard: (board) => {
-      let score = 0;
-      for(let r=0; r<8; r++) {
-          for(let c=0; c<8; c++) {
-              const p = board[r][c];
-              if(!p) continue;
-              
-              const type = p[1];
-              const color = p[0];
-              let value = PIECE_VALUES[type];
-
-              // PST (Tabelas de Posição)
-              const table = PST[type] || PST['DEFAULT'];
-              const pstValue = (color === 'b') ? table[r][c] : table[7-r][c];
-              
-              value += pstValue;
-              score += (color === 'b') ? value : -value;
-          }
-      }
-      return score;
-  },
-
   minimax: (board, depth, alpha, beta, isMaximizing) => {
       if (depth === 0) return ChessEngine.evaluateBoard(board);
 
-      const turn = isMaximizing ? 'b' : 'w';
-      // Ignora castling rights na recursão profunda para performance
-      const moves = ChessEngine.getAllValidMoves(board, turn, null); 
+      const turn = isMaximizing ? 'w' : 'b';
+      const moves = ChessEngine.getAllValidMoves(board, turn, null);
 
       if (moves.length === 0) {
           const kingPos = ChessEngine.findKing(board, turn);
-          if(!kingPos) return 0; // Bug safety
-          const inCheck = ChessEngine.isSquareAttacked(board, kingPos.r, kingPos.c, turn);
-          return inCheck ? (isMaximizing ? -99999 : 99999) : 0;
+          if (kingPos && ChessEngine.isSquareAttacked(board, kingPos.r, kingPos.c, turn)) {
+              return isMaximizing ? -99999 : 99999; // Xeque-mate
+          }
+          return 0; // Afogamento
       }
 
-      // Ordenação: Capturas primeiro (Otimização Alpha-Beta)
+      // Ordena capturas primeiro para otimizar poda
       moves.sort((a, b) => (b.to.capture ? 1 : 0) - (a.to.capture ? 1 : 0));
 
       if (isMaximizing) {
@@ -261,7 +215,8 @@ const ChessEngine = {
               const newBoard = ChessEngine.cloneBoard(board);
               newBoard[move.to.r][move.to.c] = newBoard[move.from.r][move.from.c];
               newBoard[move.from.r][move.from.c] = null;
-              
+              if (newBoard[move.to.r][move.to.c] === 'wp' && move.to.r === 0) newBoard[move.to.r][move.to.c] = 'wq'; // Promoção simples
+
               const evalScore = ChessEngine.minimax(newBoard, depth - 1, alpha, beta, false);
               maxEval = Math.max(maxEval, evalScore);
               alpha = Math.max(alpha, evalScore);
@@ -274,6 +229,7 @@ const ChessEngine = {
               const newBoard = ChessEngine.cloneBoard(board);
               newBoard[move.to.r][move.to.c] = newBoard[move.from.r][move.from.c];
               newBoard[move.from.r][move.from.c] = null;
+              if (newBoard[move.to.r][move.to.c] === 'bp' && move.to.r === 7) newBoard[move.to.r][move.to.c] = 'bq';
 
               const evalScore = ChessEngine.minimax(newBoard, depth - 1, alpha, beta, true);
               minEval = Math.min(minEval, evalScore);
@@ -284,77 +240,41 @@ const ChessEngine = {
       }
   },
 
-  getBestMove: (board, difficulty, castlingRights) => {
-      const allMoves = ChessEngine.getAllValidMoves(board, 'b', castlingRights);
+  getBestMove: (board, difficulty) => {
+      const allMoves = ChessEngine.getAllValidMoves(board, 'b', null);
       if (allMoves.length === 0) return null;
 
-      // 1. FÁCIL: Aleatório
-      if (difficulty === 'easy') {
-          return allMoves[Math.floor(Math.random() * allMoves.length)];
-      }
+      if (difficulty === 'easy') return allMoves[Math.floor(Math.random() * allMoves.length)];
 
-      // 2. MÉDIO: Minimax Depth 2 (Olha 1 jogada a frente e resposta)
-      // Antes era "Ganancioso" (Depth 1), por isso movia só a torre. Agora pensa.
-      if (difficulty === 'medium') {
-           let bestScore = -Infinity;
-           let bestMoves = []; // Array para guardar movimentos com mesmo score
-
-           for (let move of allMoves) {
-               const newBoard = ChessEngine.cloneBoard(board);
-               newBoard[move.to.r][move.to.c] = newBoard[move.from.r][move.from.c];
-               newBoard[move.from.r][move.from.c] = null;
-               
-               // Profundidade 1 (rápida)
-               const score = ChessEngine.minimax(newBoard, 1, -Infinity, Infinity, false);
-               
-               if (score > bestScore) {
-                   bestScore = score;
-                   bestMoves = [move];
-               } else if (score === bestScore) {
-                   bestMoves.push(move);
-               }
-           }
-           // Escolhe aleatório entre os melhores para evitar repetição
-           return bestMoves[Math.floor(Math.random() * bestMoves.length)];
-      }
-
-      // 3. DIFÍCIL / EXTREMO: Minimax Depth 3/4
-      const depth = difficulty === 'extreme' ? 4 : 3;
+      const depth = difficulty === 'extreme' ? 3 : 2;
       let bestMove = null;
-      let bestVal = -Infinity;
+      let minEval = Infinity;
       let alpha = -Infinity;
       let beta = Infinity;
 
-      // Ordena para otimizar a raiz
+      // Ordena para avaliar capturas primeiro
       allMoves.sort((a, b) => (b.to.capture ? 1 : 0) - (a.to.capture ? 1 : 0));
-
-      // Lista de melhores movimentos para randomizar se empatar
-      let candidateMoves = [];
 
       for (let move of allMoves) {
           const newBoard = ChessEngine.cloneBoard(board);
           newBoard[move.to.r][move.to.c] = newBoard[move.from.r][move.from.c];
           newBoard[move.from.r][move.from.c] = null;
+          // Promoção IA
           if (newBoard[move.to.r][move.to.c] === 'bp' && move.to.r === 7) newBoard[move.to.r][move.to.c] = 'bq';
 
-          const boardVal = ChessEngine.minimax(newBoard, depth - 1, alpha, beta, false);
+          const evalScore = ChessEngine.minimax(newBoard, depth, alpha, beta, true);
 
-          if (boardVal > bestVal) {
-              bestVal = boardVal;
+          if (evalScore < minEval) {
+              minEval = evalScore;
               bestMove = move;
-              candidateMoves = [move];
-          } else if (boardVal === bestVal) {
-              candidateMoves.push(move);
           }
-          alpha = Math.max(alpha, boardVal);
+          beta = Math.min(beta, evalScore);
       }
-
-      // Retorna um dos melhores movimentos aleatoriamente para variar o jogo
-      return candidateMoves.length > 0 ? candidateMoves[Math.floor(Math.random() * candidateMoves.length)] : allMoves[0];
+      return bestMove || allMoves[0];
   }
 };
 
-// --- COMPONENTE ---
+// --- COMPONENTE VISUAL ---
 export const ChessTitans = () => {
   const [board, setBoard] = useState(INITIAL_BOARD);
   const [castling, setCastling] = useState(INITIAL_CASTLING);
@@ -365,43 +285,38 @@ export const ChessTitans = () => {
   const [status, setStatus] = useState('playing');
   const [aiThinking, setAiThinking] = useState(false);
 
-  // IA Move
+  // IA Joga
   useEffect(() => {
-    let timer;
     if (turn === 'b' && status === 'playing') {
       setAiThinking(true);
-      timer = setTimeout(() => {
-        const aiMove = ChessEngine.getBestMove(board, difficulty, castling);
+      setTimeout(() => {
+        const aiMove = ChessEngine.getBestMove(board, difficulty);
         if (aiMove) {
           executeMove(aiMove.from, aiMove.to);
         } else {
+          // Se IA não tem movimentos, verifica fim de jogo
           const kingPos = ChessEngine.findKing(board, 'b');
-          if (kingPos && ChessEngine.isSquareAttacked(board, kingPos.r, kingPos.c, 'b')) {
-             setStatus('checkmate');
-          } else {
-             setStatus('stalemate');
-          }
+          if (kingPos && ChessEngine.isSquareAttacked(board, kingPos.r, kingPos.c, 'b')) setStatus('checkmate');
+          else setStatus('stalemate');
         }
         setAiThinking(false);
-      }, 200);
+      }, 100);
     }
-    return () => clearTimeout(timer);
-  }, [turn, status, board]); // Dependências corrigidas
+  }, [turn, status, board]); // board é dependência para recálculo
 
-  // Validação de Estado
+  // Verifica Xeque/Mate após cada turno
   useEffect(() => {
-      if (turn === 'w') {
-          const kingPos = ChessEngine.findKing(board, 'w');
-          if (kingPos) {
-             const inCheck = ChessEngine.isSquareAttacked(board, kingPos.r, kingPos.c, 'w');
-             const hasMoves = ChessEngine.getAllValidMoves(board, 'w', castling).length > 0;
-             if (inCheck && !hasMoves) setStatus('checkmate');
-             else if (!inCheck && !hasMoves) setStatus('stalemate');
-             else if (inCheck) setStatus('check');
-             else setStatus('playing');
-          }
-      }
-  }, [board, turn]);
+      const kingPos = ChessEngine.findKing(board, turn);
+      if(!kingPos) return;
+      
+      const inCheck = ChessEngine.isSquareAttacked(board, kingPos.r, kingPos.c, turn);
+      const hasMoves = ChessEngine.getAllValidMoves(board, turn, castling).length > 0;
+
+      if (inCheck && !hasMoves) setStatus('checkmate');
+      else if (!inCheck && !hasMoves) setStatus('stalemate');
+      else if (inCheck) setStatus('check');
+      else setStatus('playing');
+  }, [turn, board]); // Depende do turno atual e do tabuleiro
 
   const executeMove = (from, to) => {
     const newBoard = ChessEngine.cloneBoard(board);
@@ -413,20 +328,15 @@ export const ChessTitans = () => {
 
     // Roque
     if (to.isCastle) {
-        if (to.isCastle === 'king') {
-            newBoard[from.r][5] = newBoard[from.r][7];
-            newBoard[from.r][7] = null;
-        } else {
-            newBoard[from.r][3] = newBoard[from.r][0];
-            newBoard[from.r][0] = null;
-        }
+        if (to.isCastle === 'king') { newBoard[from.r][5] = newBoard[from.r][7]; newBoard[from.r][7] = null; }
+        else { newBoard[from.r][3] = newBoard[from.r][0]; newBoard[from.r][0] = null; }
     }
 
-    // Direitos de Roque
-    if (piece[1] === 'k') { newCastling[piece[0]].k = false; newCastling[piece[0]].q = false; }
+    // Atualiza direitos de Roque
+    if (piece[1] === 'k') { if(newCastling[piece[0]]) { newCastling[piece[0]].k = false; newCastling[piece[0]].q = false; } }
     if (piece[1] === 'r') {
-        if (from.c === 0) newCastling[piece[0]].q = false;
-        if (from.c === 7) newCastling[piece[0]].k = false;
+        if (from.c === 0 && newCastling[piece[0]]) newCastling[piece[0]].q = false;
+        if (from.c === 7 && newCastling[piece[0]]) newCastling[piece[0]].k = false;
     }
 
     // Promoção
@@ -447,13 +357,16 @@ export const ChessTitans = () => {
     if (turn !== 'w' || aiThinking || status === 'checkmate') return;
 
     const clickedPiece = board[r][c];
+    
+    // 1. TENTA EXECUTAR MOVIMENTO (Captura ou Deslocamento)
+    // Se a casa clicada é um destino válido para a peça selecionada, MOVA.
     const move = possibleMoves.find(m => m.r === r && m.c === c);
-
     if (move) {
       executeMove(selected, move);
-      return;
+      return; // Importante: Sai da função aqui para não selecionar a peça inimiga
     }
 
+    // 2. SE NÃO FOR MOVIMENTO, TENTA SELECIONAR NOVA PEÇA
     if (clickedPiece && clickedPiece[0] === 'w') {
       if (selected && selected.r === r && selected.c === c) {
         setSelected(null);
@@ -463,6 +376,7 @@ export const ChessTitans = () => {
         setPossibleMoves(ChessEngine.getValidMoves(board, r, c, castling));
       }
     } else {
+      // Clicou no vazio ou inimigo (sem ser movimento válido)
       setSelected(null);
       setPossibleMoves([]);
     }
@@ -475,79 +389,76 @@ export const ChessTitans = () => {
     setStatus('playing');
     setSelected(null);
     setPossibleMoves([]);
-  };
-
-  const getKingStatus = (r, c, piece) => {
-      if (piece && piece[1] === 'k' && piece[0] === turn) {
-          if (status === 'check' || status === 'checkmate') return 'bg-red-500/50 ring-4 ring-red-600';
-      }
-      return '';
+    setAiThinking(false);
   };
 
   return (
     <div className="flex flex-col h-full bg-[#1e293b] font-sans select-none">
       {/* Header */}
-      <div className="h-12 bg-white/10 flex items-center justify-between px-4 border-b border-white/10">
+      <div className="h-12 bg-white/5 flex items-center justify-between px-4 border-b border-white/10 shrink-0">
         <div className="flex items-center gap-2 text-white font-bold">
-          <span className="bg-blue-600 px-2 py-0.5 rounded text-sm">Chess Titans</span>
-          {status === 'check' && <span className="bg-orange-500 px-2 py-0.5 rounded text-xs animate-pulse">XEQUE!</span>}
+          <span className="bg-gradient-to-r from-blue-600 to-blue-500 px-3 py-1 rounded shadow-lg text-sm flex items-center gap-2"><Crown size={14}/> Chess Titans</span>
+          {status === 'check' && <span className="bg-orange-500 px-2 py-0.5 rounded text-xs animate-pulse flex items-center gap-1"><AlertTriangle size={12}/> XEQUE!</span>}
         </div>
-        <div className="flex gap-1 bg-black/40 p-1 rounded">
+        <div className="flex gap-1 bg-black/20 p-1 rounded-lg">
            {['easy', 'medium', 'hard', 'extreme'].map(d => (
-             <button key={d} onClick={() => setDifficulty(d)} className={`px-2 text-[10px] uppercase font-bold rounded ${difficulty === d ? (d==='extreme'?'bg-purple-600 text-white':'bg-blue-600 text-white') : 'text-white/50 hover:text-white'}`}>
+             <button key={d} onClick={() => setDifficulty(d)} className={`px-2 py-1 text-[10px] uppercase font-bold rounded transition-all ${difficulty === d ? 'bg-blue-600 text-white' : 'text-white/40 hover:text-white'}`}>
                 {d === 'extreme' ? <Skull size={12}/> : (d === 'easy' ? 'Fácil' : d === 'medium' ? 'Médio' : 'Difícil')}
              </button>
            ))}
         </div>
-        <button onClick={resetGame} className="text-white/70 hover:text-white"><RotateCcw size={16}/></button>
+        <button onClick={resetGame} className="text-white/70 hover:text-white p-2 hover:bg-white/10 rounded-full transition-colors"><RotateCcw size={18}/></button>
       </div>
 
       {/* Tabuleiro */}
-      <div className="flex-1 flex items-center justify-center p-4 bg-slate-900" style={{ background: 'radial-gradient(circle at center, #334155 0%, #0f172a 100%)' }}>
-        {status === 'checkmate' && (
-          <div className="absolute z-50 bg-black/80 inset-0 flex items-center justify-center backdrop-blur-sm animate-in zoom-in">
-             <div className="bg-white p-6 rounded-lg text-center border-4 border-red-500">
-                <h2 className="text-3xl font-bold text-red-600">XEQUE-MATE</h2>
-                <p className="text-gray-600 my-2">{turn === 'w' ? 'Você perdeu.' : 'Você venceu!'}</p>
-                <button onClick={resetGame} className="bg-blue-600 text-white px-4 py-2 rounded font-bold">Jogar Novamente</button>
+      <div className="flex-1 flex items-center justify-center p-4 bg-slate-900 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_#334155_0%,_#0f172a_100%)]"></div>
+        
+        {(status === 'checkmate' || status === 'stalemate') && (
+          <div className="absolute z-50 inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+             <div className="bg-white p-8 rounded-2xl text-center border-4 border-slate-200 shadow-2xl transform scale-110">
+                <h2 className={`text-4xl font-black mb-2 ${status === 'checkmate' ? 'text-red-600' : 'text-gray-600'}`}>{status === 'checkmate' ? 'FIM DE JOGO' : 'EMPATE'}</h2>
+                <p className="text-gray-500 mb-6 font-medium text-lg">{status === 'stalemate' ? 'Afogamento' : (turn === 'w' ? 'Vitória das Pretas!' : 'Vitória das Brancas!')}</p>
+                <button onClick={resetGame} className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-lg flex items-center gap-2 mx-auto"><RotateCcw size={18}/> Jogar Novamente</button>
              </div>
           </div>
         )}
 
-        <div className="relative shadow-2xl border-[12px] border-[#475569] rounded-sm bg-[#1e293b]" 
-             style={{ transform: 'perspective(1000px) rotateX(15deg)' }}>
-          <div className="grid grid-cols-8 grid-rows-8 w-[320px] h-[320px] sm:w-[480px] sm:h-[480px]">
+        <div className="relative shadow-2xl rounded-lg border-[8px] border-[#475569] bg-[#334155]" style={{ boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
+          <div className="grid grid-cols-8 grid-rows-8 w-[320px] h-[320px] sm:w-[480px] sm:h-[480px] bg-[#e2e8f0]">
             {board.map((row, r) => (
               row.map((piece, c) => {
                 const isBlack = (r + c) % 2 === 1;
                 const isSelected = selected && selected.r === r && selected.c === c;
                 const move = possibleMoves.find(m => m.r === r && m.c === c);
-                const kingAlert = getKingStatus(r, c, piece);
+                const isCheck = piece && piece[1] === 'k' && piece[0] === turn && (status === 'check' || status === 'checkmate');
 
                 return (
                   <div 
                     key={`${r}-${c}`}
                     onClick={() => handleSquareClick(r, c)}
-                    className={`relative flex items-center justify-center cursor-pointer
-                      ${isBlack ? 'bg-[#64748b]' : 'bg-[#e2e8f0]'}
-                      ${isSelected ? 'ring-inset ring-4 ring-yellow-400 bg-yellow-200/50' : ''}
-                      ${kingAlert}
+                    className={`relative flex items-center justify-center cursor-pointer transition-colors duration-150
+                      ${isBlack ? 'bg-[#779556]' : 'bg-[#ebecd0]'}
+                      ${isSelected ? '!bg-[#baca44]' : ''}
+                      ${isCheck ? '!bg-red-500/50 ring-inset ring-4 ring-red-600' : ''}
                     `}
                   >
+                    {/* Indicador de Movimento/Captura (Pointer Events None para o clique vazar para a Div Pai) */}
                     {move && (
-                      <div className={`absolute z-0 rounded-full
+                      <div className={`absolute z-20 pointer-events-none rounded-full
                         ${move.capture 
-                          ? 'inset-0 border-4 border-red-500/60 animate-pulse' 
-                          : 'w-4 h-4 bg-green-500/50 shadow-[0_0_10px_lime]'
+                          ? 'inset-0 border-[6px] border-black/20' 
+                          : 'w-4 h-4 bg-black/20'
                         }
                       `}></div>
                     )}
+
+                    {/* Peça (Pointer Events None para não bloquear o clique da casa) */}
                     {piece && (
-                      <span className={`text-4xl sm:text-5xl select-none z-10 drop-shadow-xl
-                        ${piece[0] === 'w' ? 'text-white' : 'text-black'}
-                        ${isSelected ? '-translate-y-2 scale-110' : ''}
+                      <span className={`text-4xl sm:text-5xl select-none z-10 drop-shadow-sm transition-transform duration-200 pointer-events-none
+                        ${piece[0] === 'w' ? 'text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.3)]' : 'text-black drop-shadow-[0_2px_2px_rgba(255,255,255,0.3)]'}
+                        ${isSelected ? '-translate-y-1 scale-110' : ''}
                       `}
-                      style={{ textShadow: piece[0] === 'b' ? '0 1px 2px rgba(255,255,255,0.2)' : '0 2px 4px rgba(0,0,0,0.5)' }}
                       >
                         {PIECES[piece[0]][piece[1]]}
                       </span>
@@ -560,11 +471,9 @@ export const ChessTitans = () => {
         </div>
       </div>
 
-      <div className="h-8 bg-black/40 flex items-center justify-center gap-3 text-white text-xs border-t border-white/10">
-         {aiThinking ? 
-            <span className="flex items-center gap-2 text-purple-300"><Brain size={14} className="animate-spin"/> {difficulty === 'extreme' ? 'Pensando 4 lances a frente...' : 'Pensando...'}</span> 
-            : <span className="flex items-center gap-2 text-gray-300">{turn === 'w' ? <Shield size={14}/> : <Swords size={14}/>} Vez das {turn === 'w' ? 'Brancas' : 'Pretas'}</span>
-         }
+      <div className="h-10 bg-slate-800 flex items-center justify-between px-4 text-white text-xs border-t border-white/5 shrink-0">
+         <div className="flex items-center gap-2">{aiThinking ? <span className="flex items-center gap-2 text-blue-300 animate-pulse"><Brain size={14} className="animate-spin"/> Pensando...</span> : <span className="flex items-center gap-2 text-gray-400 font-medium">Aguardando...</span>}</div>
+         <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold ${turn === 'w' ? 'bg-white text-slate-900' : 'bg-black text-white border border-white/20'}`}>{turn === 'w' ? <Shield size={12}/> : <Swords size={12}/>} {turn === 'w' ? 'Sua Vez' : 'Vez das Pretas'}</div>
       </div>
     </div>
   );
