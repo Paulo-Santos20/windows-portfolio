@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useOSStore, BLISS_URL } from '../../store/useOSStore';
 import { Monitor, MousePointer2, Check, Type, MousePointerClick, Crosshair } from 'lucide-react';
-import bugWallpaper from '../../assets/Wallpaper.webp';
+import bugWallpaper from '../../assets/wallpaper.webp';
 
 // Dados...
 const cursorOptions = [
