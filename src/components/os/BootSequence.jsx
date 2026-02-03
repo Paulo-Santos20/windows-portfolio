@@ -6,7 +6,7 @@ import { ArrowRight, Power, HelpCircle } from 'lucide-react';
 const USERS = [
   { 
     id: 'paulo', name: 'Paulo Cardoso', 
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80', 
+    avatar: 'https://avatars.githubusercontent.com/u/83308537?s=48&v=4', 
     password: '', // Sem senha
     isAdmin: true
   },
