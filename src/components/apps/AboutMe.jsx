@@ -1,32 +1,36 @@
 import React from 'react';
 import { useOSStore } from '../../store/useOSStore';
-import { Github, Linkedin, Instagram, Globe, Code, PenTool, Image as ImageIcon, Layers, Terminal, Cpu, Database } from 'lucide-react';
+import { Github, Linkedin, Globe, Code, Layers, Terminal, Cpu, Database, Cloud } from 'lucide-react';
 import { PDFViewer } from './PDFViewer';
 import { Browser } from './Browser';
+
+// 1. Importe o arquivo PDF local (Ajuste o caminho se a pasta assets estiver em outro nível)
+import curriculoPdf from '../../assets/Curriculo.pdf';
 
 // --- DADOS ---
 
 const SKILLS = [
-    { name: 'Desenvolvimento Web', img: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=100&q=80', icon: <Code/> },
-    { name: 'UI/UX Design', img: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=100&q=80', icon: <Layers/> },
-    { name: 'Edição de Imagens', img: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=100&q=80', icon: <ImageIcon/> },
+    { name: 'Desenvolvimento Full Stack', img: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=100&q=80', icon: <Code/>, level: 'React, Node, Python' },
+    { name: 'Banco de Dados & Dados', img: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=100&q=80', icon: <Database/>, level: 'SQL & BI' },
+    { name: 'Cloud & Infraestrutura', img: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=100&q=80', icon: <Cloud/>, level: 'AWS, Linux, Redes' },
 ];
 
 const LANGUAGES = [
-    { name: 'JavaScript (ES6+)', img: 'https://upload.wikimedia.org/wikipedia/commons/6/6a/JavaScript-logo.png' },
+    { name: 'JavaScript', img: 'https://upload.wikimedia.org/wikipedia/commons/6/6a/JavaScript-logo.png' },
+    { name: 'TypeScript', img: 'https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg' },
+    { name: 'Python', img: 'https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg' },
     { name: 'React.js', img: 'https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg' },
-    { name: 'HTML5 & CSS3', img: 'https://upload.wikimedia.org/wikipedia/commons/6/61/HTML5_logo_and_wordmark.svg' },
     { name: 'Node.js', img: 'https://upload.wikimedia.org/wikipedia/commons/d/d9/Node.js_logo.svg' },
     { name: 'Tailwind CSS', img: 'https://upload.wikimedia.org/wikipedia/commons/d/d5/Tailwind_CSS_Logo.svg' },
     { name: 'SQL', img: 'https://upload.wikimedia.org/wikipedia/commons/8/87/Sql_data_base_with_logo.png' },
 ];
 
 const SOFTWARE = [
-    { name: 'VS Code', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Visual_Studio_Code_1.35_icon.svg/100px-Visual_Studio_Code_1.35_icon.svg.png' },
     { name: 'Git / GitHub', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Git-logo.svg/100px-Git-logo.svg.png' },
-    { name: 'WordPress', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/WordPress_blue_logo.svg/100px-WordPress_blue_logo.svg.png' },
-    { name: 'Photoshop', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Adobe_Photoshop_CC_icon.svg/100px-Adobe_Photoshop_CC_icon.svg.png' },
-    { name: 'Figma', img: 'https://upload.wikimedia.org/wikipedia/commons/3/33/Figma-logo.svg' },
+    { name: 'AWS', img: 'https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg' },
+    { name: 'Linux', img: 'https://upload.wikimedia.org/wikipedia/commons/3/35/Tux.svg' },
+    { name: 'Windows Server', img: 'https://upload.wikimedia.org/wikipedia/commons/5/5f/Windows_logo_-_2012.svg' },
+    { name: 'VS Code', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Visual_Studio_Code_1.35_icon.svg/100px-Visual_Studio_Code_1.35_icon.svg.png' },
 ];
 
 export const AboutMe = () => {
@@ -34,12 +38,12 @@ export const AboutMe = () => {
 
   const handleNav = (action) => {
       if (action === 'projects') {
-          openWindow('browser', 'Internet Explorer', <Globe size={16} className="text-blue-500"/>, <Browser initialUrl="https://github.com/seu-usuario?tab=repositories" />);
+          openWindow('browser', 'Internet Explorer', <Globe size={16} className="text-blue-500"/>, <Browser initialUrl="https://github.com/Paulo-Santos20/" />);
       } else if (action === 'cv') {
-          const pdfData = 'data:application/pdf;base64,JVBERi0xLjcKCjEgMCBvYmoKICA8PCAvVHlwZSAvQ2F0YWxvZwogICAgIC9QYWdlcyAyIDAgUgogID4+CmVuZG9iagoKMiAwIG9iagogIDw8IC9UeXBlIC9QYWdlcwogICAgIC9LaWRzIFszIDAgUl0KICAgICAvQ291bnQgMQogICAgIC9NZWRpYUJveCBbMCAwIDU5NSA4NDJdCiAgPj4KZW5kb2JqCgozIDAgb2JqCiAgPDwgIC9UeXBlIC9QYWdlCiAgICAgIC9QYXJlbnQgMiAwIFIKICAgICAgL1Jlc291cmNlcwogICAgICAgPDwgL0ZvbnQKICAgICAgICAgIDw8IC9GMQogICAgICAgICAgICAgPDwgL1R5cGUgL0ZvbnQKICAgICAgICAgICAgICAgIC9TdWJ0eXBlIC9UeXBlMQogICAgICAgICAgICAgICAgL0Jhc2VGb250IC9IZWx2ZXRpY2EKICAgICAgICAgICAgID4+CiAgICAgICAgICA+PgogICAgICAgPj4KICAgICAgL0NvbnRlbnRzIDQgMCBSCiAgPj4KZW5kb2JqCgo0IDAgb2JqCiAgPDwgL0xlbmd0aCA1NQogID4+CnN0cmVhbQogIEJUKC9GMSAxMiBUZikgMTAwIDcwMCBUZCAoSGVsbG8hIEVzdGUgZSB1bSBQREYgZGUgVGVzdGUgbm8gc2V1IFBvcnRmb2xpbyBXaW5kb3dzIDcpIFRqIEVVCmVuZHN0cmVhbQplbmRvYmoKCnhyZWYKMCA1CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxMCAwMDAwMCBuIAowMDAwMDAwMDYwIDAwMDAwIG4gCjAwMDAwMDAxNTcgMDAwMDAgbiAKMDAwMDAwMDMwNiAwMDAwMCBuIAp0cmFpbGVyCiAgPDwgL1Jvb3QgMSAwIFIKICAgICAvU2l6ZSA1CiAgPj4Kc3RhcnR4cmVmCjQxMQolJUVPRgo=';
-          openWindow('cv-viewer', 'Meu Currículo.pdf', <div className="text-red-500 font-bold">PDF</div>, <PDFViewer src={pdfData} />);
+          // 2. Passando a variável curriculoPdf importada no topo
+          openWindow('cv-viewer', 'Curriculo.pdf', <div className="text-red-500 font-bold">PDF</div>, <PDFViewer src={curriculoPdf} />);
       } else if (action === 'github') {
-          openWindow('browser-gh', 'GitHub', <Globe size={16} className="text-black"/>, <Browser initialUrl="https://github.com" />);
+          openWindow('browser-gh', 'GitHub', <Globe size={16} className="text-black"/>, <Browser initialUrl="https://github.com/Paulo-Santos20/" />);
       }
   };
 
@@ -50,7 +54,7 @@ export const AboutMe = () => {
       <header className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center shadow-sm flex-shrink-0">
           <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-blue-500">
-                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="Profile" className="w-full h-full object-cover" />
+                  <img src="https://media.licdn.com/dms/image/v2/D4D03AQFEu8bIGJ4L2w/profile-displayphoto-shrink_200_200/B4DZXQBX8cGkAc-/0/1742951776685?e=1776297600&v=beta&t=wWWPZjh9EgeWmWL99fFgi8wK65eaFt1_2S8tRNkUDF0" alt="Profile" className="w-full h-full object-cover" />
               </div>
               <h1 className="font-bold text-lg text-slate-800">Paulo Cardoso</h1>
           </div>
@@ -63,14 +67,13 @@ export const AboutMe = () => {
       </header>
 
       {/* CORPO PRINCIPAL */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
           
-          {/* SIDEBAR ESQUERDA (REDES SOCIAIS) */}
-          <aside className="w-16 bg-slate-900 text-white flex flex-col items-center py-8 gap-6 flex-shrink-0">
-              <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="p-2 hover:bg-white/10 rounded-full transition-colors" title="LinkedIn"><Linkedin size={20}/></a>
-              <a href="https://github.com" target="_blank" rel="noreferrer" className="p-2 hover:bg-white/10 rounded-full transition-colors" title="GitHub"><Github size={20}/></a>
-              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="p-2 hover:bg-white/10 rounded-full transition-colors" title="Instagram"><Instagram size={20}/></a>
-              <div className="h-[1px] w-8 bg-white/20 my-2"></div>
+          {/* SIDEBAR ESQUERDA (REDES SOCIAIS) - Oculta em mobile, mostra em md+ */}
+          <aside className="w-full md:w-16 bg-slate-900 text-white flex flex-row md:flex-col items-center justify-center py-4 md:py-8 gap-4 md:gap-6 flex-shrink-0">
+              <a href="https://www.linkedin.com/in/paulo-dos-santos-1868a8192/" target="_blank" rel="noreferrer" className="p-2 hover:bg-white/10 rounded-full transition-colors" title="LinkedIn"><Linkedin size={20}/></a>
+              <a href="https://github.com/Paulo-Santos20/" target="_blank" rel="noreferrer" className="p-2 hover:bg-white/10 rounded-full transition-colors" title="GitHub"><Github size={20}/></a>
+              <div className="h-[1px] w-8 bg-white/20 my-2 hidden md:block"></div>
               <button onClick={() => handleNav('cv')} className="p-2 hover:bg-blue-600 rounded-full transition-colors bg-blue-600/20 text-blue-400 font-bold text-xs">CV</button>
           </aside>
 
@@ -79,17 +82,16 @@ export const AboutMe = () => {
               
               {/* Introdução */}
               <section className="mb-10">
-                  <h2 className="text-3xl font-bold text-slate-800 mb-2">Olá, eu sou o Paulo.</h2>
+                  <h2 className="text-3xl font-bold text-slate-800 mb-2">Olá, me chamo Paulo.</h2>
                   <p className="text-slate-600 max-w-2xl leading-relaxed text-sm sm:text-base">
-                      Desenvolvedor Full Stack e Designer apaixonado por criar experiências digitais intuitivas. 
-                      Combino lógica e criatividade para transformar problemas complexos em interfaces elegantes e funcionais.
+                      Especialista em Tecnologia com mais de 6 anos de experiência em desenvolvimento full-stack, automação e gestão de bancos de dados. Combino habilidades em engenharia de software e infraestrutura (cloud e redes) para criar aplicações robustas e escaláveis, focando sempre na otimização e melhoria contínua de processos.
                   </p>
               </section>
 
               {/* 1. HABILIDADES (Cards Maiores) */}
               <section className="mb-10">
                   <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                      <PenTool size={20} className="text-blue-600"/> Áreas de Atuação
+                      <Terminal size={20} className="text-blue-600"/> Áreas de Atuação
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                       {SKILLS.map((skill, idx) => (
@@ -97,19 +99,19 @@ export const AboutMe = () => {
                               <img src={skill.img} alt={skill.name} className="w-12 h-12 rounded-md object-cover opacity-90 group-hover:opacity-100" />
                               <div>
                                   <h4 className="font-bold text-sm text-slate-700">{skill.name}</h4>
-                                  <div className="text-xs text-slate-400">Nível Avançado</div>
+                                  <div className="text-xs text-slate-400">{skill.level}</div>
                               </div>
                           </div>
                       ))}
                   </div>
               </section>
 
-              {/* 2. LINGUAGENS (Novo) */}
+              {/* 2. LINGUAGENS */}
               <section className="mb-10">
                   <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
                       <Cpu size={20} className="text-orange-600"/> Linguagens & Tecnologias
                   </h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-4">
                       {LANGUAGES.map((lang, idx) => (
                           <div key={idx} className="flex flex-col items-center justify-center gap-2 p-3 bg-white rounded-lg border border-slate-100 hover:border-orange-200 hover:bg-orange-50/30 transition-colors">
                               <div className="w-10 h-10 flex items-center justify-center p-1">
@@ -121,10 +123,10 @@ export const AboutMe = () => {
                   </div>
               </section>
 
-              {/* 3. SOFTWARES */}
+              {/* 3. SOFTWARES & INFRA */}
               <section className="mb-4">
                   <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                      <Terminal size={20} className="text-purple-600"/> Ferramentas
+                      <Layers size={20} className="text-purple-600"/> Ferramentas & Infraestrutura
                   </h3>
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
                       {SOFTWARE.map((soft, idx) => (
@@ -140,10 +142,6 @@ export const AboutMe = () => {
 
           </main>
       </div>
-      
-
-[Image of Full Stack Developer Tech Stack]
-
     </div>
   );
 };

@@ -265,7 +265,7 @@ export const Solitaire = () => {
         onMouseDown={onMouseDown}
         onDoubleClick={onDoubleClick}
         className={`
-            absolute w-20 h-28 rounded-md border shadow-sm select-none
+            absolute w-14 sm:w-20 h-20 sm:h-28 rounded-md border shadow-sm select-none
             flex flex-col justify-between p-1
             ${card.faceUp ? 'bg-white border-slate-400' : 'bg-blue-700 border-white'}
             ${isDraggingSource ? 'opacity-0' : 'opacity-100'} 
@@ -279,13 +279,13 @@ export const Solitaire = () => {
       >
           {card.faceUp && (
               <>
-                  <div className={`text-sm font-bold ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
+                  <div className={`text-[8px] sm:text-sm font-bold ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
                       {card.rank}{card.suit}
                   </div>
-                  <div className={`text-3xl text-center ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
+                  <div className={`text-xl sm:text-3xl text-center ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
                       {card.suit}
                   </div>
-                  <div className={`text-sm font-bold text-right transform rotate-180 ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
+                  <div className={`text-[8px] sm:text-sm font-bold text-right transform rotate-180 ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
                       {card.rank}{card.suit}
                   </div>
               </>
@@ -304,8 +304,8 @@ export const Solitaire = () => {
       <div 
         className="fixed z-[9999] pointer-events-none"
         style={{ 
-            left: startPos.x - 40, // Centraliza no mouse (aprox)
-            top: startPos.y - 50,
+            left: startPos.x - 30, 
+            top: startPos.y - 40,
             transform: `translate(${deltaX}px, ${deltaY}px)`
         }}
       >
@@ -313,20 +313,20 @@ export const Solitaire = () => {
              <div 
                 key={'drag-' + card.id}
                 className={`
-                    absolute w-20 h-28 rounded-md border border-slate-400 bg-white shadow-2xl
+                    absolute w-14 sm:w-20 h-20 sm:h-28 rounded-md border border-slate-400 bg-white shadow-2xl
                     flex flex-col justify-between p-1
                 `}
-                style={{ top: i * 25 }}
+                style={{ top: i * (card.faceUp ? 18 : 8) }}
              >
-                  <div className={`text-sm font-bold ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
-                      {card.rank}{card.suit}
-                  </div>
-                  <div className={`text-3xl text-center ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
-                      {card.suit}
-                  </div>
-                  <div className={`text-sm font-bold text-right transform rotate-180 ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
-                      {card.rank}{card.suit}
-                  </div>
+                   <div className={`text-[8px] sm:text-sm font-bold ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
+                       {card.rank}{card.suit}
+                   </div>
+                   <div className={`text-xl sm:text-3xl text-center ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
+                       {card.suit}
+                   </div>
+                   <div className={`text-[8px] sm:text-sm font-bold text-right transform rotate-180 ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
+                       {card.rank}{card.suit}
+                   </div>
              </div>
          ))}
       </div>
@@ -355,24 +355,24 @@ export const Solitaire = () => {
        </div>
 
        {/* Mesa */}
-       <div className="flex-1 p-4 relative">
+       <div className="flex-1 p-1 sm:p-4 relative overflow-x-auto">
            
            {/* ÁREA SUPERIOR */}
-           <div className="flex justify-between max-w-4xl mx-auto">
+           <div className="flex justify-between max-w-4xl mx-auto min-w-[500px]">
                {/* Baralho e Lixo */}
-               <div className="flex gap-4">
+               <div className="flex gap-2 sm:gap-4">
                    {/* Stock */}
-                   <div onClick={handleStockClick} className="w-20 h-28 rounded-md border-2 border-white/20 flex items-center justify-center cursor-pointer hover:brightness-110 bg-[#004d00]">
+                   <div onClick={handleStockClick} className="w-14 sm:w-20 h-20 sm:h-28 rounded-md border-2 border-white/20 flex items-center justify-center cursor-pointer hover:brightness-110 bg-[#004d00]">
                        {stock.length > 0 ? (
                            <div className="w-full h-full bg-blue-700 rounded-md border-2 border-white relative">
                                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/diagmonds-light.png')] opacity-30"></div>
-                               <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-xl">{stock.length}</div>
+                               <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-sm sm:text-xl">{stock.length}</div>
                            </div>
-                       ) : <RefreshCw className="text-white/30" />}
+                       ) : <RefreshCw className="text-white/30" size={16} />}
                    </div>
 
                    {/* Waste */}
-                   <div className="w-20 h-28 relative">
+                   <div className="w-14 sm:w-20 h-20 sm:h-28 relative">
                        {waste.length > 0 && (
                            <CardView 
                                 card={waste[waste.length - 1]} 
@@ -386,20 +386,19 @@ export const Solitaire = () => {
                </div>
 
                {/* Foundations */}
-               <div className="flex gap-2">
+               <div className="flex gap-1 sm:gap-2">
                    {foundations.map((pile, i) => (
                        <div 
                          key={i} 
                          ref={el => foundationRefs.current[i] = el}
-                         className="w-20 h-28 rounded-md border-2 border-white/20 bg-white/5 flex items-center justify-center relative"
+                         className="w-14 sm:w-20 h-20 sm:h-28 rounded-md border-2 border-white/20 bg-white/5 flex items-center justify-center relative"
                        >
                            {pile.length === 0 ? (
-                               <span className="text-3xl text-white/20">{SUITS[i]}</span>
+                               <span className="text-2xl sm:text-3xl text-white/20">{SUITS[i]}</span>
                            ) : (
                                <CardView 
                                     card={pile[pile.length - 1]} 
                                     style={{ top: 0, left: 0 }} 
-                                    // Não permitimos arrastar DA base de volta para simplificar (regra opcional)
                                />
                            )}
                        </div>
@@ -408,21 +407,21 @@ export const Solitaire = () => {
            </div>
 
            {/* COLUNAS */}
-           <div className="flex justify-center gap-2 sm:gap-4 mt-8">
+           <div className="flex justify-center gap-1 sm:gap-4 mt-4 sm:mt-8 min-w-[500px]">
                {columns.map((col, colIdx) => (
                    <div 
                      key={colIdx} 
                      ref={el => colRefs.current[colIdx] = el}
-                     className="w-20 h-[400px] relative"
+                     className="w-14 sm:w-20 h-[250px] sm:h-[400px] relative"
                    >
                        {/* Area vazia clicável/droppable */}
-                       {col.length === 0 && <div className="w-20 h-28 rounded-md border-2 border-white/10 bg-white/5"></div>}
+                       {col.length === 0 && <div className="w-14 sm:w-20 h-20 sm:h-28 rounded-md border-2 border-white/10 bg-white/5"></div>}
 
                        {col.map((card, cardIdx) => (
                            <CardView 
                                 key={card.id} 
                                 card={card}
-                                style={{ top: cardIdx * (card.faceUp ? 25 : 10) }}
+                                style={{ top: cardIdx * (card.faceUp ? 18 : 8) }}
                                 isDraggingSource={dragging && dragging.source.type === 'col' && dragging.source.idx === colIdx && cardIdx >= dragging.source.cardIdx}
                                 onMouseDown={(e) => handleMouseDown(e, { type: 'col', idx: colIdx, cardIdx }, col.slice(cardIdx))}
                                 onDoubleClick={() => handleDoubleClick(card, { type: 'col', idx: colIdx })}

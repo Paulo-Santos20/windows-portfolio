@@ -59,10 +59,10 @@ export const Terminal = ({ windowId }) => {
                   setInput('');
                   return;
               case 'about':
-                  response = ['Paulo Cardoso', 'Analista de Sistemas Full Stack.', 'Especialista em React, Node.js e UI/UX.'];
+                  response = ['Paulo Cardoso', 'Desenvolvedor Full Stack.', 'Especialista em React, Node.js e UI/UX.'];
                   break;
               case 'contact':
-                  response = ['LinkedIn: linkedin.com/in/paulo', 'GitHub: github.com/paulo', 'Email: paulo@exemplo.com'];
+                  response = ['LinkedIn: https://www.linkedin.com/in/paulo-dos-santos-1868a8192/', 'GitHub: https://github.com/Paulo-Santos20', 'Email: paulo_santos20@outlook.com.br'];
                   break;
               case 'projects':
                   response = ['1. E-commerce Full Stack', '2. Dashboard Financeiro', '3. Clone Windows XP', 'Use o ícone "Meus Projetos" para detalhes.'];

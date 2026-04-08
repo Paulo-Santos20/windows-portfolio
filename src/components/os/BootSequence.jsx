@@ -10,9 +10,9 @@ const USERS = [
     password: '', // Sem senha
     isAdmin: true
   },
-  { 
-    id: 'robot', name: 'Mr. Robot', 
-    avatar: 'https://i.pinimg.com/736x/8f/c9/2c/8fc92c7304192408c6902dc9eb4c5147.jpg', 
+  {     
+    id : 'robot', name: 'Mr. Robot', 
+    avatar: 'https://static.wikia.nocookie.net/mrrobot/images/5/5a/MRPoster.jpg/revision/latest/scale-to-width-down/250?cb=20160625030409', 
     password: 'fsociety', 
     isAdmin: true
   }
@@ -26,7 +26,9 @@ export const BootSequence = () => {
   const [error, setError] = useState(false);
   const [loginStatus, setLoginStatus] = useState('idle');
 
-  const startupAudio = new Audio('https://www.myinstants.com/media/sounds/windows-xp-startup.mp3');
+  // URL do áudio de boot (com fallback)
+  const BOOT_AUDIO_URL = 'https://www.myinstants.com/media/sounds/windows-xp-startup.mp3';
+  const startupAudio = new Audio(BOOT_AUDIO_URL);
 
   useEffect(() => {
     if (bootStatus === 'booting') {

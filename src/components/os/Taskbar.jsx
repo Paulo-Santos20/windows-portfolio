@@ -69,109 +69,91 @@ const VolumeControl = ({ isOpen }) => {
 };
 
 // --- MENU INICIAR ---
-const StartMenu = ({ isOpen, onClose }) => {
+const StartMenu = ({ isOpen, onClose, onCloseComplete, isMobile = false }) => {
   const { setBootStatus, currentUser } = useOSStore();
   if (!isOpen) return null;
 
-  const handleLogoff = () => { onClose(); setTimeout(() => setBootStatus('login'), 500); };
-  const handleShutdown = () => window.location.reload();
+  const handleLogoff = () => { onClose(); onCloseComplete?.(); setTimeout(() => setBootStatus('login'), 500); };
+  const handleShutdown = () => { onClose(); onCloseComplete?.(); setTimeout(() => window.location.reload(), 500); };
 
-  // Componente para a coluna esquerda (Tech Stack Principal)
   const TechItem = ({ icon, label, subLabel }) => (
-    <div className="flex items-center gap-2 p-2 hover:bg-[#316ac5] hover:text-white text-slate-800 rounded-[3px] cursor-default group transition-colors mb-1">
-        <div className={`flex-shrink-0 w-8 h-8 rounded-sm flex items-center justify-center border border-gray-300 shadow-sm bg-white`}>
+    <div className={`flex items-center gap-2 hover:bg-[#316ac5] hover:text-white text-slate-800 rounded-[2px] cursor-default group transition-colors ${isMobile ? 'p-2' : 'p-1.5'}`}>
+        <div className={`flex-shrink-0 rounded-[3px] flex items-center justify-center border border-[#808080] shadow-[inset_1px_1px_0_#fff] bg-white ${isMobile ? 'w-9 h-9' : 'w-8 h-8'}`}>
             {icon}
         </div>
         <div className="flex flex-col leading-tight">
-            <span className="text-xs font-bold">{label}</span>
-            <span className="text-[9px] text-slate-500 group-hover:text-blue-100">{subLabel}</span>
+            <span className={`font-bold ${isMobile ? 'text-xs' : 'text-[11px]'}`}>{label}</span>
+            <span className={`text-slate-500 group-hover:text-blue-100 ${isMobile ? 'text-[9px]' : 'text-[9px]'}`}>{subLabel}</span>
         </div>
     </div>
   );
 
-  // Componente para a coluna direita (Conceitos/Ferramentas)
   const ConceptItem = ({ icon, label }) => (
-    <div className="flex items-center gap-2 p-1.5 hover:bg-[#316ac5] hover:text-white rounded-[3px] cursor-default group transition-colors text-[#1e395b]">
+    <div className="flex items-center gap-2 px-2 py-1 hover:bg-[#316ac5] hover:text-white rounded-[2px] cursor-default group transition-colors text-[#1e395b]">
         <div className="opacity-80 group-hover:opacity-100 group-hover:text-white text-[#1e395b]">{icon}</div>
-        <span className="text-xs group-hover:text-white">{label}</span>
+        <span className={`group-hover:text-white ${isMobile ? 'text-xs' : 'text-[11px]'}`}>{label}</span>
     </div>
   );
 
   return (
     <div 
-        className="absolute bottom-0 left-0 w-[380px] h-[450px] rounded-tr-lg rounded-tl-lg overflow-hidden font-sans shadow-[4px_4px_10px_rgba(0,0,0,0.5)] z-50 flex flex-col animate-in slide-in-from-bottom-2 origin-bottom-left cursor-default" 
+        className={`absolute bottom-0 left-0 rounded-tr-[8px] rounded-tl-[8px] overflow-hidden font-sans shadow-[4px_4px_12px_rgba(0,0,0,0.5)] z-50 flex flex-col animate-in slide-in-from-bottom-2 origin-bottom-left cursor-default ${isMobile ? 'w-[95vw] max-w-[400px] h-[80vh] max-h-[500px]' : 'w-[420px] h-[485px]'}`}
         onClick={(e) => e.stopPropagation()} 
         style={{ border: '2px solid #003399', borderBottom: 'none', fontFamily: 'Tahoma, sans-serif' }}
     >
       {/* HEADER: Usuário */}
-      <div className="h-16 bg-gradient-to-b from-[#1c5eb8] to-[#2470d6] flex items-center px-3 gap-3 border-b border-[#003399] shadow-md relative z-20">
-          <div className="w-12 h-12 rounded-[4px] border-2 border-white bg-[#d3e5fa] overflow-hidden shadow-sm p-0.5 relative">
+      <div className={`bg-gradient-to-b from-[#1c5eb8] to-[#2470d6] flex items-center px-3 gap-3 border-b border-[#003399] shadow-md relative z-20 ${isMobile ? 'h-16' : 'h-[72px]'}`}>
+          <div className={`rounded-[3px] border-2 border-white bg-[#d3e5fa] overflow-hidden shadow-sm p-[1px] ${isMobile ? 'w-10 h-10' : 'w-11 h-11'}`}>
              <img src={currentUser?.avatar || "https://i.pravatar.cc/150"} alt="" className="w-full h-full object-cover rounded-[2px]"/>
           </div>
-          <span className="text-white font-bold text-xl drop-shadow-[1px_1px_1px_rgba(0,0,0,0.5)]">{currentUser?.name || "Visitante"}</span>
+          <span className="text-white font-bold drop-shadow-[1px_1px_1px_rgba(0,0,0,0.5)]" style={{ fontSize: isMobile ? '14px' : '16px' }}>{currentUser?.name || "Visitante"}</span>
       </div>
 
       {/* CORPO DO MENU */}
       <div className="flex-1 flex relative bg-white">
           <div className="absolute top-0 left-0 w-full h-[2px] bg-[#e59700] z-10"></div>
           
-          {/* COLUNA ESQUERDA: STACK PRINCIPAL */}
+          {/* COLUNA ESQUERDA */}
           <div className="w-[60%] p-2 flex flex-col border-r border-[#95bdee]">
-              <span className="text-[10px] font-bold text-gray-400 mb-2 pl-1">CORE STACK</span>
+              <span className="text-[10px] font-bold text-gray-500 mb-1 pl-1 uppercase tracking-wide">Desenvolvedor</span>
               
-              <TechItem 
-                icon={<Atom size={20} className="text-[#61DAFB]"/>} 
-                label="React" 
-                subLabel="Frontend Library" 
-              />
-              <TechItem 
-                icon={<Code2 size={20} className="text-[#F7DF1E]"/>} 
-                label="JavaScript" 
-                subLabel="ES6+ Development" 
-              />
-              <TechItem 
-                icon={<FileCode size={20} className="text-[#3776AB]"/>} 
-                label="Python" 
-                subLabel="Backend & Scripting" 
-              />
-              <TechItem 
-                icon={<Database size={20} className="text-[#00758F]"/>} 
-                label="SQL" 
-                subLabel="Database Management" 
-              />
+              <TechItem icon={<Atom size={18} className="text-[#61DAFB]"/>} label="React" subLabel="Frontend Library" />
+              <TechItem icon={<Code2 size={18} className="text-[#F7DF1E]"/>} label="JavaScript" subLabel="ES6+ Development" />
+              <TechItem icon={<FileCode size={18} className="text-[#3776AB]"/>} label="Python" subLabel="Backend & Scripting" />
+              <TechItem icon={<Database size={18} className="text-[#00758F]"/>} label="SQL" subLabel="Database Management" />
               
               <div className="h-[1px] bg-gray-200 w-[95%] self-center my-2"></div>
           </div>
 
-          {/* COLUNA DIREITA: ARQUITETURA E FERRAMENTAS */}
-          <div className="w-[40%] bg-[#d3e5fa] p-2 flex flex-col gap-1 border-l border-white/50 pt-3">
-              <span className="text-[10px] font-bold text-[#1e395b]/50 mb-1 pl-1">ARCHITECTURE</span>
+          {/* COLUNA DIREITA */}
+          <div className="w-[40%] bg-[#d3e5fa] p-2 flex flex-col gap-0.5 border-l border-white/50 pt-3">
+              <span className="text-[10px] font-bold text-[#1e395b]/60 mb-0.5 pl-1 uppercase tracking-wide">Conceitos</span>
               
-              <ConceptItem icon={<Layout size={16}/>} label="Responsive Design" />
-              <ConceptItem icon={<Layers size={16}/>} label="Scalable Arch." />
-              <ConceptItem icon={<Smartphone size={16}/>} label="Mobile First" />
-              <ConceptItem icon={<Cpu size={16}/>} label="Performance" />
+              <ConceptItem icon={<Layout size={14}/>} label="Responsive Design" />
+              <ConceptItem icon={<Layers size={14}/>} label="Scalable Arch." />
+              <ConceptItem icon={<Smartphone size={14}/>} label="Mobile First" />
+              <ConceptItem icon={<Cpu size={14}/>} label="Performance" />
               
-              <div className="h-[1px] bg-[#aebdd1] my-2 shadow-[0_1px_0_white]"></div>
+              <div className="h-[1px] bg-[#aebdd1] my-1.5 shadow-[0_1px_0_white]"></div>
               
-              <span className="text-[10px] font-bold text-[#1e395b]/50 mb-1 pl-1">TOOLS</span>
-              <ConceptItem icon={<Github size={16}/>} label="GitHub" />
-              <ConceptItem icon={<GitBranch size={16}/>} label="Git / Versioning" />
+              <span className="text-[10px] font-bold text-[#1e395b]/60 mb-0.5 pl-1 uppercase tracking-wide">Ferramentas</span>
+              <ConceptItem icon={<Github size={14}/>} label="GitHub" />
+              <ConceptItem icon={<GitBranch size={14}/>} label="Git / Versioning" />
           </div>
       </div>
 
-      {/* FOOTER: AÇÕES */}
-      <div className="h-12 bg-gradient-to-b from-[#1c5eb8] to-[#2470d6] flex items-center justify-end px-4 gap-4 border-t border-[#003399] shadow-[inset_0_2px_2px_rgba(255,255,255,0.2)]">
-          <button onClick={handleLogoff} className="flex items-center gap-1 text-white text-[11px] hover:brightness-110 transition-all group cursor-pointer">
-              <div className="bg-[#e6a020] p-1 rounded-[3px] border border-white/30 shadow-sm group-hover:shadow-md">
-                  <LogOut size={14} className="text-white" strokeWidth={2.5}/>
+      {/* FOOTER */}
+      <div className="h-11 bg-gradient-to-b from-[#1c5eb8] to-[#2470d6] flex items-center justify-end px-3 gap-2 border-t border-[#003399] shadow-[inset_0_2px_2px_rgba(255,255,255,0.2)]">
+          <button onClick={handleLogoff} className="flex items-center gap-1.5 text-white text-[11px] hover:brightness-110 transition-all group cursor-pointer h-8 px-2 rounded-[3px] hover:bg-white/10">
+              <div className="bg-[#e6a020] p-1 rounded-[2px] border border-white/20 shadow-sm">
+                  <LogOut size={12} className="text-white" strokeWidth={2.5}/>
               </div>
               <span>Log Off</span>
           </button>
           
-          <button onClick={handleShutdown} className="flex items-center gap-1 text-white text-[11px] hover:brightness-110 transition-all group cursor-pointer">
-              <div className="bg-[#e0422e] p-1 rounded-[3px] border border-white/30 shadow-sm group-hover:shadow-md">
-                  <Power size={14} className="text-white" strokeWidth={2.5}/>
+          <button onClick={handleShutdown} className="flex items-center gap-1.5 text-white text-[11px] hover:brightness-110 transition-all group cursor-pointer h-8 px-2 rounded-[3px] hover:bg-white/10">
+              <div className="bg-[#e0422e] p-1 rounded-[2px] border border-white/20 shadow-sm">
+                  <Power size={12} className="text-white" strokeWidth={2.5}/>
               </div>
               <span>Turn Off Computer</span>
           </button>
@@ -181,23 +163,30 @@ const StartMenu = ({ isOpen, onClose }) => {
 };
 
 // --- BARRA DE TAREFAS PRINCIPAL ---
-export const Taskbar = () => {
+export const Taskbar = ({ isMobile = false }) => {
   const { windows, activeWindowId, focusWindow, restoreWindow, minimizeWindow, globalVolume, themeMode } = useOSStore();
   const [startOpen, setStartOpen] = useState(false);
   const [showVolume, setShowVolume] = useState(false);
   const [time, setTime] = useState(new Date());
+  const [isStartActive, setIsStartActive] = useState(false);
+
+  // Tamanhos responsivos
+  const taskbarHeight = isMobile ? 'h-[40px]' : 'h-[30px]';
+  const buttonStartHeight = isMobile ? 'h-[36px]' : 'h-[30px]';
+  const iconSize = isMobile ? 18 : 14;
+  const fontSize = isMobile ? 'text-xs' : 'text-[11px]';
 
   const getVolumeIcon = () => {
-      if (globalVolume === 0) return <VolumeX size={14}/>;
-      if (globalVolume < 0.5) return <Volume1 size={14}/>;
-      return <Volume2 size={14}/>;
+      if (globalVolume === 0) return <VolumeX size={iconSize}/>;
+      if (globalVolume < 0.5) return <Volume1 size={iconSize}/>;
+      return <Volume2 size={iconSize}/>;
   };
 
   useEffect(() => { const t = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(t); }, []);
 
   useEffect(() => {
     const handleClick = (e) => {
-        if (startOpen && !e.target.closest('.start-menu-container')) setStartOpen(false);
+        if (startOpen && !e.target.closest('.start-menu-container')) { setStartOpen(false); setIsStartActive(false); }
         if (showVolume && !e.target.closest('.volume-container')) setShowVolume(false);
     };
     window.addEventListener('click', handleClick);
@@ -208,12 +197,12 @@ export const Taskbar = () => {
 
   return (
     <>
-      <div className="fixed bottom-[30px] left-0 z-[100] start-menu-container">
-          <StartMenu isOpen={startOpen} onClose={() => setStartOpen(false)} />
+      <div className={`fixed ${isMobile ? 'bottom-[40px]' : 'bottom-[30px]'} left-0 z-[100] start-menu-container`}>
+          <StartMenu isOpen={startOpen} onClose={() => setStartOpen(false)} onCloseComplete={() => setIsStartActive(false)} isMobile={isMobile} />
       </div>
       
       <div 
-        className="fixed bottom-0 w-full h-[30px] flex items-center justify-between z-[9999] select-none" 
+        className={`fixed bottom-0 w-full ${taskbarHeight} flex items-center justify-between z-[9999] select-none`} 
         style={{ 
             background: isDark ? 'linear-gradient(to bottom, #333 0%, #111 100%)' : 'linear-gradient(to bottom, #245db5 0%, #3d78d6 5%, #3d78d6 80%, #1941a5 100%)', 
             borderTop: isDark ? '1px solid #444' : '1px solid #649cec', 
@@ -223,65 +212,71 @@ export const Taskbar = () => {
         {/* Botão Iniciar */}
         <div className="relative start-menu-container z-50">
            <button 
-                onClick={(e) => { e.stopPropagation(); setStartOpen(!startOpen); }} 
-                className="h-[30px] w-auto pr-3 pl-0 rounded-r-[14px] flex items-center gap-1 transition-all hover:brightness-110 active:brightness-90 overflow-visible relative cursor-pointer" 
+                onClick={(e) => { e.stopPropagation(); setStartOpen(!startOpen); setIsStartActive(!startOpen); }} 
+                className={`${buttonStartHeight} w-auto pr-3 pl-1 rounded-r-[16px] flex items-center gap-1.5 transition-all hover:brightness-110 active:brightness-90 overflow-visible relative cursor-pointer touch-manipulation`}
                 style={{ 
-                    background: 'linear-gradient(to bottom, #3c8e2f 0%, #4fba32 8%, #4fba32 80%, #2d6921 100%)', 
-                    boxShadow: '2px 2px 2px rgba(0,0,0,0.4)', 
+                    background: isStartActive 
+                        ? 'linear-gradient(to bottom, #3078d6 0%, #4d9de0 8%, #4d9de0 40%, #2f6bb8 100%)' 
+                        : 'linear-gradient(to bottom, #368829 0%, #4fba32 5%, #4fba32 40%, #347320 100%)',
+                    boxShadow: isStartActive 
+                        ? 'inset 1px 1px 2px rgba(255,255,255,0.5), inset -1px -1px 2px rgba(0,0,0,0.3), 1px 1px 2px rgba(0,0,0,0.4)' 
+                        : 'inset 1px 1px 1px rgba(255,255,255,0.4), inset -1px -1px 1px rgba(0,0,0,0.2), 2px 2px 2px rgba(0,0,0,0.4)',
                     border: '1px solid #2b5c22', 
                     borderLeft: 'none', 
-                    borderTopRightRadius: '14px', 
-                    borderBottomRightRadius: '14px' 
+                    borderTopRightRadius: '16px', 
+                    borderBottomRightRadius: '16px'
                 }}
             >
-                <div className="w-6 h-6 ml-1 italic font-bold text-white bg-gradient-to-br from-white/40 to-transparent rounded-full flex items-center justify-center border border-white/30 shadow-sm">
-                    <div className="grid grid-cols-2 gap-[1px] transform -rotate-12 scale-75">
-                        <div className="w-2 h-2 bg-[#f2552e] rounded-tl-sm"></div>
-                        <div className="w-2 h-2 bg-[#8bc43d] rounded-tr-sm"></div>
-                        <div className="w-2 h-2 bg-[#2d9fe6] rounded-bl-sm"></div>
-                        <div className="w-2 h-2 bg-[#fdbd08] rounded-br-sm"></div>
+                <div className="w-7 h-[26px] ml-0.5 italic font-bold text-white bg-gradient-to-b from-white/50 via-transparent to-transparent rounded-[12px] flex items-center justify-center border border-white/30 shadow-sm relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent"></div>
+                    <div className="grid grid-cols-2 gap-[1px] transform -rotate-12 scale-90">
+                        <div className="w-2 h-2 bg-[#f2552e] rounded-tl-sm shadow-sm"></div>
+                        <div className="w-2 h-2 bg-[#8bc43d] rounded-tr-sm shadow-sm"></div>
+                        <div className="w-2 h-2 bg-[#2d9fe6] rounded-bl-sm shadow-sm"></div>
+                        <div className="w-2 h-2 bg-[#fdbd08] rounded-br-sm shadow-sm"></div>
                     </div>
                 </div>
-                <span className="text-white font-bold italic text-lg drop-shadow-[1px_1px_1px_rgba(0,0,0,0.5)] pr-1" style={{fontFamily: 'Trebuchet MS, sans-serif'}}>start</span>
+                <span className="text-white font-bold italic text-[13px] drop-shadow-[1px_1px_1px_rgba(0,0,0,0.6)] pr-1" style={{fontFamily: "'Trebuchet MS', sans-serif"}}>start</span>
            </button>
         </div>
 
         {/* Lista de Janelas */}
         <div className="flex-1 flex items-center gap-1 px-1 overflow-x-auto h-full">
           {windows.map((win) => {
-             const isActive = activeWindowId === win.id && !win.isMinimized;
-             return (
-                 <button 
-                    key={win.id} 
-                    onClick={() => { if (win.isMinimized) restoreWindow(win.id); else if (isActive) minimizeWindow(win.id); else focusWindow(win.id); }} 
-                    className={clsx(
-                        "relative h-[24px] px-2 min-w-[150px] w-[160px] rounded-[2px] flex items-center justify-start gap-2 text-shadow overflow-hidden transition-colors font-sans cursor-pointer",
-                        isActive 
-                            ? "bg-[#1e52b7] shadow-[inset_1px_1px_2px_rgba(0,0,0,0.6)] text-white border border-[#103375] opacity-90" 
-                            : "bg-[#3c81f0] hover:bg-[#5394f7] text-white border-t border-l border-[#6eb0f8] border-b border-r border-[#1941a5] shadow-[1px_1px_0_rgba(0,0,0,0.2)]"
-                    )}
-                 >
-                   <div className="w-4 h-4 min-w-[16px] flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>img]:w-full [&>img]:h-full drop-shadow-md">
-                       {win.icon}
-                   </div>
-                   <span className="text-[11px] truncate">{win.title}</span>
-                 </button>
-             );
+              const isActive = activeWindowId === win.id && !win.isMinimized;
+              return (
+                  <button 
+                     key={win.id} 
+                     onClick={() => { if (win.isMinimized) restoreWindow(win.id); else if (isActive) minimizeWindow(win.id); else focusWindow(win.id); }} 
+                     className={clsx(
+                         "relative h-[24px] px-2 min-w-[140px] w-[150px] rounded-[3px] flex items-center justify-start gap-1.5 text-shadow overflow-hidden transition-all font-sans cursor-pointer",
+                         isActive 
+                             ? "bg-[#1e52b7] shadow-[inset_1px_1px_2px_rgba(0,0,0,0.6)] text-white border border-[#103375] opacity-90" 
+                             : "bg-[#3c81f0] hover:bg-[#5394f7] text-white border-t border-l border-[#6eb0f8] border-b border-r border-[#1941a5] shadow-[1px_1px_0_rgba(0,0,0,0.2)]"
+                     )}
+                  >
+                    <div className="w-4 h-4 min-w-[16px] flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>img]:w-full [&>img]:h-full drop-shadow-md">
+                        {win.icon}
+                    </div>
+                    <span className="text-[11px] truncate font-normal">{win.title}</span>
+                  </button>
+              );
           })}
         </div>
 
         {/* Bandeja do Sistema */}
-        <div className="flex items-center gap-2 px-3 h-[30px] bg-[#1293e8] border-l border-[#103375] shadow-[inset_2px_0_5px_rgba(0,0,0,0.2)] relative volume-container" style={{ background: isDark ? '#222' : '#1293e8' }}>
-           <div className="w-4 h-4 bg-[#1c5eb8] rounded-full flex items-center justify-center shadow-sm border border-white/30 cursor-pointer hover:brightness-110"><ChevronRight size={10} className="text-white transform rotate-180"/></div>
-           <div className="flex gap-2 text-white drop-shadow-md mx-1 items-center relative">
-               <div onClick={(e) => { e.stopPropagation(); setShowVolume(!showVolume); }} className="cursor-pointer hover:text-slate-200">{getVolumeIcon()}</div>
-               <VolumeControl isOpen={showVolume} />
-               <HardDrive size={14} className="cursor-pointer hover:text-slate-200 animate-pulse"/>
-               <div className="w-3 h-3 bg-red-500 rounded-full border border-white shadow-sm cursor-pointer" title="Status"></div>
+        <div className="flex items-center gap-1 px-2 h-[30px] border-l border-white/30 relative" style={{ background: isDark ? 'linear-gradient(to bottom, #222 0%, #111 100%)' : 'linear-gradient(to bottom, #2478d6 0%, #1073c9 50%, #0b5fa3 100%)' }}>
+           <div className="w-5 h-[26px] bg-[#1c5eb8] rounded-sm flex items-center justify-center shadow-sm border border-white/20 cursor-pointer hover:bg-[#2369c9]">
+               <ChevronRight size={11} className="text-white transform -rotate-180"/>
            </div>
-           <div className="text-white text-[11px] font-sans px-1 cursor-default">{time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+            <div className="flex gap-1.5 text-white drop-shadow-md mx-1 items-center relative">
+                <div onClick={(e) => { e.stopPropagation(); setShowVolume(!showVolume); }} className="cursor-pointer hover:scale-110 transition-transform">{getVolumeIcon()}</div>
+                <VolumeControl isOpen={showVolume} />
+                <HardDrive size={14} className="cursor-pointer hover:scale-110 transition-transform"/>
+            </div>
+            <div className="text-white text-[11px] font-sans px-2 py-1 cursor-default">{time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
         </div>
-        <div className="w-3 h-full border-l border-white/30 hover:bg-white/30 cursor-pointer ml-1"></div>
+        <div className="w-2 h-full border-l border-black/20 hover:bg-white/10 cursor-pointer ml-0.5"></div>
       </div>
     </>
   );

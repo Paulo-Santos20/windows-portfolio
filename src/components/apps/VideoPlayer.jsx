@@ -54,14 +54,14 @@ export const VideoPlayer = ({ src, title, onClose, onMinimize, onMaximize, isMax
       </div>
 
       {/* CORPO DO PLAYER (IDÊNTICO AO MUSIC PLAYER, APENAS O MIOLO MUDA) */}
-      <div className="flex-1 flex relative bg-black border-l-[4px] border-r-[4px] border-[#647b9e] overflow-hidden">
-          <div className="w-[110px] flex-shrink-0 flex flex-col bg-[#3b6ea5] border-r border-[#2a4a75] relative z-20">
+      <div className="flex-1 flex flex-col lg:flex-row relative bg-black border-l-[4px] border-r-[4px] border-[#647b9e] overflow-hidden">
+          <div className="w-full lg:w-[110px] flex-shrink-0 flex flex-col bg-[#3b6ea5] border-r border-[#2a4a75] relative z-20 order-2 lg:order-1">
               <div className={`${sidebarBtnStyle} bg-gradient-to-r from-[#ffffff] to-[#85a4d0] text-[#1d3b67] shadow-[inset_2px_2px_5px_rgba(0,0,0,0.2)] border-l-4 border-l-[#e59700]`}>Now Playing</div>
               {['Media Guide', 'Copy from CD'].map(i => <div key={i} className={`${sidebarBtnStyle} text-white`}>{i}</div>)}
               <div className="flex-1 bg-[#3b6ea5]"></div>
           </div>
 
-          <div className="flex-1 flex flex-col bg-black relative z-10 min-w-0">
+          <div className="flex-1 flex flex-col bg-black relative z-10 min-w-0 order-1 lg:order-2">
               <div className="h-8 bg-black text-white px-3 py-1 flex flex-col justify-center border-b border-[#333]">
                   <span className="text-xl font-bold leading-none text-white truncate">{title || "Video Player"}</span>
               </div>
@@ -70,7 +70,7 @@ export const VideoPlayer = ({ src, title, onClose, onMinimize, onMaximize, isMax
               </div>
           </div>
 
-          <div className="w-[150px] flex-shrink-0 bg-[#5A5A85] flex flex-col border-l border-[#3b3b55] text-white text-[10px] relative z-20">
+          <div className="w-full lg:w-[150px] flex-shrink-0 bg-[#5A5A85] flex flex-col border-l border-[#3b3b55] text-white text-[10px] relative z-20 order-3">
               <div className="h-6 bg-[#7070a0] flex items-center justify-between px-2 border-b border-[#4a4a6a] shadow-md"><span>Playlist</span></div>
               <div className="h-24 bg-gradient-to-b from-[#4a4a6a] to-[#3a3a55] flex flex-col items-center justify-center p-2 border-b border-[#4a4a6a]">
                   <div className="w-14 h-14 bg-white rounded-sm flex items-center justify-center border border-gray-400 shadow-lg mb-1"><Film size={24} className="text-black/50"/></div>

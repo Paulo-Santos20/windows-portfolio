@@ -12,37 +12,36 @@ const XPButton = ({ type, onClick, isMaximized }) => {
     <button 
       onClick={(e) => { e.stopPropagation(); onClick(); }}
       className="group relative flex items-center justify-center cursor-pointer"
-      style={{ width: '21px', height: '21px', marginLeft: '2px', borderRadius: '3px', border: '1px solid white', boxShadow: '0px 0px 1px 0px rgba(0,0,0,0.7)', ...bgStyle }}
+      style={{ width: '21px', height: '21px', marginLeft: '1px', borderRadius: '3px', border: '1px solid white', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 1px rgba(0,0,0,0.3)', ...bgStyle }}
     >
-      <div style={{ position: 'absolute', inset: 0, borderRadius: '2px', boxShadow: 'inset 1px 1px 0 rgba(255,255,255,0.4)' }}></div>
-      <div style={{ filter: 'drop-shadow(0px 1px 0px rgba(0,0,0,0.3))', position: 'relative', zIndex: 10 }}>
-          {type === 'minimize' && <div style={{ width: '8px', height: '3px', background: 'white', marginTop: '4px' }}></div>}
-          {type === 'maximize' && (isMaximized ? 
-              <div style={{ width: '12px', height: '12px', position: 'relative' }}>
-                 <div style={{ position: 'absolute', top: 0, right: 0, width: '8px', height: '8px', border: '2px solid white', borderTopWidth: '3px' }}></div>
-                 <div style={{ position: 'absolute', bottom: 0, left: 0, width: '8px', height: '8px', border: '2px solid white', borderTopWidth: '3px', background: '#193da5', zIndex: 2 }}></div>
-              </div> : 
-              <div style={{ width: '10px', height: '10px', border: '2px solid white', borderTopWidth: '3px' }}></div>
-          )}
-          {isClose && <svg width="10" height="10" viewBox="0 0 10 10" style={{ stroke: 'white', strokeWidth: 2 }}><path d="M1 1 L9 9 M9 1 L1 9" /></svg>}
-      </div>
+      {type === 'minimize' && <div style={{ width: '8px', height: '2px', background: 'white', marginTop: '5px', boxShadow: '0 1px 0 rgba(0,0,0,0.4)' }}></div>}
+      {type === 'maximize' && (isMaximized ? 
+          <div style={{ width: '11px', height: '10px', position: 'relative' }}>
+             <div style={{ position: 'absolute', top: 0, right: 0, width: '7px', height: '7px', border: '2px solid white', borderTopWidth: '3px' }}></div>
+             <div style={{ position: 'absolute', bottom: 0, left: 0, width: '7px', height: '7px', border: '2px solid white', borderTopWidth: '3px', background: '#193da5', zIndex: 2 }}></div>
+          </div> : 
+          <div style={{ width: '9px', height: '9px', border: '2px solid white', borderTopWidth: '3px', boxShadow: '0 1px 0 rgba(0,0,0,0.4)' }}></div>
+      )}
+      {isClose && <svg width="9" height="9" viewBox="0 0 10 10" style={{ stroke: 'white', strokeWidth: 2.5, filter: 'drop-shadow(0px 1px 0px rgba(0,0,0,0.4))' }}><path d="M1 1 L9 9 M9 1 L1 9" /></svg>}
     </button>
   );
 };
 
-export const WindowFrame = ({ id, title, icon, children, zIndex, isMinimized, isMaximized, isSkin, initialWidth, initialHeight, hasMenuBar = true, resizable = true }) => {
+export const WindowFrame = ({ id, title, icon, children, zIndex, isMinimized, isMaximized, isSkin, initialWidth, initialHeight, hasMenuBar = true, resizable = true, isMobile = false }) => {
   const { closeWindow, minimizeWindow, toggleMaximize, focusWindow, activeWindowId, themeMode } = useOSStore();
   const [isDragging, setIsDragging] = useState(false);
   const rndRef = useRef(null);
   const isActive = activeWindowId === id;
 
-  // Calcula Posição Inicial
-  const defaultW = initialWidth || (isSkin ? 600 : 800);
-  const defaultH = initialHeight || (isSkin ? 400 : 600);
+  // Calcula Posição Inicial com suporte a mobile
+  const defaultW = isMobile ? Math.min(initialWidth || (isSkin ? 600 : 800), window.innerWidth - 20) : initialWidth || (isSkin ? 600 : 800);
+  const defaultH = isMobile ? Math.min(initialHeight || (isSkin ? 400 : 600), window.innerHeight - 60) : initialHeight || (isSkin ? 400 : 600);
   const screenW = typeof window !== 'undefined' ? window.innerWidth : 1024;
   const screenH = typeof window !== 'undefined' ? window.innerHeight : 768;
-  const centerX = (screenW / 0.85 - defaultW) / 2 + (zIndex % 5) * 20;
-  const centerY = (screenH / 0.85 - defaultH) / 2 + (zIndex % 5) * 20 - 30;
+  
+  // Em mobile, centralizar e ajustar posição
+  const centerX = isMobile ? 10 : (screenW / 0.85 - defaultW) / 2 + (zIndex % 5) * 20;
+  const centerY = isMobile ? 10 : (screenH / 0.85 - defaultH) / 2 + (zIndex % 5) * 20 - 30;
 
   // --- 1. MEMÓRIA DE POSIÇÃO (Para Restaurar) ---
   const lastBounds = useRef({ x: centerX, y: centerY, width: defaultW, height: defaultH });

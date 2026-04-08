@@ -14,90 +14,61 @@ import { FileExplorer } from '../apps/FileExplorer';
 import { Projects } from '../apps/Projects';
 import { Calculator } from '../apps/Calculator';
 import { Terminal } from '../apps/Terminal';
-import { Paint } from '../apps/Paint'; // NOVO: Paint
+import { Paint } from '../apps/Paint';
 
-// --- ÍCONES E ASSETS ---
-import { Settings, Gamepad2, Play, Film, User, FileText, Globe, Briefcase, Calculator as CalcIcon, Terminal as TermIcon, Palette } from 'lucide-react';
+// --- ASSETS ---
 import curriculoPdf from '../../assets/Curriculo.pdf';
+import folderIcon from '../../assets/icons/folder.ico';
+import textIcon from '../../assets/icons/text.ico';
+import userIcon from '../../assets/icons/user.png';
+import ieIcon from '../../assets/icons/ie.ico';
+import wmpIcon from '../../assets/icons/wmp.ico';
+import videoIcon from '../../assets/icons/video.png';
+import gameIcon from '../../assets/icons/game.ico';
+import configIcon from '../../assets/icons/config.ico';
+import pdfIcon from '../../assets/icons/pdf.ico';
+import projectsIcon from '../../assets/icons/projects.png';
 
-// Assets WebP
-import folderWebp from '../../assets/icons/folder.ico';
-import textWebp from '../../assets/icons/text.ico';
-import ieWebp from '../../assets/icons/ie.ico';
-import wmpWebp from '../../assets/icons/wmp.ico';
-import videoWebp from '../../assets/icons/video.png';
-import gamesWebp from '../../assets/icons/game.ico';
-import settingsWebp from '../../assets/icons/config.ico';
-import pdfWebp from '../../assets/icons/pdf.ico';
-import userWebp from '../../assets/icons/user.png';
-import imageWebp from '../../assets/icons/user.png'; 
-import unknownWebp from '../../assets/icons/user.png';
+// --- ÍCONES SVG DO WINDOWS XP ---
+import { XPCalcIcon, XPPaintIcon, XPCmdIcon } from './XPAppIcons';
 
-// --- ÍCONES VETORIAIS PERSONALIZADOS (SVG) ---
-
-const XP_ProjectsIcon = () => (
-  <svg viewBox="0 0 48 48" className="w-full h-full drop-shadow-md">
-    <defs>
-      <linearGradient id="projBack" x1="24" y1="6" x2="24" y2="40" gradientUnits="userSpaceOnUse"><stop stopColor="#FFD700"/><stop offset="1" stopColor="#DAA520"/></linearGradient>
-      <linearGradient id="projFront" x1="24" y1="14" x2="24" y2="42" gradientUnits="userSpaceOnUse"><stop stopColor="#FFFACD"/><stop offset="1" stopColor="#F0E68C"/></linearGradient>
-      <linearGradient id="blueprint" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#1E90FF"/><stop offset="1" stopColor="#00008B"/></linearGradient>
-    </defs>
-    <path d="M4 10C4 8.89 5.79 8 8 8H18L22 12H42C43.1 12 44 12.89 44 14V40C44 41.1 43.1 42 42 42H6C4.89 42 4 41.1 4 40V10Z" fill="url(#projBack)" stroke="#B8860B"/>
-    <rect x="10" y="8" width="28" height="24" fill="#fff" stroke="#ccc" />
-    <rect x="14" y="12" width="20" height="16" fill="url(#blueprint)" stroke="#00008B"/>
-    <line x1="14" y1="16" x2="34" y2="16" stroke="white" strokeWidth="0.5" opacity="0.5"/>
-    <line x1="14" y1="20" x2="34" y2="20" stroke="white" strokeWidth="0.5" opacity="0.5"/>
-    <path d="M4 40C4 41.1 4.89 42 6 42H42C43.1 42 44 41.1 44 40V18H4V40Z" fill="url(#projFront)" stroke="#DAA520"/>
-    <path d="M20 24 L24 34 L28 24" stroke="#B8860B" strokeWidth="2" fill="none" />
-  </svg>
-);
-
-const XP_CalcIcon = () => (
-  <svg viewBox="0 0 48 48" className="w-full h-full drop-shadow-md">
-    <defs>
-      <linearGradient id="calcBody" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#fcfcfc" /><stop offset="100%" stopColor="#d4d0c8" /></linearGradient>
-      <linearGradient id="calcScreen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#e8f1fa"/><stop offset="1" stopColor="#ffffff"/></linearGradient>
-    </defs>
-    <rect x="10" y="4" width="28" height="40" rx="2" fill="url(#calcBody)" stroke="#808080" strokeWidth="1" />
-    <rect x="11" y="5" width="26" height="38" rx="1" fill="none" stroke="white" strokeWidth="1" opacity="0.5" />
-    <rect x="13" y="8" width="22" height="7" fill="url(#calcScreen)" stroke="#808080" strokeWidth="0.5" />
-    {/* Botões Vermelhos */}
-    <rect x="13" y="19" width="6" height="4" rx="1" fill="#e05e5e" stroke="#a03030" strokeWidth="0.5"/>
-    <rect x="21" y="19" width="6" height="4" rx="1" fill="#e05e5e" stroke="#a03030" strokeWidth="0.5"/>
-    <rect x="29" y="19" width="6" height="4" rx="1" fill="#e05e5e" stroke="#a03030" strokeWidth="0.5"/>
-    {/* Botões Azuis */}
-    <rect x="13" y="25" width="6" height="4" rx="1" fill="#4a90e2" stroke="#205090" strokeWidth="0.5"/><rect x="21" y="25" width="6" height="4" rx="1" fill="#4a90e2" stroke="#205090" strokeWidth="0.5"/><rect x="29" y="25" width="6" height="4" rx="1" fill="#4a90e2" stroke="#205090" strokeWidth="0.5"/>
-    <rect x="13" y="31" width="6" height="4" rx="1" fill="#4a90e2" stroke="#205090" strokeWidth="0.5"/><rect x="21" y="31" width="6" height="4" rx="1" fill="#4a90e2" stroke="#205090" strokeWidth="0.5"/><rect x="29" y="31" width="6" height="4" rx="1" fill="#4a90e2" stroke="#205090" strokeWidth="0.5"/>
-    <rect x="13" y="37" width="6" height="4" rx="1" fill="#4a90e2" stroke="#205090" strokeWidth="0.5"/><rect x="21" y="37" width="6" height="4" rx="1" fill="#4a90e2" stroke="#205090" strokeWidth="0.5"/><rect x="29" y="37" width="6" height="4" rx="1" fill="#4a90e2" stroke="#205090" strokeWidth="0.5"/>
-  </svg>
-);
-
-const XP_PaintIcon = () => (
-  <svg viewBox="0 0 48 48" className="w-full h-full drop-shadow-md">
-    <defs><linearGradient id="paintJar" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#ccc"/><stop offset="1" stopColor="#999"/></linearGradient></defs>
-    <path d="M14 40h20v-16h-20z" fill="url(#paintJar)" stroke="#666"/>
-    <path d="M18 10l-4 14h4z" fill="#d4a017"/>
-    <path d="M30 8l4 16h-4z" fill="#8b4513"/>
-    <path d="M24 6l-2 18h4z" fill="#cd853f"/>
-    <path d="M34 34c0 4-4 8-8 8s-8-4-8-8 4-8 8-8 8 4 8 8z" fill="#ff0000" opacity="0.8"/>
-  </svg>
-);
-
-const WebPIcon = ({ src, alt = "icon" }) => (<img src={src} alt={alt} className="w-full h-full object-contain drop-shadow-md select-none pointer-events-none" draggable={false} />);
-
-// Mapeamentos de ícones padrão
-const XP_FolderIcon = () => ( <svg viewBox="0 0 48 48" fill="none" className="drop-shadow-md"><path d="M4 10C4 8.89 5.79 8 8 8H18L22 12H42C43.1 12 44 12.89 44 14V40C44 41.1 43.1 42 42 42H6C4.89 42 4 41.1 4 40V10Z" fill="#DAA520" stroke="#B8860B"/><rect x="8" y="10" width="32" height="20" fill="#fff" stroke="#D3D3D3"/><path d="M4 40C4 41.1 4.89 42 6 42H42C43.1 42 44 41.1 44 40V18H4V40Z" fill="#F0E68C" stroke="#DAA520"/></svg> );
-const XP_TextFileIcon = () => ( <svg viewBox="0 0 48 48" fill="none" className="drop-shadow-md"><path d="M10 6H30L38 14V42H10V6Z" fill="#fff" stroke="#A9A9A9"/><path d="M30 6V14H38" fill="#E0E0E0" stroke="#A9A9A9"/><line x1="16" y1="20" x2="32" y2="20" stroke="#D3D3D3"/><line x1="16" y1="26" x2="32" y2="26" stroke="#D3D3D3"/><line x1="16" y1="32" x2="32" y2="32" stroke="#D3D3D3"/></svg> );
-const XP_IEIcon = () => ( <WebPIcon src={ieWebp} /> ); 
-const XP_WMPIcon = () => ( <WebPIcon src={wmpWebp} /> );
-const XP_VideoNewIcon = () => ( <WebPIcon src={videoWebp} /> );
-const XP_GamesIcon = () => ( <WebPIcon src={gamesWebp} /> );
-const XP_ControlPanelIcon = () => ( <WebPIcon src={settingsWebp} /> );
-const XP_PDFIcon = () => ( <WebPIcon src={pdfWebp} /> );
-const XP_UserIcon = () => ( <WebPIcon src={userWebp} /> );
+// Componente para renderizar ícone do Windows XP
+const XPIcon = ({ type, className = "" }) => {
+  // Para calc, paint e cmd, usar ícones SVG autênticos
+  if (type === 'calc') return <XPCalcIcon />;
+  if (type === 'paint') return <XPPaintIcon />;
+  if (type === 'cmd') return <XPCmdIcon />;
+  
+  const iconMap = {
+    folder: folderIcon,
+    txt: textIcon,
+    user: userIcon,
+    ie: ieIcon,
+    wmp: wmpIcon,
+    video: videoIcon,
+    games: gameIcon,
+    settings: configIcon,
+    pdf: pdfIcon,
+    projects: projectsIcon,
+    globe: ieIcon,
+    play: wmpIcon,
+    gamepad: gameIcon,
+    briefcase: projectsIcon,
+  };
+  
+  const iconSrc = iconMap[type] || folderIcon;
+  
+  return (
+    <img 
+      src={iconSrc} 
+      alt={type}
+      className={`w-full h-full ${className}`}
+    />
+  );
+};
 
 // --- ÍCONE UNITÁRIO ---
-const DesktopIcon = ({ id, label, icon, onDoubleClick, onContextMenu, isRenaming, onRename }) => {
+const DesktopIcon = ({ id, label, icon, onDoubleClick, onContextMenu, isRenaming, onRename, isMobile = false }) => {
     const [tempName, setTempName] = useState(label);
     const inputRef = useRef(null);
 
@@ -109,20 +80,25 @@ const DesktopIcon = ({ id, label, icon, onDoubleClick, onContextMenu, isRenaming
         if (e.key === 'Escape') { e.preventDefault(); onRename(id, label); }
     };
 
+    // Tamanhos responsivos
+    const iconSize = isMobile ? 'w-9 h-9' : 'w-11 h-11 md:w-[44px] md:h-[44px]';
+    const containerSize = isMobile ? 'w-[70px] h-[80px]' : 'w-[86px] h-[98px]';
+    const fontSize = isMobile ? 'text-[10px]' : 'text-[11px]';
+
     return (
         <div 
             onDoubleClick={onDoubleClick} 
             onContextMenu={onContextMenu} 
-            className="flex flex-col items-center justify-start gap-1 p-1 w-[86px] h-[100px] hover:bg-[#316ac5]/50 border border-transparent hover:border-[#316ac5]/30 rounded-[3px] cursor-pointer group transition-none mb-2"
+            className={`flex flex-col items-center justify-start gap-0.5 p-1 ${containerSize} hover:bg-[#316ac5]/50 border border-transparent hover:border-[#316ac5]/30 rounded-[3px] cursor-pointer group transition-none touch-manipulation`}
         >
-            <div className="w-10 h-10 md:w-[48px] md:h-[48px] flex-shrink-0 flex items-center justify-center filter drop-shadow-[2px_2px_1px_rgba(0,0,0,0.3)]">
+            <div className={`${iconSize} flex-shrink-0 flex items-center justify-center drop-shadow-[2px_2px_2px_rgba(0,0,0,0.4)]`}>
                 {icon}
             </div>
-            <div className="w-full flex items-start justify-center h-[42px] overflow-visible relative">
+            <div className="w-full flex items-start justify-center h-[38px] overflow-visible relative">
                 {isRenaming ? (
                     <textarea ref={inputRef} value={tempName} onChange={(e) => setTempName(e.target.value)} onBlur={() => onRename(id, tempName)} onKeyDown={handleKeyDown} className="text-black text-[11px] text-center leading-tight w-[120%] -ml-[10%] px-1 py-0.5 outline-none border border-blue-500 bg-white h-auto min-h-[20px] font-tahoma shadow-lg z-50" rows={2} onClick={(e) => e.stopPropagation()} />
                 ) : (
-                    <span className="text-white text-[11px] font-medium text-center leading-tight select-none px-1 rounded-[2px] group-hover:bg-[#316ac5]" style={{ fontFamily: 'Tahoma, sans-serif', textShadow: '1px 1px 0px #000000', wordBreak: 'break-word' }} title={label}>{label}</span>
+                    <span className={`text-white ${fontSize} font-normal text-center leading-tight select-none px-1 py-0.5 rounded-[2px] group-hover:bg-[#316ac5] group-hover:text-white`} style={{ fontFamily: 'Tahoma, sans-serif', wordBreak: 'break-word', textShadow: '-1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000, 1px 1px 0 #000000, 1px 1px 2px rgba(0,0,0,0.8)' }} title={label}>{label}</span>
                 )}
             </div>
         </div>
@@ -130,7 +106,7 @@ const DesktopIcon = ({ id, label, icon, onDoubleClick, onContextMenu, isRenaming
 };
 
 // --- DESKTOP PRINCIPAL ---
-export const Desktop = () => {
+export const Desktop = ({ isMobile = false }) => {
     const { openWindow, openContextMenu, fileSystem, refreshKey, desktopSort, renameItem, renamingId } = useOSStore();
     const [isVisible, setIsVisible] = useState(true);
 
@@ -148,27 +124,27 @@ export const Desktop = () => {
 
     // Helper para Ícones
     const getIcon = (item) => {
-        if (item.type === 'folder') return <XP_FolderIcon />;
-        if (item.type === 'txt') return <XP_TextFileIcon />;
-        if (item.type === 'img') return <WebPIcon src={imageWebp} />;
+        if (item.type === 'folder') return <XPIcon type="folder" />;
+        if (item.type === 'txt') return <XPIcon type="txt" />;
+        if (item.type === 'img') return <XPIcon type="user" />;
         
         // --- ÍCONES ESPECIAIS (CALC, CMD, PAINT) ---
-        if (item.id === 'calc') return <XP_CalcIcon />;
-        if (item.id === 'paint') return <XP_PaintIcon />;
-        if (item.id === 'cmd') return <div className="w-10 h-10 bg-black border border-gray-500 rounded-sm flex items-center justify-center shadow-md"><TermIcon className="text-gray-200" size={24}/></div>;
+        if (item.id === 'calc') return <XPIcon type="calc" />;
+        if (item.id === 'paint') return <XPIcon type="paint" />;
+        if (item.id === 'cmd') return <XPIcon type="cmd" />;
 
-        return <WebPIcon src={unknownWebp} />;
+        return <XPIcon type="txt" />;
     };
 
     // Helper para Abrir Itens
     const handleOpenItem = (item) => {
-        if (item.type === 'folder') openWindow(`folder-${item.id}`, item.name, <XP_FolderIcon />, <FileExplorer initialPath={item.id} />);
-        else if (item.type === 'txt') openWindow(`notepad-${item.id}`, item.name, <FileText size={16} />, <Notepad id={item.id} content={item.content} fileName={item.name} />);
+        if (item.type === 'folder') openWindow(`folder-${item.id}`, item.name, <XPIcon type="folder" />, <FileExplorer initialPath={item.id} />);
+        else if (item.type === 'txt') openWindow(`notepad-${item.id}`, item.name, <XPIcon type="txt" />, <Notepad id={item.id} content={item.content} fileName={item.name} />);
         
         // Apps
-        else if (item.id === 'calc') openWindow('calc', 'Calculadora', <CalcIcon size={16} className="text-blue-500"/>, <Calculator />);
-        else if (item.id === 'cmd') openWindow('cmd', 'Prompt de Comando', <TermIcon size={16} className="text-gray-200"/>, <Terminal />);
-        else if (item.id === 'paint') openWindow('paint', 'Untitled - Paint', <Palette size={16} className="text-purple-600"/>, <Paint />);
+        else if (item.id === 'calc') openWindow('calc', 'Calculadora', <XPIcon type="calc" />, <Calculator />);
+        else if (item.id === 'cmd') openWindow('cmd', 'Prompt de Comando', <XPIcon type="cmd" />, <Terminal />);
+        else if (item.id === 'paint') openWindow('paint', 'Untitled - Paint', <XPIcon type="paint" />, <Paint />);
     };
 
     const getName = (id, defaultName) => fileSystem[id]?.name || defaultName;
@@ -176,21 +152,21 @@ export const Desktop = () => {
     const videoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
 
     return (
-        <div className="absolute inset-0 p-2 flex flex-col flex-wrap content-start items-start gap-y-1 gap-x-2 z-0 pt-4 pl-2 pb-12 overflow-hidden" onContextMenu={(e) => openContextMenu(e, 'desktop')}>
+        <div className={`absolute inset-0 p-2 flex flex-col flex-wrap content-start items-start gap-y-0 gap-x-1 z-0 ${isMobile ? 'pt-2 pb-12' : 'pt-3 pl-2 pb-14'} overflow-hidden`} onContextMenu={(e) => openContextMenu(e, 'desktop')}>
             {isVisible && (
                 <div className="contents">
                     {/* ÍCONES FIXOS */}
-                    <DesktopIcon id="cv" label={getName('cv', "Meu Currículo")} icon={<XP_PDFIcon />} isRenaming={renamingId === 'cv'} onRename={renameItem} onDoubleClick={() => openWindow('cv', 'Meu Currículo.pdf', <FileText size={16} className="text-red-500" />, <PDFViewer src={curriculoPdf} />)} onContextMenu={(e) => openContextMenu(e, 'file', 'cv')} />
-                    <DesktopIcon id="about" label={getName('about', "Sobre Mim")} icon={<XP_UserIcon />} isRenaming={renamingId === 'about'} onRename={renameItem} onDoubleClick={() => openWindow('about', 'Sobre Mim', <User size={16} className="text-blue-500" />, <AboutMe />)} onContextMenu={(e) => openContextMenu(e, 'file', 'about')} />
-                    <DesktopIcon id="my_projects" label={getName('my_projects', "Meus Projetos")} icon={<XP_ProjectsIcon />} isRenaming={renamingId === 'my_projects'} onRename={renameItem} onDoubleClick={() => openWindow('projects_app', 'Meus Projetos', <Briefcase size={16} className="text-blue-500" />, <Projects />)} onContextMenu={(e) => openContextMenu(e, 'file', 'my_projects')} />
-                    <DesktopIcon id="browser" label={getName('browser', "Internet Explorer")} icon={<XP_IEIcon />} isRenaming={renamingId === 'browser'} onRename={renameItem} onDoubleClick={() => openWindow('browser', 'Internet Explorer', <Globe size={16} className="text-blue-500" />, <Browser initialUrl="https://github.com" />)} onContextMenu={(e) => openContextMenu(e, 'file', 'browser')} />
-                    <DesktopIcon id="wmp" label={getName('wmp', "Media Player")} icon={<XP_WMPIcon />} isRenaming={renamingId === 'wmp'} onRename={renameItem} onDoubleClick={() => openWindow('wmp', 'Windows Media Player', <Play size={16} className="text-orange-500" />, <MusicPlayer src={musicUrl} title="Dream Scapes" artist="SoundHelix" />, '/', { isSkin: true })} onContextMenu={(e) => openContextMenu(e, 'file', 'wmp')} />
-                    <DesktopIcon id="games_folder" label={getName('games_folder', "Jogos")} icon={<XP_GamesIcon />} isRenaming={renamingId === 'games_folder'} onRename={renameItem} onDoubleClick={() => openWindow('games-explorer', 'Jogos', <Gamepad2 size={16} className="text-green-600" />, <GamesExplorer />)} onContextMenu={(e) => openContextMenu(e, 'folder', 'games_folder')} />
-                    <DesktopIcon id="settings" label={getName('settings', "Personalizar")} icon={<XP_ControlPanelIcon />} isRenaming={renamingId === 'settings'} onRename={renameItem} onDoubleClick={() => openWindow('settings', 'Painel de Controle', <Settings size={16} />, <ControlPanel />)} onContextMenu={(e) => openContextMenu(e, 'file', 'settings')} />
+                    <DesktopIcon id="cv" label={getName('cv', "Meu Currículo")} icon={<XPIcon type="pdf" />} isRenaming={renamingId === 'cv'} onRename={renameItem} onDoubleClick={() => openWindow('cv', 'Meu Currículo.pdf', <XPIcon type="pdf" />, <PDFViewer src={curriculoPdf} />)} onContextMenu={(e) => openContextMenu(e, 'file', 'cv')} isMobile={isMobile} />
+                    <DesktopIcon id="about" label={getName('about', "Sobre Mim")} icon={<XPIcon type="user" />} isRenaming={renamingId === 'about'} onRename={renameItem} onDoubleClick={() => openWindow('about', 'Sobre Mim', <XPIcon type="user" />, <AboutMe />)} onContextMenu={(e) => openContextMenu(e, 'file', 'about')} isMobile={isMobile} />
+                    <DesktopIcon id="my_projects" label={getName('my_projects', "Meus Projetos")} icon={<XPIcon type="projects" />} isRenaming={renamingId === 'my_projects'} onRename={renameItem} onDoubleClick={() => openWindow('projects_app', 'Meus Projetos', <XPIcon type="briefcase" />, <Projects />)} onContextMenu={(e) => openContextMenu(e, 'file', 'my_projects')} isMobile={isMobile} />
+                    <DesktopIcon id="browser" label={getName('browser', "Internet Explorer")} icon={<XPIcon type="ie" />} isRenaming={renamingId === 'browser'} onRename={renameItem} onDoubleClick={() => openWindow('browser', 'Internet Explorer', <XPIcon type="globe" />, <Browser initialUrl="https://github.com" />)} onContextMenu={(e) => openContextMenu(e, 'file', 'browser')} isMobile={isMobile} />
+                    <DesktopIcon id="wmp" label={getName('wmp', "Media Player")} icon={<XPIcon type="wmp" />} isRenaming={renamingId === 'wmp'} onRename={renameItem} onDoubleClick={() => openWindow('wmp', 'Windows Media Player', <XPIcon type="play" />, <MusicPlayer src={musicUrl} title="Dream Scapes" artist="SoundHelix" />, '/', { isSkin: true })} onContextMenu={(e) => openContextMenu(e, 'file', 'wmp')} isMobile={isMobile} />
+                    <DesktopIcon id="games_folder" label={getName('games_folder', "Jogos")} icon={<XPIcon type="games" />} isRenaming={renamingId === 'games_folder'} onRename={renameItem} onDoubleClick={() => openWindow('games-explorer', 'Jogos', <XPIcon type="gamepad" />, <GamesExplorer />)} onContextMenu={(e) => openContextMenu(e, 'folder', 'games_folder')} isMobile={isMobile} />
+                    <DesktopIcon id="settings" label={getName('settings', "Personalizar")} icon={<XPIcon type="settings" />} isRenaming={renamingId === 'settings'} onRename={renameItem} onDoubleClick={() => openWindow('settings', 'Painel de Controle', <XPIcon type="settings" />, <ControlPanel />)} onContextMenu={(e) => openContextMenu(e, 'file', 'settings')} isMobile={isMobile} />
 
                     {/* ÍCONES DINÂMICOS (Calc, CMD, Paint) */}
                     {desktopItems.map(item => (
-                        <DesktopIcon key={item.id} id={item.id} label={item.name} icon={getIcon(item)} isRenaming={renamingId === item.id} onRename={renameItem} onDoubleClick={() => handleOpenItem(item)} onContextMenu={(e) => openContextMenu(e, item.type === 'folder' ? 'folder' : 'file', item.id)} />
+                        <DesktopIcon key={item.id} id={item.id} label={item.name} icon={getIcon(item)} isRenaming={renamingId === item.id} onRename={renameItem} onDoubleClick={() => handleOpenItem(item)} onContextMenu={(e) => openContextMenu(e, item.type === 'folder' ? 'folder' : 'file', item.id)} isMobile={isMobile} />
                     ))}
                 </div>
             )}

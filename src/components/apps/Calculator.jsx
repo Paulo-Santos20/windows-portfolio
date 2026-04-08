@@ -1,5 +1,16 @@
 import React, { useState } from 'react';
 
+// Botão genérico - declarado FORA do componente principal para evitar re-criação
+const CalcButton = ({ label, onClick, className = "", textColor = "text-blue-800" }) => (
+  <button
+    type="button"
+    onMouseDown={(e) => { e.stopPropagation(); if (onClick) onClick(label); }}
+    className={`relative flex items-center justify-center bg-gradient-to-b from-white to-[#dcdcdc] border border-[#878785] rounded-[3px] active:border-[#666] active:bg-[#ccc] active:shadow-[inset_1px_1px_2px_rgba(0,0,0,0.2)] shadow-[1px_1px_1px_rgba(0,0,0,0.1)] text-[11px] font-tahoma ${textColor} ${className} cursor-default select-none`}
+  >
+    {label}
+  </button>
+);
+
 export const Calculator = () => {
   const [display, setDisplay] = useState('0.');
   const [history, setHistory] = useState('');
@@ -23,7 +34,7 @@ export const Calculator = () => {
 
   const inputDot = () => {
     if (waitingForOperand) { setDisplay('0.'); setWaitingForOperand(false); }
-    else if (!display.includes('..')) { if (display.endsWith('.')) { } }
+    else if (!display.includes('.')) { /* Allow one dot */ }
   };
 
   const performOperation = (nextOperator) => {
@@ -70,16 +81,7 @@ export const Calculator = () => {
       }
   };
 
-  // Botão genérico
-  const CalcButton = ({ label, onClick, className = "", textColor = "text-blue-800" }) => (
-    <button
-      type="button"
-      onMouseDown={(e) => { e.stopPropagation(); if (onClick) onClick(label); }}
-      className={`relative flex items-center justify-center bg-gradient-to-b from-white to-[#dcdcdc] border border-[#878785] rounded-[3px] active:border-[#666] active:bg-[#ccc] active:shadow-[inset_1px_1px_2px_rgba(0,0,0,0.2)] shadow-[1px_1px_1px_rgba(0,0,0,0.1)] text-[11px] font-tahoma ${textColor} ${className} cursor-default select-none`}
-    >
-      {label}
-    </button>
-  );
+  // Botão genérico - REMOVIDO, foi movido para fora do componente
 
   return (
     // CONTAINER PRINCIPAL: Ocupa 100% da janela (que será definida na Store)

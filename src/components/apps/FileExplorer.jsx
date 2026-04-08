@@ -132,8 +132,8 @@ export const FileExplorer = ({ initialPath = 'c_drive' }) => {
           </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
-          <div className="w-[220px] bg-[#f1f5fb] border-r border-[#dae5f0] h-full overflow-y-auto pt-2 pb-4 flex-shrink-0">
+      <div className="flex flex-1 overflow-hidden flex-col lg:flex-row">
+          <div className="w-full lg:w-[220px] bg-[#f1f5fb] border-r border-[#dae5f0] h-full overflow-y-auto pt-2 pb-4 flex-shrink-0 order-2 lg:order-1">
               <div className="mb-2">
                   <div className="flex items-center gap-1 px-1 py-0.5 text-slate-500 cursor-default mb-1 group">
                       <Star size={12} className="text-yellow-500 fill-yellow-500 ml-1"/>
@@ -158,7 +158,7 @@ export const FileExplorer = ({ initialPath = 'c_drive' }) => {
             onContextMenu={(e) => openContextMenu(e, 'folder-bg', null, currentId)}
           >
             {currentFolder.children && currentFolder.children.length > 0 ? (
-                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 items-start">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 items-start">
                     {currentFolder.children.map(childId => {
                         const child = fileSystem[childId];
                         if (!child) return null;

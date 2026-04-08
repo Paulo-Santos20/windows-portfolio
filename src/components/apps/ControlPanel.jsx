@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useOSStore, BLISS_URL } from '../../store/useOSStore';
+import { useOSStore, WALLPAPER_URL } from '../../store/useOSStore';
 import { Monitor, MousePointer2, Check, Type, MousePointerClick, Crosshair } from 'lucide-react';
-import bugWallpaper from '../../assets/wallpaper.webp';
+import localWallpaper from '../../assets/wallpaper.webp';
 
 // Dados...
 const cursorOptions = [
@@ -12,8 +12,8 @@ const cursorOptions = [
 ];
 
 const wallpapers = [
-  { name: 'Bug Edition', url: bugWallpaper },
-  { name: 'Windows XP (Bliss)', url: BLISS_URL },
+  { name: 'Windows XP (Bliss)', url: WALLPAPER_URL },
+  { name: 'Bug Edition', url: localWallpaper },
   { name: 'Azul Real', url: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80' },
   { name: 'Outono', url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80' },
 ];

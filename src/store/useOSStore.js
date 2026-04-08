@@ -1,8 +1,26 @@
 import { create } from 'zustand';
-import bugWallpaper from '../assets/wallpaper.webp';
+import localWallpaper from '../assets/wallpaper.webp';
 
-// Link estável para o Bliss
-export const BLISS_URL = 'https://web.archive.org/web/20230607062923if_/https://upload.wikimedia.org/wikipedia/pt/2/2d/Bliss_%28Windows_XP%29.png';
+// URL do wallpaper online (com fallback automático)
+export const WALLPAPER_URL = 'https://web.archive.org/web/20230607062923if_/https://upload.wikimedia.org/wikipedia/pt/2/2d/Bliss_%28Windows_XP%29.png';
+
+// Fallback: usa o wallpaper local se a URL online falhar
+const loadWallpaper = () => {
+  const img = new Image();
+  img.onload = () => useOSStore.setState({ wallpaper: WALLPAPER_URL });
+  img.onerror = () => useOSStore.setState({ wallpaper: localWallpaper });
+  img.src = WALLPAPER_URL;
+  // Timeout para fallback após 3 segundos
+  setTimeout(() => {
+    const state = useOSStore.getState();
+    if (state.wallpaper !== localWallpaper && state.wallpaper !== WALLPAPER_URL) {
+      useOSStore.setState({ wallpaper: localWallpaper });
+    }
+  }, 3000);
+};
+
+// Iniciar carga do wallpaper
+loadWallpaper();
 
 const initialFileSystem = {
   // RAIZ E DRIVES
@@ -63,7 +81,7 @@ export const useOSStore = create((set, get) => ({
   // --- DISPLAY & TEMA ---
   displaySettings: { scale: 0.85, fontSize: 'normal' },
   setDisplaySettings: (newSettings) => set((state) => ({ displaySettings: { ...state.displaySettings, ...newSettings } })),
-  wallpaper: bugWallpaper, 
+  wallpaper: localWallpaper, 
   themeMode: 'xp',
   setWallpaper: (url) => set({ wallpaper: url }),
   setThemeMode: (mode) => set({ themeMode: mode }),

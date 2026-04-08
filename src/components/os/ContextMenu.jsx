@@ -12,7 +12,7 @@ import { Browser } from '../apps/Browser';
 import { AboutMe } from '../apps/AboutMe';
 import { GamesExplorer } from '../apps/GamesExplorer';
 import { Projects } from '../apps/Projects';
-import curriculoPdf from '../../assets/curriculo.pdf';
+import curriculoPdf from '../../assets/Curriculo.pdf';
 
 export const ContextMenu = () => {
   const { contextMenu, closeContextMenu, openWindow, triggerRefresh, createItem, setRenamingId, fileSystem, selectItem } = useOSStore();

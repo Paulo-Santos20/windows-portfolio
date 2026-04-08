@@ -89,8 +89,10 @@ export const Browser = () => {
   const handleRefresh = () => {
     setIsLoading(true);
     if (iframeRef.current) {
-      // Truque para forçar recarregamento do iframe
-      iframeRef.current.src = iframeRef.current.src;
+      // Force reload by getting current src and setting it
+      const currentSrc = iframeRef.current.src;
+      iframeRef.current.src = '';
+      iframeRef.current.src = currentSrc;
     }
   };
 
