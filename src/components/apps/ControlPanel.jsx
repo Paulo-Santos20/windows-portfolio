@@ -11,11 +11,12 @@ const cursorOptions = [
     { id: 'text', name: 'Texto', icon: <Type size={24} /> },
 ];
 
+// Wallpapers do Windows XP (URLs diretas que funcionam)
 const wallpapers = [
-  { name: 'Windows XP (Bliss)', url: WALLPAPER_URL },
+  { name: 'Bliss', url: 'https://upload.wikimedia.org/wikipedia/commons/2/2d/Bliss_%28Windows_XP%29.png' },
   { name: 'Bug Edition', url: localWallpaper },
-  { name: 'Azul Real', url: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80' },
-  { name: 'Outono', url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80' },
+  { name: 'Aurora', url: 'https://upload.wikimedia.org/wikipedia/commons/3/32/Windows_XP_-_Aurora.jpg' },
+  { name: 'Autumn', url: 'https://upload.wikimedia.org/wikipedia/commons/e/e8/Windows_XP_-_Autumn.jpg' },
 ];
 
 // Recebe windowId automaticamente do WindowFrame
@@ -116,7 +117,28 @@ export const ControlPanel = ({ windowId }) => {
 
             {activeTab === 'desktop' && (
                 <div className="flex flex-col gap-4 h-full overflow-y-auto">
-                    <fieldset className="border border-[#d4d0c8] p-3 rounded-sm"><legend className="ml-1 px-1 text-blue-800">Plano de Fundo</legend><div className="grid grid-cols-2 gap-3 max-h-40 overflow-y-auto pr-1 custom-scrollbar">{wallpapers.map((wp, idx) => (<div key={idx} onClick={() => setWallpaper(wp.url)} className={`cursor-pointer relative border-2 flex flex-col ${wallpaper === wp.url ? 'border-blue-500 bg-blue-50' : 'border-transparent hover:border-gray-300'}`}><div className="h-20 bg-gray-200 w-full"><img src={wp.url} alt={wp.name} className="w-full h-full object-cover" /></div><span className="p-1 text-center truncate">{wp.name}</span>{wallpaper === wp.url && <div className="absolute top-1 right-1 bg-blue-500 rounded-full p-0.5"><Check size={8} className="text-white"/></div>}</div>))}</div></fieldset>
+                    <fieldset className="border border-[#d4d0c8] p-3 rounded-sm">
+                        <legend className="ml-1 px-1 text-blue-800">Plano de Fundo</legend>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
+                            {wallpapers.map((wp, idx) => (
+                                <div 
+                                    key={idx} 
+                                    onClick={() => setWallpaper(wp.url)}
+                                    className={`cursor-pointer relative border-2 flex flex-col ${wallpaper === wp.url ? 'border-blue-500 bg-blue-50' : 'border-transparent hover:border-gray-300'}`}
+                                >
+                                    <div className="h-16 bg-gray-200 w-full overflow-hidden">
+                                        <img src={wp.url} alt={wp.name} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                                    </div>
+                                    <span className="p-1 text-center truncate text-[10px]">{wp.name}</span>
+                                    {wallpaper === wp.url && (
+                                        <div className="absolute top-1 right-1 bg-blue-500 rounded-full p-0.5">
+                                            <Check size={8} className="text-white"/>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </fieldset>
                     <fieldset className="border border-[#d4d0c8] p-3 rounded-sm"><legend className="ml-1 px-1 text-blue-800">Ponteiros do Mouse</legend><div className="flex gap-4 overflow-x-auto pb-2 custom-scrollbar">{cursorOptions.map(opt => (<button key={opt.id} onClick={() => setCursorType(opt.id)} className={`flex flex-col items-center justify-center p-2 border rounded min-w-[70px] ${cursorType === opt.id ? 'bg-white border-blue-500 shadow-inner' : 'border-transparent hover:bg-white hover:border-gray-300'}`}><div className="mb-1 text-gray-700">{opt.icon}</div><span className="text-center">{opt.name}</span></button>))}</div></fieldset>
                 </div>
             )}

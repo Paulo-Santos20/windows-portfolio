@@ -174,8 +174,14 @@ export const useOSStore = create((set, get) => ({
   }),
   
   closeWindow: (id) => set((state) => ({ windows: state.windows.filter((w) => w.id !== id), activeWindowId: state.activeWindowId === id ? null : state.activeWindowId })),
-  minimizeWindow: (id) => set((state) => ({ activeWindowId: null, windows: state.windows.map((w) => w.id === id ? { ...w, isMinimized: true } : w) })),
-  toggleMaximize: (id) => set((state) => ({ activeWindowId: id, windows: state.windows.map((w) => w.id === id ? { ...w, isMaximized: !w.isMaximized } : w) })),
+  minimizeWindow: (id) => set((state) => ({ 
+    activeWindowId: null, 
+    windows: state.windows.map((w) => w.id === id ? { ...w, isMinimized: true } : w) 
+  })),
+  toggleMaximize: (id) => set((state) => ({ 
+    activeWindowId: id, 
+    windows: state.windows.map((w) => w.id === id ? { ...w, isMaximized: !w.isMaximized } : w) 
+  })),
   focusWindow: (id) => set((state) => { const newZIndex = state.zIndexCounter + 1; return { activeWindowId: id, zIndexCounter: newZIndex, windows: state.windows.map((w) => w.id === id ? { ...w, zIndex: newZIndex } : w) }; }),
   restoreWindow: (id) => set((state) => { const newZIndex = state.zIndexCounter + 1; return { activeWindowId: id, zIndexCounter: newZIndex, windows: state.windows.map((w) => w.id === id ? { ...w, isMinimized: false, zIndex: newZIndex } : w) }; }),
   

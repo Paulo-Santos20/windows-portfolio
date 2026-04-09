@@ -98,40 +98,40 @@ export const WindowFrame = ({ id, title, icon, children, zIndex, isMinimized, is
       
       // --- LÓGICA DE INTERAÇÃO ---
       disableDragging={isMaximized} 
-      enableResizing={!isMaximized && resizable} // Libera redimensionamento se não estiver maximizado e for permitido
+      enableResizing={!isMaximized && resizable}
       dragHandleClassName="window-header"
       
       onDragStart={() => { setIsDragging(true); focusWindow(id); }}
-      onDragStop={handleDragStop} // Salva posição
-      onResizeStop={handleResizeStop} // Salva tamanho
+      onDragStop={handleDragStop}
+      onResizeStop={handleResizeStop}
       onMouseDown={() => focusWindow(id)}
       
       className={`flex flex-col overflow-hidden ${isActive ? 'z-50' : 'z-0'} ${isSkin ? 'pointer-events-none' : ''}`}
       style={{ zIndex: zIndex || 1, display: 'flex', background: isSkin ? 'transparent' : borderColor, borderRadius: isMaximized || isSkin ? '0' : '8px 8px 0 0', padding: (isSkin || isMaximized) ? '0' : '3px', paddingTop: 0, boxShadow: isSkin ? 'none' : '2px 2px 10px rgba(0,0,0,0.5)' }}
     >
       {!isSkin && (
-          <div 
-            className="window-header h-[30px] flex-shrink-0 flex items-center justify-between px-2 cursor-default relative overflow-hidden select-none"
-            onDoubleClick={() => resizable && toggleMaximize(id)} // Só maximiza se for resizable
-            style={{ background: headerBg, borderRadius: isMaximized ? 0 : '6px 6px 0 0', borderBottom: `1px solid ${borderColor}` }}
-          >
-            <div className="flex items-center gap-2 text-white font-bold text-[13px] pointer-events-none truncate" style={{ textShadow: '1px 1px 1px black', fontFamily: 'Tahoma' }}>
-              <span className="drop-shadow-md">{icon}</span><span className="truncate">{title}</span>
-            </div>
-            <div className="flex items-start pt-[2px] no-drag" onMouseDown={(e) => e.stopPropagation()}>
-              <XPButton type="minimize" onClick={() => minimizeWindow(id)} />
-              {resizable && <XPButton type="maximize" onClick={() => toggleMaximize(id)} isMaximized={isMaximized} />}
-              <XPButton type="close" onClick={() => closeWindow(id)} />
-            </div>
+        <div 
+          className="window-header h-[30px] flex-shrink-0 flex items-center justify-between px-2 cursor-default relative overflow-hidden select-none"
+          onDoubleClick={() => resizable && toggleMaximize(id)}
+          style={{ background: headerBg, borderRadius: isMaximized ? 0 : '6px 6px 0 0', borderBottom: `1px solid ${borderColor}` }}
+        >
+          <div className="flex items-center gap-2 text-white font-bold text-[13px] pointer-events-none truncate" style={{ textShadow: '1px 1px 1px black', fontFamily: 'Tahoma' }}>
+            <span className="drop-shadow-md">{icon}</span><span className="truncate">{title}</span>
           </div>
+          <div className="flex items-start pt-[2px] no-drag" onMouseDown={(e) => e.stopPropagation()}>
+            <XPButton type="minimize" onClick={() => minimizeWindow(id)} />
+            {resizable && <XPButton type="maximize" onClick={() => toggleMaximize(id)} isMaximized={isMaximized} />}
+            <XPButton type="close" onClick={() => closeWindow(id)} />
+          </div>
+        </div>
       )}
       <div className={`flex-1 flex flex-col relative overflow-hidden`} style={{ backgroundColor: isSkin ? 'transparent' : bodyBg, border: isSkin ? 'none' : `1px solid ${borderColor}` }}>
-         {isSkin ? React.cloneElement(children, { onClose: () => closeWindow(id), onMinimize: () => minimizeWindow(id), onMaximize: () => toggleMaximize(id), isMaximized: isMaximized, isWindowActive: isActive, windowId: id, style: { pointerEvents: 'auto' } }) : (
-             <div className="flex-1 bg-white overflow-auto relative select-text pointer-events-auto flex flex-col">
-                 {hasMenuBar && (<div style={{ backgroundColor: bodyBg }} className="border-b border-[#d1d1d1] px-2 py-0.5 text-[11px] flex gap-3 select-none shrink-0" >{['File', 'Edit', 'View', 'Favorites', 'Tools', 'Help'].map(m => <span key={m} className={`px-1 cursor-pointer ${isDark ? 'text-white hover:bg-gray-600' : 'text-black hover:bg-[#316ac5] hover:text-white'}`}>{m}</span>)}</div>)}
-                 <div className="w-full h-full overflow-auto bg-[#ece9d8]">{React.isValidElement(children) ? React.cloneElement(children, { windowId: id }) : children}</div>
-             </div>
-         )}
+        {isSkin ? React.cloneElement(children, { onClose: () => closeWindow(id), onMinimize: () => minimizeWindow(id), onMaximize: () => toggleMaximize(id), isMaximized: isMaximized, isWindowActive: isActive, windowId: id, style: { pointerEvents: 'auto' } }) : (
+          <div className="flex-1 bg-white overflow-auto relative select-text pointer-events-auto flex flex-col">
+            {hasMenuBar && (<div style={{ backgroundColor: bodyBg }} className="border-b border-[#d1d1d1] px-2 py-0.5 text-[11px] flex gap-3 select-none shrink-0" >{['File', 'Edit', 'View', 'Favorites', 'Tools', 'Help'].map(m => <span key={m} className={`px-1 cursor-pointer ${isDark ? 'text-white hover:bg-gray-600' : 'text-black hover:bg-[#316ac5] hover:text-white'}`}>{m}</span>)}</div>)}
+            <div className="w-full h-full overflow-auto bg-[#ece9d8]">{React.isValidElement(children) ? React.cloneElement(children, { windowId: id }) : children}</div>
+          </div>
+        )}
       </div>
     </Rnd>
   );
