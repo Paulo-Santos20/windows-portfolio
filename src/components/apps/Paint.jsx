@@ -51,6 +51,7 @@ const ResizeDialog = ({ isOpen, onClose, onResize, currentW, currentH }) => {
 
 export const Paint = () => {
   const canvasRef = useRef(null);
+  const overlayRef = useRef(null);
   const contextRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [tool, setTool] = useState('pencil');
@@ -58,12 +59,12 @@ export const Paint = () => {
   const [lineWidth, setLineWidth] = useState(3);
   const [showResize, setShowResize] = useState(false);
   const [dimensions, setDimensions] = useState({ w: 800, h: 500 });
+  const [mousePos, setMousePos] = useState({ x: -100, y: -100 });
 
   const toolRef = useRef('pencil');
   const colorRef = useRef('#000000');
   const lineWidthRef = useRef(3);
-
-  const cursorEraser = `url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBmaWxsPSIjRkZGIiBzdHJva2U9IiMwMDAiIGQ9Ik0xIDE0aDE0VjJHMVoiLz48L3N2Zz4=') 8 8, auto`;
+  const mousePosRef = useRef({ x: -100, y: -100 });
 
   const widthOptions = tool === 'pencil' ? [1, 2, 3, 5] : tool === 'brush' ? [4, 8, 12, 18] : [4, 8, 16, 32];
 
@@ -106,6 +107,12 @@ export const Paint = () => {
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     contextRef.current = ctx;
+
+    const overlay = overlayRef.current;
+    if (overlay) {
+      overlay.width = w;
+      overlay.height = h;
+    }
   };
 
   useEffect(() => {
@@ -122,6 +129,26 @@ export const Paint = () => {
       x: (e.clientX - rect.left) * scaleX,
       y: (e.clientY - rect.top) * scaleY
     };
+  };
+
+  const drawEraserPreview = (x, y) => {
+    const overlay = overlayRef.current;
+    if (!overlay) return;
+    const ctx = overlay.getContext('2d');
+    ctx.clearRect(0, 0, overlay.width, overlay.height);
+    const size = lineWidthRef.current;
+    ctx.strokeStyle = '#ff0000';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+    ctx.strokeRect(x - size / 2, y - size / 2, size, size);
+    ctx.setLineDash([]);
+  };
+
+  const clearEraserPreview = () => {
+    const overlay = overlayRef.current;
+    if (!overlay) return;
+    const ctx = overlay.getContext('2d');
+    ctx.clearRect(0, 0, overlay.width, overlay.height);
   };
 
   const applySettings = () => {
@@ -156,11 +183,20 @@ export const Paint = () => {
     contextRef.current.beginPath();
     contextRef.current.moveTo(x, y);
     setIsDrawing(true);
+    clearEraserPreview();
   };
 
   const draw = (e) => {
-    if (!isDrawing) return;
     const { x, y } = getCoordinates(e);
+    mousePosRef.current = { x, y };
+    setMousePos({ x, y });
+
+    if (tool === 'eraser' && !isDrawing) {
+      drawEraserPreview(x, y);
+      return;
+    }
+
+    if (!isDrawing) return;
     applySettings();
     contextRef.current.lineTo(x, y);
     contextRef.current.stroke();
@@ -172,12 +208,14 @@ export const Paint = () => {
       contextRef.current.globalAlpha = 1;
     }
     setIsDrawing(false);
+    if (toolRef.current === 'eraser') {
+      drawEraserPreview(mousePosRef.current.x, mousePosRef.current.y);
+    }
   };
 
   const handleResize = (newW, newH) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const oldCtx = contextRef.current;
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = canvas.width;
     tempCanvas.height = canvas.height;
@@ -194,11 +232,19 @@ export const Paint = () => {
     ctx.lineJoin = 'round';
     contextRef.current = ctx;
     setDimensions({ w: newW, h: newH });
+
+    const overlay = overlayRef.current;
+    if (overlay) {
+      overlay.width = newW;
+      overlay.height = newH;
+      const octx = overlay.getContext('2d');
+      octx.clearRect(0, 0, newW, newH);
+    }
   };
 
   const getCursor = () => {
-    if (tool === 'eraser') return cursorEraser;
-    if (tool === 'brush') return 'none';
+    if (tool === 'eraser') return 'none';
+    if (tool === 'brush') return 'crosshair';
     return 'crosshair';
   };
 
@@ -220,7 +266,7 @@ export const Paint = () => {
             <svg viewBox="0 0 16 16" width="14" height="14"><path d="M4 14c-1 0-2-.5-2-2 0-1.5 2-3 4-3s3 1 2 2c-.5.5-2 1-3 1 0 1 .5 2-1 2zM13 2c-1 1-3 3-5 5l1 1 5-5-1-1z" fill="#222"/></svg>
           </ToolButton>
           <ToolButton active={tool === 'eraser'} onClick={() => handleToolChange('eraser')} title="Borracha">
-            <svg viewBox="0 0 16 16" width="14" height="14"><path d="M12 2L8 6l2 2 4-4-2-2zM7 7l-4 4c-1 1-1 2 0 3l1 1h5l3-3-5-5z" fill="#e04040"/></svg>
+            <svg viewBox="0 0 16 16" width="14" height="14"><rect x="2" y="3" width="12" height="12" rx="1" fill="#e04040" stroke="#a02020" strokeWidth="0.5"/><rect x="4" y="5" width="8" height="8" fill="#ffcccc" stroke="#c06060" strokeWidth="0.3"/></svg>
           </ToolButton>
 
           <div className="mt-3 w-8 bg-white border border-[#aca899] p-1 flex flex-col gap-1 items-center shadow-[inset_1px_1px_2px_rgba(0,0,0,0.1)]">
@@ -230,7 +276,7 @@ export const Paint = () => {
                 onClick={() => handleWidthChange(size)}
                 className={`w-full h-4 flex items-center justify-center cursor-pointer ${lineWidth === size ? 'bg-blue-600' : 'hover:bg-blue-100'}`}
               >
-                <div className={`rounded-full ${tool === 'eraser' ? 'border border-gray-400' : 'bg-black'}`} style={{ width: Math.min(size * 1.2, 10), height: Math.min(size * 1.2, 10) }}></div>
+                <div className={`rounded-full ${tool === 'eraser' ? 'border border-gray-400 bg-white' : 'bg-black'}`} style={{ width: Math.min(size * 1.2, 10), height: Math.min(size * 1.2, 10) }}></div>
               </div>
             ))}
           </div>
@@ -244,15 +290,22 @@ export const Paint = () => {
           className="flex-1 bg-[#808080] p-3 overflow-auto flex shadow-[inset_1px_1px_2px_rgba(0,0,0,0.3)] relative"
           style={{ cursor: getCursor() }}
         >
-          <canvas
-            ref={canvasRef}
-            onMouseDown={startDrawing}
-            onMouseUp={finishDrawing}
-            onMouseMove={draw}
-            onMouseLeave={finishDrawing}
-            className="bg-white shadow-[2px_2px_5px_rgba(0,0,0,0.5)] block"
-            style={{ width: '100%', height: '100%', touchAction: 'none' }}
-          />
+          <div className="relative" style={{ width: '100%', height: '100%' }}>
+            <canvas
+              ref={canvasRef}
+              onMouseDown={startDrawing}
+              onMouseUp={finishDrawing}
+              onMouseMove={draw}
+              onMouseLeave={() => { finishDrawing(); clearEraserPreview(); }}
+              className="bg-white shadow-[2px_2px_5px_rgba(0,0,0,0.5)] block absolute inset-0"
+              style={{ width: '100%', height: '100%', touchAction: 'none' }}
+            />
+            <canvas
+              ref={overlayRef}
+              className="pointer-events-none absolute inset-0"
+              style={{ width: '100%', height: '100%' }}
+            />
+          </div>
           <ResizeDialog
             isOpen={showResize}
             onClose={() => setShowResize(false)}
@@ -276,6 +329,7 @@ export const Paint = () => {
 
         <div className="flex-1 text-[10px] text-gray-500 text-right px-2 truncate">
           {dimensions.w} × {dimensions.h}px
+          {tool === 'eraser' && <span className="ml-2 text-red-500 font-bold">({lineWidth}px)</span>}
         </div>
       </div>
     </div>

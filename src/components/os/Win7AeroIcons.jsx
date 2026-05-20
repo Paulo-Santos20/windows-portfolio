@@ -45,22 +45,41 @@ const CalcIcon = () => (
   </svg>
 );
 
+const Person = ({ dx }) => (
+  <g transform={`translate(${dx}, 0)`}>
+    <circle cx="0" cy="-10" r="4.5" fill="white" />
+    <path d="
+      M -1,-5
+      C -5,-4 -6,-2 -6,1
+      L -5,8
+      C -6,10 -4,11 -3,10
+      L -3,7
+      C -3,5 -2,4 -1,4
+      C -3,7 -4,9 -4,11
+      C -4,13 4,13 4,11
+      C 4,9 3,7 1,4
+      C 1,4 2,5 3,7
+      L 3,10
+      C 4,11 6,10 5,8
+      L 6,1
+      C 6,-2 5,-4 1,-5
+      Z" fill="white" />
+  </g>
+);
+
 const MsnIcon = () => (
   <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <radialGradient id="msnGrad" cx="40%" cy="30%" r="70%">
-        <stop offset="0%" stopColor="#a8e65c"/>
-        <stop offset="50%" stopColor="#7cc428"/>
-        <stop offset="100%" stopColor="#4f8a0f"/>
+      <radialGradient id="msnGrad" cx="35%" cy="30%" r="75%">
+        <stop offset="0%" stopColor="#b8ef5c"/>
+        <stop offset="45%" stopColor="#7cc428"/>
+        <stop offset="100%" stopColor="#3f7a0a"/>
       </radialGradient>
     </defs>
     <circle cx="24" cy="24" r="22.5" fill="url(#msnGrad)"/>
-    <g fill="white">
-      <path d="M13 18.5c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6-6-2.7-6-6z"/>
-      <path d="M11 36c0-4.4 3.6-8 8-8s8 3.6 8 8v2H11z"/>
-      <path d="M23 18.5c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6-6-2.7-6-6z"/>
-      <path d="M21 36c0-4.4 3.6-8 8-8s8 3.6 8 8v2H21z"/>
-    </g>
+    <circle cx="24" cy="24" r="22.5" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
+    <Person dx={16} />
+    <Person dx={30} />
   </svg>
 );
 
