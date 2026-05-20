@@ -108,7 +108,7 @@ const StartMenu = ({ isOpen, onClose, onCloseComplete, isMobile = false }) => {
   const recentPrograms = [
     { id: 'browser', label: 'Internet Explorer', icon: 'ie' },
     { id: 'wmp', label: 'Windows Media Player', icon: 'wmp' },
-    { id: 'msg-main', label: 'Windows Live Messenger', icon: 'msg' },
+    { id: 'msg-main', label: 'Windows Live Messenger', icon: 'msn' },
     { id: 'paint', label: 'Paint', icon: 'paint' },
     { id: 'cmd', label: 'Prompt de Comando', icon: 'cmd' },
     { id: 'calc', label: 'Calculadora', icon: 'calc' },
@@ -146,7 +146,7 @@ const StartMenu = ({ isOpen, onClose, onCloseComplete, isMobile = false }) => {
               const iconMap = {
                 ie: 'Internet%20Explorer/iexplore_7.ico',
                 wmp: 'Windows%20Media%20Player/wmplayer_120.ico',
-                msg: 'Default%20Programs/notepad_2.ico',
+                msn: 'Default%20Programs/notepad_2.ico',
                 paint: 'Default%20Programs/mspaint_2.ico',
                 cmd: 'Default%20Programs/cmd_IDI_APPICON.ico',
                 calc: 'Control%20Panel/imageres_27.ico',

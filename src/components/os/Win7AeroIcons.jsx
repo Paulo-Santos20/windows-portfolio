@@ -45,28 +45,28 @@ const CalcIcon = () => (
   </svg>
 );
 
-const MsgIcon = () => (
+const MsnIcon = () => (
   <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <radialGradient id="msgGrad" cx="40%" cy="35%" r="65%">
-        <stop offset="0%" stopColor="#9bdb4d"/>
-        <stop offset="100%" stopColor="#5e9e1a"/>
+      <radialGradient id="msnGrad" cx="40%" cy="30%" r="70%">
+        <stop offset="0%" stopColor="#a8e65c"/>
+        <stop offset="50%" stopColor="#7cc428"/>
+        <stop offset="100%" stopColor="#4f8a0f"/>
       </radialGradient>
     </defs>
-    <circle cx="24" cy="24" r="22" fill="url(#msgGrad)" stroke="#4a7f14" strokeWidth="1"/>
-    <circle cx="24" cy="24" r="21" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5"/>
-    <g fill="white" opacity="0.95">
-      <ellipse cx="17" cy="20" rx="5.5" ry="6"/>
-      <ellipse cx="31" cy="20" rx="5.5" ry="6"/>
-      <ellipse cx="17" cy="33" rx="7" ry="5"/>
-      <ellipse cx="31" cy="33" rx="7" ry="5"/>
+    <circle cx="24" cy="24" r="22.5" fill="url(#msnGrad)"/>
+    <g fill="white">
+      <path d="M13 18.5c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6-6-2.7-6-6z"/>
+      <path d="M11 36c0-4.4 3.6-8 8-8s8 3.6 8 8v2H11z"/>
+      <path d="M23 18.5c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6-6-2.7-6-6z"/>
+      <path d="M21 36c0-4.4 3.6-8 8-8s8 3.6 8 8v2H21z"/>
     </g>
   </svg>
 );
 
 export const Win7Icon = ({ type, className = "" }) => {
   if (type === 'calc') return <CalcIcon />;
-  if (type === 'msg') return <MsgIcon />;
+  if (type === 'msn') return <MsnIcon />;
 
   const src = iconSrc[type] || fallbackSrc;
 
