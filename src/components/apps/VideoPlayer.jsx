@@ -32,7 +32,6 @@ export const VideoPlayer = ({ src, title, onClose, onMinimize, onMaximize, isMax
   
   const handleSeek = (e) => { const time = parseFloat(e.target.value); videoRef.current.currentTime = time; setCurrentTime(time); };
   const handleVolumeChange = (e) => { const vol = parseFloat(e.target.value); setGlobalVolume(vol); };
-  const formatTime = (time) => { if (isNaN(time) || time === Infinity) return "0:00"; const m = Math.floor(time/60); const s = Math.floor(time%60); return `${m}:${s.toString().padStart(2,'0')}`; };
 
   const sidebarBtnStyle = "w-full text-left px-3 py-1.5 text-[11px] font-bold cursor-pointer border-b border-[#5d8bc6] hover:text-orange-300 transition-colors relative overflow-hidden";
   const controlBtnStyle = "rounded-full bg-gradient-to-b from-[#ffffff] to-[#dcdcdc] border border-[#808080] shadow-[inset_0_1px_2px_rgba(255,255,255,1),0_2px_2px_rgba(0,0,0,0.3)] hover:brightness-110 active:scale-95 flex items-center justify-center active:shadow-inner";

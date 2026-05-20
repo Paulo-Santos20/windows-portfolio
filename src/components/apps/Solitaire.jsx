@@ -40,6 +40,79 @@ const HelpModal = ({ onClose }) => (
   </div>
 );
 
+// --- COMPONENTES EXTERNOS ---
+const CardView = ({ card, style, onMouseDown, onDoubleClick, isDraggingSource }) => (
+    <div 
+      onMouseDown={onMouseDown}
+      onDoubleClick={onDoubleClick}
+      className={`
+          absolute w-14 sm:w-20 h-20 sm:h-28 rounded-md border shadow-sm select-none
+          flex flex-col justify-between p-1
+          ${card.faceUp ? 'bg-white border-slate-400' : 'bg-blue-700 border-white'}
+          ${isDraggingSource ? 'opacity-0' : 'opacity-100'} 
+          hover:brightness-105
+      `}
+      style={{ 
+          ...style,
+          backgroundImage: !card.faceUp ? 'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,0.1) 5px, rgba(255,255,255,0.1) 10px)' : 'none',
+          cursor: card.faceUp ? 'grab' : 'default'
+      }}
+    >
+        {card.faceUp && (
+            <>
+                <div className={`text-[8px] sm:text-sm font-bold ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
+                    {card.rank}{card.suit}
+                </div>
+                <div className={`text-xl sm:text-3xl text-center ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
+                    {card.suit}
+                </div>
+                <div className={`text-[8px] sm:text-sm font-bold text-right transform rotate-180 ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
+                    {card.rank}{card.suit}
+                </div>
+            </>
+        )}
+    </div>
+);
+
+const DragLayer = ({ dragging }) => {
+  if (!dragging) return null;
+  const { cards, startPos, currentPos } = dragging;
+  const deltaX = currentPos.x - startPos.x;
+  const deltaY = currentPos.y - startPos.y;
+
+  return (
+    <div 
+      className="fixed z-[9999] pointer-events-none"
+      style={{ 
+          left: startPos.x - 30, 
+          top: startPos.y - 40,
+          transform: `translate(${deltaX}px, ${deltaY}px)`
+      }}
+    >
+       {cards.map((card, i) => (
+           <div 
+              key={'drag-' + card.id}
+              className={`
+                  absolute w-14 sm:w-20 h-20 sm:h-28 rounded-md border border-slate-400 bg-white shadow-2xl
+                  flex flex-col justify-between p-1
+              `}
+              style={{ top: i * (card.faceUp ? 18 : 8) }}
+           >
+                  <div className={`text-[8px] sm:text-sm font-bold ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
+                      {card.rank}{card.suit}
+                  </div>
+                  <div className={`text-xl sm:text-3xl text-center ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
+                      {card.suit}
+                  </div>
+                  <div className={`text-[8px] sm:text-sm font-bold text-right transform rotate-180 ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
+                      {card.rank}{card.suit}
+                  </div>
+           </div>
+       ))}
+    </div>
+  );
+};
+
 export const Solitaire = () => {
   const [columns, setColumns] = useState([]);
   const [foundations, setFoundations] = useState([[], [], [], []]);
@@ -53,10 +126,7 @@ export const Solitaire = () => {
   // Refs para detecção de drop (Hit Testing)
   const colRefs = useRef([]);
   const foundationRefs = useRef([]);
-
-  useEffect(() => {
-    initGame();
-  }, []);
+  const handleDropRef = useRef(null);
 
   // --- LÓGICA DO JOGO ---
   const initGame = () => {
@@ -96,6 +166,85 @@ export const Solitaire = () => {
     setDragging(null);
   };
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { initGame(); }, []);
+
+  // --- REGRAS E MOVIMENTAÇÃO ---
+
+  const canMoveToColumn = (card, targetCol) => {
+    if (targetCol.length === 0) return card.value === 13;
+    const targetCard = targetCol[targetCol.length - 1];
+    return (card.color !== targetCard.color) && (card.value === targetCard.value - 1);
+  };
+
+  const canMoveToFoundation = (card, foundationIdx) => {
+    const base = foundations[foundationIdx];
+    if (base.length === 0) return card.value === 1;
+    const topCard = base[base.length - 1];
+    return (card.suit === topCard.suit) && (card.value === topCard.value + 1);
+  };
+
+  const moveCards = (source, dest, cards) => {
+    setColumns(prev => {
+      const newCols = prev.map(col => [...col]);
+      if (source.type === 'col') {
+        const srcCol = newCols[source.idx];
+        newCols[source.idx] = srcCol.slice(0, source.cardIdx);
+        if (newCols[source.idx].length > 0) newCols[source.idx][newCols[source.idx].length - 1].faceUp = true;
+      }
+      if (dest.type === 'col') newCols[dest.idx] = [...newCols[dest.idx], ...cards];
+      return newCols;
+    });
+    if (dest.type === 'foundation') {
+      setFoundations(prev => {
+        const newF = prev.map(f => [...f]);
+        newF[dest.idx] = [...newF[dest.idx], ...cards];
+        return newF;
+      });
+    }
+  };
+
+  // 3. Soltar (Lógica de Validação)
+  const handleDrop = (e) => {
+    const { cards, source } = dragging;
+    const dropX = e.clientX;
+    const dropY = e.clientY;
+
+    const isOver = (rect) => {
+      return dropX >= rect.left && dropX <= rect.right && dropY >= rect.top && dropY <= rect.bottom;
+    };
+
+    for (let i = 0; i < 7; i++) {
+      if (colRefs.current[i]) {
+        const rect = colRefs.current[i].getBoundingClientRect();
+        const hitRect = { ...rect, bottom: rect.bottom + 200 };
+        if (isOver(hitRect)) {
+          const targetCol = columns[i];
+          if (canMoveToColumn(cards[0], targetCol)) {
+             moveCards(source, { type: 'col', idx: i }, cards);
+             return;
+          }
+        }
+      }
+    }
+
+    if (cards.length === 1) {
+      for (let i = 0; i < 4; i++) {
+        if (foundationRefs.current[i]) {
+          const rect = foundationRefs.current[i].getBoundingClientRect();
+          if (isOver(rect)) {
+            if (canMoveToFoundation(cards[0], i)) {
+              moveCards(source, { type: 'foundation', idx: i }, cards);
+              return;
+            }
+          }
+        }
+      }
+    }
+  };
+
+  useEffect(() => { handleDropRef.current = handleDrop; });
+
   // --- DRAG AND DROP (MOUSE HANDLERS) ---
 
   // 1. Iniciar Arraste
@@ -130,7 +279,7 @@ export const Solitaire = () => {
 
     const handleMouseUp = (e) => {
       if (dragging) {
-        handleDrop(e);
+        handleDropRef.current(e);
         setDragging(null);
       }
     };
@@ -145,94 +294,6 @@ export const Solitaire = () => {
       window.removeEventListener('mouseup', handleMouseUp);
     };
   }, [dragging]);
-
-  // 3. Soltar (Lógica de Validação)
-  const handleDrop = (e) => {
-    const { cards, source } = dragging;
-    const dropX = e.clientX;
-    const dropY = e.clientY;
-
-    // Helper para verificar colisão
-    const isOver = (rect) => {
-      return dropX >= rect.left && dropX <= rect.right && dropY >= rect.top && dropY <= rect.bottom;
-    };
-
-    // A. Tentar soltar em uma Coluna
-    for (let i = 0; i < 7; i++) {
-      if (colRefs.current[i]) {
-        const rect = colRefs.current[i].getBoundingClientRect();
-        // Expande a área de drop para baixo para facilitar
-        const hitRect = { ...rect, bottom: rect.bottom + 200 }; 
-        
-        if (isOver(hitRect)) {
-          // Validar regra da coluna
-          const targetCol = columns[i];
-          if (canMoveToColumn(cards[0], targetCol)) {
-             moveCards(source, { type: 'col', idx: i }, cards);
-             return;
-          }
-        }
-      }
-    }
-
-    // B. Tentar soltar numa Base (Foundation)
-    // Só pode mover 1 carta por vez para base
-    if (cards.length === 1) {
-      for (let i = 0; i < 4; i++) {
-        if (foundationRefs.current[i]) {
-          const rect = foundationRefs.current[i].getBoundingClientRect();
-          if (isOver(rect)) {
-            if (canMoveToFoundation(cards[0], i)) {
-              moveCards(source, { type: 'foundation', idx: i }, cards);
-              return;
-            }
-          }
-        }
-      }
-    }
-  };
-
-  // --- REGRAS E MOVIMENTAÇÃO ---
-
-  const canMoveToColumn = (card, targetCol) => {
-    if (targetCol.length === 0) return card.value === 13; // Rei
-    const targetCard = targetCol[targetCol.length - 1];
-    return (card.color !== targetCard.color) && (card.value === targetCard.value - 1);
-  };
-
-  const canMoveToFoundation = (card, fIdx) => {
-    const pile = foundations[fIdx];
-    if (pile.length === 0) return card.value === 1; // Ás
-    const targetCard = pile[pile.length - 1];
-    return (card.suit === targetCard.suit) && (card.value === targetCard.value + 1);
-  };
-
-  const moveCards = (from, to, cardsToMove) => {
-    const newCols = [...columns];
-    const newFoundations = [...foundations];
-    let newWaste = [...waste];
-
-    // 1. Remover da origem
-    if (from.type === 'waste') {
-      newWaste.pop();
-    } else if (from.type === 'col') {
-      const col = newCols[from.idx];
-      col.splice(from.cardIdx, cardsToMove.length);
-      // Virar carta anterior
-      if (col.length > 0) col[col.length - 1].faceUp = true;
-    }
-
-    // 2. Adicionar ao destino
-    if (to.type === 'col') {
-      newCols[to.idx].push(...cardsToMove);
-    } else if (to.type === 'foundation') {
-      newFoundations[to.idx].push(cardsToMove[0]);
-    }
-
-    setColumns(newCols);
-    setFoundations(newFoundations);
-    setWaste(newWaste);
-  };
 
   // --- AÇÕES EXTRAS ---
   const handleStockClick = () => {
@@ -260,85 +321,13 @@ export const Solitaire = () => {
   };
 
   // --- RENDERIZADORES ---
-  const CardView = ({ card, style, onMouseDown, onDoubleClick, isDraggingSource }) => (
-      <div 
-        onMouseDown={onMouseDown}
-        onDoubleClick={onDoubleClick}
-        className={`
-            absolute w-14 sm:w-20 h-20 sm:h-28 rounded-md border shadow-sm select-none
-            flex flex-col justify-between p-1
-            ${card.faceUp ? 'bg-white border-slate-400' : 'bg-blue-700 border-white'}
-            ${isDraggingSource ? 'opacity-0' : 'opacity-100'} 
-            hover:brightness-105
-        `}
-        style={{ 
-            ...style,
-            backgroundImage: !card.faceUp ? 'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,0.1) 5px, rgba(255,255,255,0.1) 10px)' : 'none',
-            cursor: card.faceUp ? 'grab' : 'default'
-        }}
-      >
-          {card.faceUp && (
-              <>
-                  <div className={`text-[8px] sm:text-sm font-bold ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
-                      {card.rank}{card.suit}
-                  </div>
-                  <div className={`text-xl sm:text-3xl text-center ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
-                      {card.suit}
-                  </div>
-                  <div className={`text-[8px] sm:text-sm font-bold text-right transform rotate-180 ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
-                      {card.rank}{card.suit}
-                  </div>
-              </>
-          )}
-      </div>
-  );
-
-  // Renderiza a "pilha fantasma" que segue o mouse
-  const DragLayer = () => {
-    if (!dragging) return null;
-    const { cards, startPos, currentPos } = dragging;
-    const deltaX = currentPos.x - startPos.x;
-    const deltaY = currentPos.y - startPos.y;
-
-    return (
-      <div 
-        className="fixed z-[9999] pointer-events-none"
-        style={{ 
-            left: startPos.x - 30, 
-            top: startPos.y - 40,
-            transform: `translate(${deltaX}px, ${deltaY}px)`
-        }}
-      >
-         {cards.map((card, i) => (
-             <div 
-                key={'drag-' + card.id}
-                className={`
-                    absolute w-14 sm:w-20 h-20 sm:h-28 rounded-md border border-slate-400 bg-white shadow-2xl
-                    flex flex-col justify-between p-1
-                `}
-                style={{ top: i * (card.faceUp ? 18 : 8) }}
-             >
-                   <div className={`text-[8px] sm:text-sm font-bold ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
-                       {card.rank}{card.suit}
-                   </div>
-                   <div className={`text-xl sm:text-3xl text-center ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
-                       {card.suit}
-                   </div>
-                   <div className={`text-[8px] sm:text-sm font-bold text-right transform rotate-180 ${card.color === 'red' ? 'text-red-600' : 'text-black'}`}>
-                       {card.rank}{card.suit}
-                   </div>
-             </div>
-         ))}
-      </div>
-    );
-  };
 
   return (
     <div className="flex flex-col h-full bg-[#005c00] font-sans overflow-hidden select-none">
        {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
        
        {/* Camada de Arraste */}
-       <DragLayer />
+        <DragLayer dragging={dragging} />
 
        {/* Topo */}
        <div className="h-8 bg-white/10 flex items-center justify-between px-4 border-b border-white/10 text-white text-xs">

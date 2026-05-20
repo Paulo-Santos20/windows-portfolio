@@ -1,59 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useOSStore } from './store/useOSStore';
 import { BootSequence } from './components/os/BootSequence';
 import { Desktop } from './components/os/Desktop';
 import { Taskbar } from './components/os/Taskbar';
 import { WindowFrame } from './components/os/WindowFrame';
+import { AltTabSwitcher } from './components/os/AltTabSwitcher';
 
-// --- TELA DE ORIENTAÇÃO (Para Mobile) ---
-const OrientationLock = ({ isPortrait }) => {
-  if (!isPortrait) return null;
-  
-  return (
-    <div className="fixed inset-0 bg-[#003399] z-[999999] flex flex-col items-center justify-center p-8">
-      <div className="bg-[#ece9d8] p-6 rounded-lg shadow-2xl text-center max-w-sm">
-        <div className="text-6xl mb-4">📱</div>
-        <h2 className="text-xl font-bold text-[#003399] mb-2">Gire seu dispositivo</h2>
-        <p className="text-sm text-gray-600">
-          Para uma melhor experiência, gire seu celular para o modo paisagem (horizontal).
-        </p>
-        <div className="mt-4 flex justify-center">
-          <div className="animate-bounce text-4xl">↔️</div>
-        </div>
-      </div>
-    </div>
-  );
+const BREAKPOINTS = {
+  phone: window.matchMedia('(max-width: 639px)'),
+  tablet: window.matchMedia('(min-width: 640px) and (max-width: 1023px)'),
+  desktop: window.matchMedia('(min-width: 1024px)'),
 };
 
 const App = () => {
-  const { wallpaper, bootStatus, windows, cursorType, displaySettings } = useOSStore();
+  const { wallpaper, bootStatus, windows, cursorType, displaySettings, theme, setBreakpoint, focusWindow } = useOSStore();
   
-  // Detectar modo mobile e orientação
-  const [isMobile, setIsMobile] = useState(false);
-  const [isPortrait, setIsPortrait] = useState(false);
+  const [isMobile, setIsMobile] = useState(BREAKPOINTS.phone.matches || BREAKPOINTS.tablet.matches || 'ontouchstart' in window);
+
+  const updateBreakpoint = useCallback(() => {
+    if (BREAKPOINTS.phone.matches) { setBreakpoint('phone'); setIsMobile(true); }
+    else if (BREAKPOINTS.tablet.matches) { setBreakpoint('tablet'); setIsMobile(true); }
+    else { setBreakpoint('desktop'); setIsMobile(false); }
+  }, [setBreakpoint]);
 
   useEffect(() => {
-    const checkDevice = () => {
-      const mobile = window.innerWidth < 768 || 'ontouchstart' in window;
-      const portrait = window.innerHeight > window.innerWidth;
-      setIsMobile(mobile);
-      setIsPortrait(portrait);
-    };
-
-    checkDevice();
-    window.addEventListener('resize', checkDevice);
-    window.addEventListener('orientationchange', checkDevice);
-    
-    // Forçar orientação landscape via API se disponível
-    if (screen.orientation && screen.orientation.lock) {
-      screen.orientation.lock('landscape').catch(() => {});
-    }
-
-    return () => {
-      window.removeEventListener('resize', checkDevice);
-      window.removeEventListener('orientationchange', checkDevice);
-    };
-  }, []);
+    updateBreakpoint();
+    const handleChange = () => updateBreakpoint();
+    Object.values(BREAKPOINTS).forEach(mq => mq.addEventListener('change', handleChange));
+    return () => Object.values(BREAKPOINTS).forEach(mq => mq.removeEventListener('change', handleChange));
+  }, [updateBreakpoint]);
 
   const getFontSize = () => {
       switch(displaySettings.fontSize) {
@@ -73,39 +48,23 @@ const App = () => {
       }
   };
 
-  // Calcular scale dinâmico baseado no tamanho da tela
-  const getScale = () => {
-    if (isMobile) {
-      // Em mobile, usar escala baseada na largura
-      const baseScale = Math.min(window.innerWidth / 1024, window.innerHeight / 768);
-      return Math.min(baseScale * 0.85, 1);
-    }
-    return displaySettings.scale;
-  };
-
   return (
     <div 
-      className={`h-screen w-screen overflow-hidden relative select-none font-tahoma bg-black`}
+      className={`h-screen w-screen overflow-hidden relative select-none font-tahoma bg-black ${theme === 'win7' ? 'theme-win7' : 'theme-winxp'}`}
       style={{ cursor: getCursorStyle() }}
     >
-      {/* Tela de orientação para mobile portrait */}
-      <OrientationLock isPortrait={isMobile && isPortrait} />
-
       <BootSequence />
 
       {bootStatus === 'desktop' && (
         <div 
-            className="w-full h-full relative origin-top-left transition-all duration-300 ease-in-out"
-            style={{ 
-                transform: `scale(${getScale()})`,
-                width: isMobile ? '100vw' : `${100 / getScale()}%`,
-                height: isMobile ? '100vh' : `${100 / getScale()}%`,
-                fontSize: getFontSize(),
-                // Ajustar transform origin para mobile
-                transformOrigin: isMobile ? 'center center' : 'top left'
-            }}
+            className="w-full h-full relative"
+            style={{ fontSize: getFontSize() }}
         >
-          <div className="absolute inset-0 bg-cover bg-center z-0" style={{ backgroundImage: `url(${wallpaper})` }} />
+          <div 
+            className="absolute inset-0 bg-cover bg-center z-0"
+            style={{ backgroundImage: `url(${wallpaper})` }}
+            onError={(e) => { e.target.style.backgroundImage = 'linear-gradient(135deg, #3a6ea5, #1a3a5a)'; }}
+          />
 
           <Desktop isMobile={isMobile} />
 
@@ -130,6 +89,8 @@ const App = () => {
           ))}
 
           <Taskbar isMobile={isMobile} />
+
+          <AltTabSwitcher windows={windows} activeWindowId={useOSStore.getState().activeWindowId} onSelect={focusWindow} />
         </div>
       )}
     </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RotateCcw, Brain, Shield, Swords, AlertTriangle, Crown, Skull } from 'lucide-react';
 
 // --- CONSTANTES ---
@@ -285,39 +285,6 @@ export const ChessTitans = () => {
   const [status, setStatus] = useState('playing');
   const [aiThinking, setAiThinking] = useState(false);
 
-  // IA Joga
-  useEffect(() => {
-    if (turn === 'b' && status === 'playing') {
-      setAiThinking(true);
-      setTimeout(() => {
-        const aiMove = ChessEngine.getBestMove(board, difficulty);
-        if (aiMove) {
-          executeMove(aiMove.from, aiMove.to);
-        } else {
-          // Se IA não tem movimentos, verifica fim de jogo
-          const kingPos = ChessEngine.findKing(board, 'b');
-          if (kingPos && ChessEngine.isSquareAttacked(board, kingPos.r, kingPos.c, 'b')) setStatus('checkmate');
-          else setStatus('stalemate');
-        }
-        setAiThinking(false);
-      }, 100);
-    }
-  }, [turn, status, board]); // board é dependência para recálculo
-
-  // Verifica Xeque/Mate após cada turno
-  useEffect(() => {
-      const kingPos = ChessEngine.findKing(board, turn);
-      if(!kingPos) return;
-      
-      const inCheck = ChessEngine.isSquareAttacked(board, kingPos.r, kingPos.c, turn);
-      const hasMoves = ChessEngine.getAllValidMoves(board, turn, castling).length > 0;
-
-      if (inCheck && !hasMoves) setStatus('checkmate');
-      else if (!inCheck && !hasMoves) setStatus('stalemate');
-      else if (inCheck) setStatus('check');
-      else setStatus('playing');
-  }, [turn, board]); // Depende do turno atual e do tabuleiro
-
   const executeMove = (from, to) => {
     const newBoard = ChessEngine.cloneBoard(board);
     const piece = newBoard[from.r][from.c];
@@ -352,6 +319,42 @@ export const ChessTitans = () => {
     setSelected(null);
     setPossibleMoves([]);
   };
+
+  // IA Joga
+  useEffect(() => {
+    if (turn === 'b' && status === 'playing') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setAiThinking(true);
+      setTimeout(() => {
+        const aiMove = ChessEngine.getBestMove(board, difficulty);
+        if (aiMove) {
+          executeMove(aiMove.from, aiMove.to);
+        } else {
+          // Se IA não tem movimentos, verifica fim de jogo
+          const kingPos = ChessEngine.findKing(board, 'b');
+          if (kingPos && ChessEngine.isSquareAttacked(board, kingPos.r, kingPos.c, 'b')) setStatus('checkmate');
+          else setStatus('stalemate');
+        }
+        setAiThinking(false);
+      }, 100);
+    }
+  }, [turn, status, board]); // board é dependência para recálculo
+
+  // Verifica Xeque/Mate após cada turno
+  useEffect(() => {
+      const kingPos = ChessEngine.findKing(board, turn);
+      if(!kingPos) return;
+      
+      const inCheck = ChessEngine.isSquareAttacked(board, kingPos.r, kingPos.c, turn);
+      const hasMoves = ChessEngine.getAllValidMoves(board, turn, castling).length > 0;
+
+      /* eslint-disable react-hooks/set-state-in-effect */
+      if (inCheck && !hasMoves) setStatus('checkmate');
+      else if (!inCheck && !hasMoves) setStatus('stalemate');
+      else if (inCheck) setStatus('check');
+      else setStatus('playing');
+      /* eslint-enable react-hooks/set-state-in-effect */
+  }, [turn, board]); // Depende do turno atual e do tabuleiro
 
   const handleSquareClick = (r, c) => {
     if (turn !== 'w' || aiThinking || status === 'checkmate') return;

@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useOSStore, WALLPAPER_URL } from '../../store/useOSStore';
 import { Monitor, MousePointer2, Check, Type, MousePointerClick, Crosshair } from 'lucide-react';
 import localWallpaper from '../../assets/wallpaper.webp';
+import blissImg from '../../assets/wallpapers/bliss.jpg';
+import auroraImg from '../../assets/wallpapers/aurora.jpg';
+import autumnImg from '../../assets/wallpapers/autumn.jpg';
 
-// Dados...
 const cursorOptions = [
     { id: 'default', name: 'Padrão', icon: <MousePointer2 size={24} className="transform -rotate-12"/> },
     { id: 'pointer', name: 'Link', icon: <MousePointerClick size={24}/> },
@@ -11,12 +13,11 @@ const cursorOptions = [
     { id: 'text', name: 'Texto', icon: <Type size={24} /> },
 ];
 
-// Wallpapers do Windows XP (URLs diretas que funcionam)
 const wallpapers = [
-  { name: 'Bliss', url: 'https://upload.wikimedia.org/wikipedia/commons/2/2d/Bliss_%28Windows_XP%29.png' },
+  { name: 'Bliss', url: blissImg },
   { name: 'Bug Edition', url: localWallpaper },
-  { name: 'Aurora', url: 'https://upload.wikimedia.org/wikipedia/commons/3/32/Windows_XP_-_Aurora.jpg' },
-  { name: 'Autumn', url: 'https://upload.wikimedia.org/wikipedia/commons/e/e8/Windows_XP_-_Autumn.jpg' },
+  { name: 'Aurora', url: auroraImg },
+  { name: 'Autumn', url: autumnImg },
 ];
 
 // Recebe windowId automaticamente do WindowFrame
@@ -126,7 +127,7 @@ export const ControlPanel = ({ windowId }) => {
                                     onClick={() => setWallpaper(wp.url)}
                                     className={`cursor-pointer relative border-2 flex flex-col ${wallpaper === wp.url ? 'border-blue-500 bg-blue-50' : 'border-transparent hover:border-gray-300'}`}
                                 >
-                                    <div className="h-16 bg-gray-200 w-full overflow-hidden">
+                                    <div className="h-16 w-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-blue-200 to-blue-400">
                                         <img src={wp.url} alt={wp.name} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
                                     </div>
                                     <span className="p-1 text-center truncate text-[10px]">{wp.name}</span>

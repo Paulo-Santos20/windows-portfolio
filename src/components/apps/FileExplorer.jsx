@@ -13,7 +13,12 @@ import { MusicPlayer } from './MusicPlayer';
 import { VideoPlayer } from './VideoPlayer';
 
 // ... (Mantenha FavoriteLink e SidebarItem iguais) ...
-const FavoriteLink = ({ id, icon: Icon, label, color = "text-blue-500", currentId, onClick, fileSystem }) => (<div onClick={() => onClick(fileSystem[id])} className={`pl-6 py-0.5 text-xs text-slate-700 hover:bg-[#e5f3fb] cursor-pointer flex items-center gap-2 border border-transparent ${currentId === id ? 'bg-[#dceafc] font-medium border-dashed border-[#7da2ce] border-l-0 border-r-0 border-t-0 border-b-0' : ''}`}><Icon size={14} className={color}/> {label}</div>);
+const FavoriteLink = ({ id, icon, label, color = "text-blue-500", currentId, onClick, fileSystem }) => (
+  <div onClick={() => onClick(fileSystem[id])} className={`pl-6 py-0.5 text-xs text-slate-700 hover:bg-[#e5f3fb] cursor-pointer flex items-center gap-2 border border-transparent ${currentId === id ? 'bg-[#dceafc] font-medium border-dashed border-[#7da2ce] border-l-0 border-r-0 border-t-0 border-b-0' : ''}`}>
+    {React.createElement(icon, { size: 14, className: color })}
+    {label}
+  </div>
+);
 const SidebarItem = ({ id, level = 0, currentId, expandedFolders, onToggle, onNavigate, fileSystem }) => { const item = fileSystem[id]; if (!item) return null; const hasChildren = item.children && item.children.some(childId => { const child = fileSystem[childId]; return child && ['folder', 'drive', 'root'].includes(child.type); }); const isExpanded = expandedFolders.includes(id); const isSelected = currentId === id; return ( <div> <div onClick={() => onNavigate(item)} className={`flex items-center gap-1 py-0.5 px-1 cursor-pointer select-none border border-transparent whitespace-nowrap group ${isSelected ? 'bg-[#dceafc] border-[#7da2ce]' : 'hover:bg-[#f0f5f9]'}`} style={{ paddingLeft: `${level * 12 + 4}px` }}> <div onClick={(e) => { e.stopPropagation(); if(hasChildren) onToggle(id); }} className={`w-4 h-4 flex items-center justify-center rounded z-10 ${hasChildren ? 'hover:bg-slate-200/50' : ''}`}> {hasChildren ? (isExpanded ? <ChevronDown size={10} className="text-slate-500"/> : <ChevronRight size={10} className="text-slate-500"/>) : <div className="w-4" />} </div> <div className="w-4 h-4 flex items-center justify-center"> {item.type === 'root' ? <Monitor size={14} className="text-slate-600" /> : item.type === 'drive' ? <HardDrive size={14} className="text-slate-600" /> : <Folder size={14} className="text-yellow-500 fill-yellow-500" />} </div> <span className={`text-xs truncate ${isSelected ? 'text-black font-medium' : 'text-slate-700'}`}>{item.name}</span> </div> {isExpanded && hasChildren && (<div>{item.children.filter(childId => { const child = fileSystem[childId]; return child && ['folder', 'drive', 'root'].includes(child.type); }).map(childId => (<SidebarItem key={childId} id={childId} level={level + 1} currentId={currentId} expandedFolders={expandedFolders} onToggle={onToggle} onNavigate={onNavigate} fileSystem={fileSystem} />))}</div>)} </div> ); };
 
 // --- COMPONENTE ITEM DO GRID (Renomeável) ---
@@ -75,6 +80,7 @@ export const FileExplorer = ({ initialPath = 'c_drive' }) => {
 
   useEffect(() => {
       if (refreshKey > 0) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setOpacity(0);
           setTimeout(() => setOpacity(100), 150);
       }

@@ -34,28 +34,16 @@ export const MusicPlayer = ({ onClose, onMinimize, onMaximize, isMaximized }) =>
   const currentTrack = playlist[currentIndex];
   const isYoutube = currentTrack.type === 'youtube';
 
-  // --- API YOUTUBE ---
-  useEffect(() => {
-    if (!window.YT) {
-      const tag = document.createElement('script');
-      tag.src = "https://www.youtube.com/iframe_api";
-      const firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-    }
-    window.onYouTubeIframeAPIReady = () => loadYoutubePlayer();
-    if (window.YT && window.YT.Player) loadYoutubePlayer();
-    return () => clearInterval(progressInterval.current);
-  }, []);
+  const stopProgressLoop = () => clearInterval(progressInterval.current);
 
-  const loadYoutubePlayer = () => {
-    if (ytPlayerRef.current) return;
-    ytPlayerRef.current = new window.YT.Player('youtube-player-frame', {
-      height: '100%', width: '100%',
-      videoId: currentTrack.type === 'youtube' ? currentTrack.src : '',
-      playerVars: { 'playsinline': 1, 'controls': 0, 'showinfo': 0, 'rel': 0, 'modestbranding': 1 },
-      events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
-    });
+  const startProgressLoop = () => {
+    stopProgressLoop();
+    progressInterval.current = setInterval(() => {
+      if (ytPlayerRef.current && ytPlayerRef.current.getCurrentTime) setCurrentTime(ytPlayerRef.current.getCurrentTime());
+    }, 500);
   };
+
+  const playNext = () => setCurrentIndex((prev) => (prev + 1) % playlist.length);
 
   const onPlayerReady = (event) => {
     setIsYoutubeReady(true);
@@ -76,16 +64,32 @@ export const MusicPlayer = ({ onClose, onMinimize, onMaximize, isMaximized }) =>
     }
   };
 
-  const startProgressLoop = () => {
-    stopProgressLoop();
-    progressInterval.current = setInterval(() => {
-      if (ytPlayerRef.current && ytPlayerRef.current.getCurrentTime) setCurrentTime(ytPlayerRef.current.getCurrentTime());
-    }, 500);
+  const loadYoutubePlayer = () => {
+    if (ytPlayerRef.current) return;
+    ytPlayerRef.current = new window.YT.Player('youtube-player-frame', {
+      height: '100%', width: '100%',
+      videoId: currentTrack.type === 'youtube' ? currentTrack.src : '',
+      playerVars: { 'playsinline': 1, 'controls': 0, 'showinfo': 0, 'rel': 0, 'modestbranding': 1 },
+      events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
+    });
   };
-  const stopProgressLoop = () => clearInterval(progressInterval.current);
+
+  // --- API YOUTUBE ---
+  useEffect(() => {
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    }
+    window.onYouTubeIframeAPIReady = () => loadYoutubePlayer();
+    if (window.YT && window.YT.Player) loadYoutubePlayer();
+    return () => clearInterval(progressInterval.current);
+  }, []);
 
   // --- CONTROLE DE MÍDIA ---
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsPlaying(true);
     setCurrentTime(0);
     if (isYoutube) {
@@ -93,7 +97,7 @@ export const MusicPlayer = ({ onClose, onMinimize, onMaximize, isMaximized }) =>
       if (ytPlayerRef.current && isYoutubeReady) { ytPlayerRef.current.loadVideoById(currentTrack.src); ytPlayerRef.current.playVideo(); }
     } else {
       if (ytPlayerRef.current && isYoutubeReady) ytPlayerRef.current.pauseVideo();
-      if (audioRef.current) { audioRef.current.load(); audioRef.current.play().catch(e => console.log("Autoplay bloqueado")); }
+      if (audioRef.current) { audioRef.current.load(); audioRef.current.play().catch(() => console.log("Autoplay bloqueado")); }
     }
   }, [currentIndex, isYoutubeReady]);
 
@@ -118,7 +122,6 @@ export const MusicPlayer = ({ onClose, onMinimize, onMaximize, isMaximized }) =>
 
   const handleMp3TimeUpdate = () => setCurrentTime(audioRef.current.currentTime);
   const handleMp3Loaded = () => setDuration(audioRef.current.duration);
-  const playNext = () => setCurrentIndex((prev) => (prev + 1) % playlist.length);
   const playPrev = () => setCurrentIndex((prev) => (prev - 1 + playlist.length) % playlist.length);
   const handleTrackClick = (index) => setCurrentIndex(index);
 

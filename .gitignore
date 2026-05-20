@@ -7,18 +7,45 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependências
 node_modules
+.pnp
+.pnp.js
+
+# Testing
+coverage
+*.lcov
+
+# Produção / Build (Vite/React)
 dist
 dist-ssr
-*.local
+build
+out
 
-# Editor directories and files
+# Arquivos de Ambiente (Segurança)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production
+
+# Editor / IDE
 .vscode/*
 !.vscode/extensions.json
 .idea
-.DS_Store
 *.suo
-*.ntvs*
+*.ntvs
 *.njsproj
 *.sln
 *.sw?
+
+# Sistema Operacional (Windows/Mac/Linux)
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Vite specific
+stats.html
+.vercel

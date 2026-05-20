@@ -1,18 +1,16 @@
 import React from 'react';
 import { useOSStore } from '../../store/useOSStore';
-import { Github, Linkedin, Globe, Code, Layers, Terminal, Cpu, Database, Cloud } from 'lucide-react';
+import { Github, Linkedin, Code, Layers, Terminal, Cpu, Database, Cloud } from 'lucide-react';
 import { PDFViewer } from './PDFViewer';
 import { Browser } from './Browser';
 
-// 1. Importe o arquivo PDF local (Ajuste o caminho se a pasta assets estiver em outro nível)
 import curriculoPdf from '../../assets/Curriculo.pdf';
 
-// --- DADOS ---
-
 const SKILLS = [
-    { name: 'Desenvolvimento Full Stack', img: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=100&q=80', icon: <Code/>, level: 'React, Node, Python' },
-    { name: 'Banco de Dados & Dados', img: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=100&q=80', icon: <Database/>, level: 'SQL & BI' },
-    { name: 'Cloud & Infraestrutura', img: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=100&q=80', icon: <Cloud/>, level: 'AWS, Linux, Redes' },
+    { name: 'Desenvolvimento Full Stack', img: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=100&q=80', icon: <Code/>, level: 'React, Next.js, Node, Python, Rust' },
+    { name: 'Mobile & Desktop', img: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=100&q=80', icon: <Terminal/>, level: 'React Native, Expo, Tauri' },
+    { name: 'Banco de Dados & BI', img: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=100&q=80', icon: <Database/>, level: 'SQL, MySQL, PostgreSQL, Power BI' },
+    { name: 'Cloud & Infraestrutura', img: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=100&q=80', icon: <Cloud/>, level: 'AWS, Linux, Windows Server, Redes' },
 ];
 
 const LANGUAGES = [
@@ -20,7 +18,10 @@ const LANGUAGES = [
     { name: 'TypeScript', img: 'https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg' },
     { name: 'Python', img: 'https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg' },
     { name: 'React.js', img: 'https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg' },
+    { name: 'Next.js', img: 'https://upload.wikimedia.org/wikipedia/commons/8/8e/Nextjs-logo.svg' },
     { name: 'Node.js', img: 'https://upload.wikimedia.org/wikipedia/commons/d/d9/Node.js_logo.svg' },
+    { name: 'Rust', img: 'https://upload.wikimedia.org/wikipedia/commons/d/d5/Rust_programming_language_black_logo.svg' },
+    { name: 'React Native', img: 'https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg' },
     { name: 'Tailwind CSS', img: 'https://upload.wikimedia.org/wikipedia/commons/d/d5/Tailwind_CSS_Logo.svg' },
     { name: 'SQL', img: 'https://upload.wikimedia.org/wikipedia/commons/8/87/Sql_data_base_with_logo.png' },
 ];
@@ -31,26 +32,30 @@ const SOFTWARE = [
     { name: 'Linux', img: 'https://upload.wikimedia.org/wikipedia/commons/3/35/Tux.svg' },
     { name: 'Windows Server', img: 'https://upload.wikimedia.org/wikipedia/commons/5/5f/Windows_logo_-_2012.svg' },
     { name: 'VS Code', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Visual_Studio_Code_1.35_icon.svg/100px-Visual_Studio_Code_1.35_icon.svg.png' },
+    { name: 'Docker', img: 'https://upload.wikimedia.org/wikipedia/commons/4/4e/Docker_%28container_asset%29_logo.svg' },
+    { name: 'Figma', img: 'https://upload.wikimedia.org/wikipedia/commons/3/33/Figma-logo.svg' },
+    { name: 'Firebase', img: 'https://upload.wikimedia.org/wikipedia/commons/3/37/Firebase_Logo.svg' },
 ];
 
 export const AboutMe = () => {
   const { openWindow } = useOSStore();
 
+  const openInBrowser = (url, title) => {
+    openWindow('browser-' + Date.now(), title || 'Internet Explorer', null, <Browser initialUrl={url} />);
+  };
+
   const handleNav = (action) => {
       if (action === 'projects') {
-          openWindow('browser', 'Internet Explorer', <Globe size={16} className="text-blue-500"/>, <Browser initialUrl="https://github.com/Paulo-Santos20/" />);
+          openWindow('browser', 'Internet Explorer', null, <Browser initialUrl="https://github.com/Paulo-Santos20/" />);
       } else if (action === 'cv') {
-          // 2. Passando a variável curriculoPdf importada no topo
-          openWindow('cv-viewer', 'Curriculo.pdf', <div className="text-red-500 font-bold">PDF</div>, <PDFViewer src={curriculoPdf} />);
+          openWindow('cv-viewer', 'Curriculo.pdf', null, <PDFViewer src={curriculoPdf} />);
       } else if (action === 'github') {
-          openWindow('browser-gh', 'GitHub', <Globe size={16} className="text-black"/>, <Browser initialUrl="https://github.com/Paulo-Santos20/" />);
+          openWindow('browser-gh', 'GitHub', null, <Browser initialUrl="https://github.com/Paulo-Santos20/" />);
       }
   };
 
   return (
     <div className="flex flex-col h-full bg-slate-50 font-sans overflow-hidden text-slate-800">
-      
-      {/* HEADER (NAVBAR) */}
       <header className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center shadow-sm flex-shrink-0">
           <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-blue-500">
@@ -58,7 +63,7 @@ export const AboutMe = () => {
               </div>
               <h1 className="font-bold text-lg text-slate-800">Paulo Cardoso</h1>
           </div>
-          
+
           <nav className="flex gap-6 text-sm font-medium text-slate-600">
               <button onClick={() => handleNav('projects')} className="hover:text-blue-600 transition-colors">Meus Projetos</button>
               <button onClick={() => handleNav('cv')} className="hover:text-blue-600 transition-colors">Meu Currículo</button>
@@ -66,29 +71,27 @@ export const AboutMe = () => {
           </nav>
       </header>
 
-      {/* CORPO PRINCIPAL */}
       <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
-          
-          {/* SIDEBAR ESQUERDA (REDES SOCIAIS) - Oculta em mobile, mostra em md+ */}
           <aside className="w-full md:w-16 bg-slate-900 text-white flex flex-row md:flex-col items-center justify-center py-4 md:py-8 gap-4 md:gap-6 flex-shrink-0">
-              <a href="https://www.linkedin.com/in/paulo-dos-santos-1868a8192/" target="_blank" rel="noreferrer" className="p-2 hover:bg-white/10 rounded-full transition-colors" title="LinkedIn"><Linkedin size={20}/></a>
-              <a href="https://github.com/Paulo-Santos20/" target="_blank" rel="noreferrer" className="p-2 hover:bg-white/10 rounded-full transition-colors" title="GitHub"><Github size={20}/></a>
+              <button onClick={() => openInBrowser('https://www.linkedin.com/in/paulo-dos-santos-1868a8192/', 'LinkedIn')} className="p-2 hover:bg-white/10 rounded-full transition-colors cursor-pointer" title="LinkedIn"><Linkedin size={20}/></button>
+              <button onClick={() => openInBrowser('https://github.com/Paulo-Santos20/', 'GitHub')} className="p-2 hover:bg-white/10 rounded-full transition-colors cursor-pointer" title="GitHub"><Github size={20}/></button>
               <div className="h-[1px] w-8 bg-white/20 my-2 hidden md:block"></div>
-              <button onClick={() => handleNav('cv')} className="p-2 hover:bg-blue-600 rounded-full transition-colors bg-blue-600/20 text-blue-400 font-bold text-xs">CV</button>
+              <button onClick={() => handleNav('cv')} className="p-2 hover:bg-blue-600 rounded-full transition-colors bg-blue-600/20 text-blue-400 font-bold text-xs cursor-pointer">CV</button>
           </aside>
 
-          {/* CONTEÚDO ROLÁVEL */}
           <main className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-              
-              {/* Introdução */}
               <section className="mb-10">
                   <h2 className="text-3xl font-bold text-slate-800 mb-2">Olá, me chamo Paulo.</h2>
                   <p className="text-slate-600 max-w-2xl leading-relaxed text-sm sm:text-base">
-                      Especialista em Tecnologia com mais de 6 anos de experiência em desenvolvimento full-stack, automação e gestão de bancos de dados. Combino habilidades em engenharia de software e infraestrutura (cloud e redes) para criar aplicações robustas e escaláveis, focando sempre na otimização e melhoria contínua de processos.
+                      Desenvolvedor Full Stack com +6 anos de experiência em tecnologia, criando aplicações web, mobile e desktop do zero ao deploy. Fundador da Olimpo (+50 projetos entregues). Stack principal: React/Next.js, React Native/Expo, Node.js, Python, AWS e Rust (Tauri).
                   </p>
+                  <div className="flex flex-wrap gap-4 mt-3 text-xs text-slate-500">
+                      <span>📍 Olinda - PE</span>
+                      <span>📧 paulo_santos@outlook.com.br</span>
+                      <span>📱 (81) 99528-4440</span>
+                  </div>
               </section>
 
-              {/* 1. HABILIDADES (Cards Maiores) */}
               <section className="mb-10">
                   <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
                       <Terminal size={20} className="text-blue-600"/> Áreas de Atuação
@@ -106,7 +109,6 @@ export const AboutMe = () => {
                   </div>
               </section>
 
-              {/* 2. LINGUAGENS */}
               <section className="mb-10">
                   <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
                       <Cpu size={20} className="text-orange-600"/> Linguagens & Tecnologias
@@ -123,7 +125,6 @@ export const AboutMe = () => {
                   </div>
               </section>
 
-              {/* 3. SOFTWARES & INFRA */}
               <section className="mb-4">
                   <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
                       <Layers size={20} className="text-purple-600"/> Ferramentas & Infraestrutura
@@ -139,7 +140,6 @@ export const AboutMe = () => {
                       ))}
                   </div>
               </section>
-
           </main>
       </div>
     </div>

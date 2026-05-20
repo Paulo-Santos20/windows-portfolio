@@ -237,9 +237,32 @@ export const Checkers = () => {
   const [isThinking, setIsThinking] = useState(false);
   const [winner, setWinner] = useState(null);
 
+  const executeMove = (from, to) => {
+      const { newBoard, extraTurn, nextStart } = CheckersEngine.simulateMove(board, { from, ...to });
+      
+      setBoard(newBoard);
+      setSelected(null);
+      setPossibleMoves([]);
+
+      if (extraTurn) {
+          setMustCaptureFrom(nextStart);
+          // Se for vez da IA (Pretas), o useEffect vai rodar de novo pois o turno não mudou
+          // Se for vez do Jogador (Brancas), selecionamos automaticamente a peça
+          if (turn === 'w') {
+              setSelected(nextStart);
+              const moves = CheckersEngine.getPieceMoves(newBoard, nextStart.r, nextStart.c, nextStart);
+              setPossibleMoves(moves);
+          }
+      } else {
+          setMustCaptureFrom(null);
+          setTurn(prev => prev === 'w' ? 'b' : 'w');
+      }
+  };
+
   // IA Turno
   useEffect(() => {
       if (turn === 'b' && !winner) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setIsThinking(true);
           const delay = difficulty === 'extreme' ? 50 : 600;
           
@@ -266,28 +289,6 @@ export const Checkers = () => {
           if (moves.length === 0) setWinner('b');
       }
   }, [turn, mustCaptureFrom, board]);
-
-  const executeMove = (from, to) => {
-      const { newBoard, extraTurn, nextStart } = CheckersEngine.simulateMove(board, { from, ...to });
-      
-      setBoard(newBoard);
-      setSelected(null);
-      setPossibleMoves([]);
-
-      if (extraTurn) {
-          setMustCaptureFrom(nextStart);
-          // Se for vez da IA (Pretas), o useEffect vai rodar de novo pois o turno não mudou
-          // Se for vez do Jogador (Brancas), selecionamos automaticamente a peça
-          if (turn === 'w') {
-              setSelected(nextStart);
-              const moves = CheckersEngine.getPieceMoves(newBoard, nextStart.r, nextStart.c, nextStart);
-              setPossibleMoves(moves);
-          }
-      } else {
-          setMustCaptureFrom(null);
-          setTurn(prev => prev === 'w' ? 'b' : 'w');
-      }
-  };
 
   const handleSquareClick = (r, c) => {
       if (turn !== 'w' || isThinking || winner) return;
@@ -378,9 +379,7 @@ export const Checkers = () => {
                            const isDark = (r + c) % 2 === 1;
                            const isSelected = selected && selected.r === r && selected.c === c;
                            const move = possibleMoves.find(m => m.r === r && m.c === c);
-                           const isHighlighted = move || isSelected;
-
-                           return (
+                            return (
                                <div 
                                  key={`${r}-${c}`}
                                  onClick={() => handleSquareClick(r, c)}

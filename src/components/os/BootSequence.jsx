@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useOSStore } from '../../store/useOSStore';
-import { ArrowRight, Power, HelpCircle } from 'lucide-react';
+import { ArrowRight, Power, HelpCircle, SkipForward } from 'lucide-react';
 
 // Usuários
 const USERS = [
@@ -19,12 +19,14 @@ const USERS = [
 ];
 
 export const BootSequence = () => {
-  const { bootStatus, setBootStatus, setCurrentUser } = useOSStore();
+  const { bootStatus, setBootStatus, setCurrentUser, breakpoint } = useOSStore();
   
   const [selectedUser, setSelectedUser] = useState(null);
   const [passwordInput, setPasswordInput] = useState('');
   const [error, setError] = useState(false);
   const [loginStatus, setLoginStatus] = useState('idle');
+
+  const isPhone = breakpoint === 'phone';
 
   // URL do áudio de boot (com fallback)
   const BOOT_AUDIO_URL = 'https://www.myinstants.com/media/sounds/windows-xp-startup.mp3';
@@ -32,17 +34,19 @@ export const BootSequence = () => {
 
   useEffect(() => {
     if (bootStatus === 'booting') {
-      const timer = setTimeout(() => setBootStatus('login'), 4000);
+      const timer = setTimeout(() => setBootStatus('login'), isPhone ? 1500 : 4000);
       return () => clearTimeout(timer);
     }
-  }, [bootStatus, setBootStatus]);
+  }, [bootStatus, setBootStatus, isPhone]);
 
   useEffect(() => {
       if (bootStatus === 'login') {
+          /* eslint-disable react-hooks/set-state-in-effect */
           setSelectedUser(null);
           setPasswordInput('');
           setError(false);
           setLoginStatus('idle');
+          /* eslint-enable react-hooks/set-state-in-effect */
       }
   }, [bootStatus]);
 
@@ -96,6 +100,15 @@ export const BootSequence = () => {
                 <div className="h-full w-16 bg-gradient-to-r from-blue-900 via-blue-500 to-blue-900 rounded-[2px] animate-[slide-right_1.5s_linear_infinite]"></div>
             </div>
             <style>{`@keyframes slide-right { 0% { margin-left: -40px; } 100% { margin-left: 100%; } }`}</style>
+            {isPhone && (
+              <button
+                onClick={() => setBootStatus('login')}
+                className="absolute bottom-8 right-8 flex items-center gap-2 text-white/60 hover:text-white transition-colors text-xs cursor-pointer"
+              >
+                <SkipForward size={14} />
+                <span>Pular</span>
+              </button>
+            )}
         </div>
       </div>
     );
@@ -115,10 +128,10 @@ export const BootSequence = () => {
         <div className="flex-1 flex items-center justify-center relative bg-gradient-to-r from-[#5A7EDC] via-[#638ADD] to-[#5A7EDC]">
             
             {/* Container Central Dividido */}
-            <div className="w-[800px] flex h-[350px]">
+            <div className={`flex ${isPhone ? 'flex-col w-full h-full px-4' : 'w-[800px] h-[350px]'}`}>
                 
-                {/* ESQUERDA: LOGO E INSTRUÇÕES */}
-                <div className="w-1/2 flex flex-col items-end justify-center pr-8 border-r border-white/30">
+                {/* ESQUERDA: LOGO E INSTRUÇÕES (hidden on phone) */}
+                <div className={`${isPhone ? 'hidden' : 'w-1/2'} flex flex-col items-end justify-center pr-8 border-r border-white/30`}>
                     <div className="flex flex-col items-end mb-8">
                         <div className="flex gap-[2px] mb-2 transform -rotate-3 scale-90">
                             <div className="flex flex-col gap-[2px]">
@@ -143,7 +156,7 @@ export const BootSequence = () => {
                 </div>
 
                 {/* DIREITA: LISTA DE USUÁRIOS */}
-                <div className="w-1/2 flex flex-col justify-center pl-8 gap-3">
+                <div className={`${isPhone ? 'w-full justify-center items-center' : 'w-1/2'} flex flex-col ${isPhone ? 'px-2' : 'pl-8'} gap-3`}>
                     {USERS.map(user => {
                         const isSelected = selectedUser?.id === user.id;
                         

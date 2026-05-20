@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useOSStore } from '../../store/useOSStore';
 
-export const Notepad = ({ id, content = "", fileName = "Sem título" }) => {
+export const Notepad = ({ id, content = "" }) => {
   const { updateFileContent } = useOSStore();
   const [text, setText] = useState(content);
 

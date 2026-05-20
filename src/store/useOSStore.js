@@ -77,14 +77,18 @@ const initialFileSystem = {
   'song1': { id: 'song1', name: 'Dream_Scapes.mp3', type: 'mp3', parent: 'musics', src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', title: 'Dream Scapes', artist: 'SoundHelix' },
 };
 
-export const useOSStore = create((set, get) => ({
+export const useOSStore = create((set) => ({
   // --- DISPLAY & TEMA ---
   displaySettings: { scale: 0.85, fontSize: 'normal' },
   setDisplaySettings: (newSettings) => set((state) => ({ displaySettings: { ...state.displaySettings, ...newSettings } })),
-  wallpaper: localWallpaper, 
+  wallpaper: localStorage.getItem('wallpaper') || localWallpaper,
   themeMode: 'xp',
-  setWallpaper: (url) => set({ wallpaper: url }),
+  theme: (localStorage.getItem('theme') || 'win7'),
+  breakpoint: 'desktop',
+  setWallpaper: (url) => { localStorage.setItem('wallpaper', url); set({ wallpaper: url }); },
   setThemeMode: (mode) => set({ themeMode: mode }),
+  setTheme: (theme) => { localStorage.setItem('theme', theme); set({ theme }); },
+  setBreakpoint: (bp) => set({ breakpoint: bp }),
 
   // --- WINDOWS & BOOT ---
   windows: [],
@@ -92,12 +96,22 @@ export const useOSStore = create((set, get) => ({
   zIndexCounter: 100,
   bootStatus: 'booting',
   cursorType: 'default',
+  lastShakenWindow: null,
+  shakeRestoreQueue: [],
   setBootStatus: (status) => set({ bootStatus: status }),
   setCursorType: (type) => set({ cursorType: type }),
 
   // --- USUÁRIO & ÁUDIO ---
   currentUser: { name: 'Convidado', avatar: '' },
   globalVolume: 0.5,
+  msgNickname: localStorage.getItem('msgNickname') || '',
+  setMsgNickname: (name) => { localStorage.setItem('msgNickname', name); set({ msgNickname: name }); },
+  msgStatus: localStorage.getItem('msgStatus') || 'online',
+  setMsgStatus: (s) => { localStorage.setItem('msgStatus', s); set({ msgStatus: s }); },
+  msgPersonalMessage: localStorage.getItem('msgPersonalMessage') || '',
+  setMsgPersonalMessage: (m) => { localStorage.setItem('msgPersonalMessage', m); set({ msgPersonalMessage: m }); },
+  msgSoundEnabled: localStorage.getItem('msgSoundEnabled') !== 'false',
+  setMsgSoundEnabled: (v) => { localStorage.setItem('msgSoundEnabled', v); set({ msgSoundEnabled: v }); },
   setGlobalVolume: (vol) => set({ globalVolume: vol }),
   setCurrentUser: (name, avatar) => set({ currentUser: { name, avatar } }),
 
@@ -155,6 +169,12 @@ export const useOSStore = create((set, get) => ({
     // Media Player (Redimensionável) -> AQUI O AJUSTE
     if (id === 'wmp') { winWidth = 700; winHeight = 500; hasMenuBar = false; resizable = true; }
 
+    // MSG Main (lista de contatos)
+    if (id === 'msg-main') { winWidth = 310; winHeight = 500; hasMenuBar = false; resizable = true; }
+
+    // MSG Conversation
+    if (id === 'msg-conversation') { winWidth = 500; winHeight = 420; hasMenuBar = false; resizable = true; }
+
     return {
       activeWindowId: id,
       zIndexCounter: newZIndex,
@@ -184,6 +204,23 @@ export const useOSStore = create((set, get) => ({
   })),
   focusWindow: (id) => set((state) => { const newZIndex = state.zIndexCounter + 1; return { activeWindowId: id, zIndexCounter: newZIndex, windows: state.windows.map((w) => w.id === id ? { ...w, zIndex: newZIndex } : w) }; }),
   restoreWindow: (id) => set((state) => { const newZIndex = state.zIndexCounter + 1; return { activeWindowId: id, zIndexCounter: newZIndex, windows: state.windows.map((w) => w.id === id ? { ...w, isMinimized: false, zIndex: newZIndex } : w) }; }),
+  minimizeOthers: (exceptId) => set((state) => ({ windows: state.windows.map((w) => w.id !== exceptId ? { ...w, isMinimized: true } : w) })),
+  handleShake: (id) => set((state) => {
+    if (state.lastShakenWindow === id) {
+      const restoreIds = state.shakeRestoreQueue;
+      return {
+        lastShakenWindow: null,
+        shakeRestoreQueue: [],
+        windows: state.windows.map((w) => restoreIds.includes(w.id) ? { ...w, isMinimized: false } : w),
+      };
+    }
+    const openIds = state.windows.filter((w) => w.id !== id && !w.isMinimized).map((w) => w.id);
+    return {
+      lastShakenWindow: id,
+      shakeRestoreQueue: openIds,
+      windows: state.windows.map((w) => w.id !== id ? { ...w, isMinimized: true } : w),
+    };
+  }),
   
   // --- MENU DE CONTEXTO ---
   contextMenu: { isOpen: false, x: 0, y: 0, type: null, targetId: null, contextId: null },
