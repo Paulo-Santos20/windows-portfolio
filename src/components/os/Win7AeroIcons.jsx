@@ -45,47 +45,14 @@ const CalcIcon = () => (
   </svg>
 );
 
-const Person = ({ dx }) => (
-  <g transform={`translate(${dx}, 0)`}>
-    <circle cx="0" cy="-10" r="4.5" fill="white" />
-    <path d="
-      M -1,-5
-      C -5,-4 -6,-2 -6,1
-      L -5,8
-      C -6,10 -4,11 -3,10
-      L -3,7
-      C -3,5 -2,4 -1,4
-      C -3,7 -4,9 -4,11
-      C -4,13 4,13 4,11
-      C 4,9 3,7 1,4
-      C 1,4 2,5 3,7
-      L 3,10
-      C 4,11 6,10 5,8
-      L 6,1
-      C 6,-2 5,-4 1,-5
-      Z" fill="white" />
-  </g>
-);
-
-const MsnIcon = () => (
-  <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <radialGradient id="msnGrad" cx="35%" cy="30%" r="75%">
-        <stop offset="0%" stopColor="#b8ef5c"/>
-        <stop offset="45%" stopColor="#7cc428"/>
-        <stop offset="100%" stopColor="#3f7a0a"/>
-      </radialGradient>
-    </defs>
-    <circle cx="24" cy="24" r="22.5" fill="url(#msnGrad)"/>
-    <circle cx="24" cy="24" r="22.5" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
-    <Person dx={16} />
-    <Person dx={30} />
-  </svg>
-);
+const MSN_ICON_URL = 'https://images.icon-icons.com/23/PNG/256/application_msn_windows_2431.png';
 
 export const Win7Icon = ({ type, className = "" }) => {
   if (type === 'calc') return <CalcIcon />;
-  if (type === 'msn') return <MsnIcon />;
+
+  if (type === 'msn') {
+    return <img src={MSN_ICON_URL} alt="MSN" className={`w-full h-full object-contain ${className}`} draggable={false} />;
+  }
 
   const src = iconSrc[type] || fallbackSrc;
 

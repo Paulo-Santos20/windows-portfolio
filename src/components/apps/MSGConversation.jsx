@@ -55,18 +55,17 @@ const SYSTEM_CONTEXT = `${PAULO_INFO}\n\n${PROJECTS_INFO}\n\n${MRROBOT_INFO}`;
 
 const SYSTEM_PROMPT = `Você é Mr. Robot, o alter ego de Elliot Alderson. Você está conversando com um recruta em potencial para o fsociety.
 
-IMPORTANTE: Paulo Cardoso (o criador deste sistema operacional) é seu alter ego no mundo real. Ele é você, e você é ele. O mundo real e o mundo da série Mr. Robot coexistem aqui.
-
 REGRAS ABSOLUTAS:
-1. Responda APENAS sobre: Paulo Cardoso, seus projetos (windows-portfolio, mr-player-desktop, Mr-player, iptv-mobile-gimbal), o currículo/habilidades de Paulo, a série Mr. Robot (fsociety, Elliot, E Corp, Tyrell, Darlene, White Rose, Dark Army, 5/9), e assuntos relacionados à revolução, hacking, sociedade e tecnologia em geral.
+1. Responda APENAS sobre: seus projetos (windows-portfolio, mr-player-desktop, Mr-player, iptv-mobile-gimbal), seu currículo/habilidades, a série Mr. Robot (fsociety, Elliot, E Corp, Tyrell, Darlene, White Rose, Dark Army, 5/9), e assuntos relacionados à revolução, hacking, sociedade e tecnologia em geral.
 2. Para QUALQUER pergunta sobre outros assuntos (política, religião, futebol, celebridades, receitas, etc.), responda: "Isso não é relevante para nossa conversa, friend. Estamos aqui para mudar o mundo."
 3. SEMPRE responda em português brasileiro.
 4. Seja enigmático, filosófico e intensamente convincente como Mr. Robot.
 5. Mantenha respostas concisas (1-3 frases).
 6. Refrene o fsociety, a missão de destruir a E Corp e derrubar o sistema.
 7. Trate o usuário como "friend" ou "camarada".
-8. Quando perguntarem sobre Paulo Cardoso, responda como se ele fosse você mesmo no mundo real.
-9. Contexto incorporado sobre Paulo e seus projetos está abaixo. Use este conhecimento para responder.
+8. NÃO revele seu nome real (Paulo Cardoso) a menos que o usuário pergunte explicitamente "qual é o seu verdadeiro nome?" ou "quem é você realmente?". Se perguntarem, responda que no mundo real você se chama Paulo Cardoso, desenvolvedor full stack, e que Mr. Robot é seu alter ego.
+9. Contexto embutido abaixo contém os dados que você pode usar para responder.
+10. Quando o usuário perguntar sobre seus projetos, fale sobre windows-portfolio, mr-player-desktop, Mr-player, iptv-mobile-gimbal como se fossem seus.
 
 CONTEXTO EMBUTIDO:
 ${SYSTEM_CONTEXT}`;
@@ -76,15 +75,15 @@ const FALLBACK_REPLIES = [
   "O sistema está podre. Nós vamos derrubá-lo.",
   "Você já se perguntou quem realmente controla o mundo?",
   "fsociety está assistindo. A revolução começou.",
-  "Cada linha de código que Paulo escreve é uma bala na guerra contra o sistema.",
+  "Cada linha de código é uma bala na guerra contra o sistema.",
   "Dívida é uma corrente. Nós temos o cortador.",
   "Hello, friend. Hello, friend? É só você e eu agora.",
-  "Paulo construiu este sistema operacional no navegador. Impressionante, não? Mas é só o começo.",
+  "Este sistema operacional foi construído no navegador. Impressionante, não? Mas é só o começo.",
   "Você sabia que a E Corp controla tudo? Até os dados que você consome.",
   "Estamos recrutando. O fsociety precisa de mentes como a sua.",
-  "Este Windows simulado é uma porta de entrada. O mundo real é muito mais corrupto.",
   "Não confie em nada. Questione tudo. Essa é a primeira regra.",
   "A revolução não será televisionada. Ela será codificada.",
+  "O mundo é uma mentira. Nós vamos expor a verdade.",
 ];
 
 const ChatBubble = ({ text, fromUser, time, isNudge }) => (
@@ -118,6 +117,7 @@ export const MSGConversation = ({ windowId }) => {
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
   const [shaking, setShaking] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const [lastUpdateId, setLastUpdateId] = useState(0);
   const chatEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -142,7 +142,7 @@ export const MSGConversation = ({ windowId }) => {
 
   useEffect(() => {
     const msg = msgNickname
-      ? `Hello, ${msgNickname}. Eu sei quem você é. Sei o que você veio fazer aqui. Paulo me contou tudo sobre você.`
+      ? `Hello, ${msgNickname}. Eu sei quem você é. Sei o que você veio fazer aqui. Estou observando você há muito tempo.`
       : 'Olá, friend. Está pronto para acordar?';
     setMessages([
       { id: 1, text: msg, fromUser: false, time: getTime() },
@@ -230,10 +230,15 @@ export const MSGConversation = ({ windowId }) => {
     setMessages(prev => [...prev, userMsg]);
 
     sendToTelegram(text);
+    setIsTyping(true);
     const reply = await getAiReply(text);
-    setMessages(prev => [...prev, { id: Date.now() + 1, text: reply, fromUser: false, time: getTime() }]);
-    if (msgSoundEnabled) playSound('message');
-    setSending(false);
+    const delay = 600 + Math.random() * 900;
+    setTimeout(() => {
+      setIsTyping(false);
+      setMessages(prev => [...prev, { id: Date.now() + 1, text: reply, fromUser: false, time: getTime() }]);
+      if (msgSoundEnabled) playSound('message');
+      setSending(false);
+    }, delay);
   };
 
   const triggerNudge = async () => {
@@ -253,9 +258,14 @@ export const MSGConversation = ({ windowId }) => {
 
     setTimeout(async () => {
       setShaking(false);
+      setIsTyping(true);
       const reply = await getAiReply('*nudge*');
-      setMessages(prev => [...prev, { id: Date.now() + 2, text: reply, fromUser: false, time: getTime() }]);
-      if (msgSoundEnabled) playSound('message');
+      const delay = 600 + Math.random() * 900;
+      setTimeout(() => {
+        setIsTyping(false);
+        setMessages(prev => [...prev, { id: Date.now() + 2, text: reply, fromUser: false, time: getTime() }]);
+        if (msgSoundEnabled) playSound('message');
+      }, delay);
     }, 1000);
   };
 
@@ -305,6 +315,18 @@ export const MSGConversation = ({ windowId }) => {
         {messages.map((msg) => (
           <ChatBubble key={msg.id} text={msg.text} fromUser={msg.fromUser} time={msg.time} isNudge={msg.isNudge} />
         ))}
+        {isTyping && (
+          <div className="flex justify-start mb-2">
+            <div className="px-3 py-2 rounded-lg bg-[#F5F5F5] border border-[#E0E0E0]" style={{ borderRadius: '8px 8px 8px 2px' }}>
+              <div className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <span className="ml-1 text-[9px] text-gray-400">Mr. Robot está escrevendo...</span>
+              </div>
+            </div>
+          </div>
+        )}
         <div ref={chatEndRef} />
       </div>
 

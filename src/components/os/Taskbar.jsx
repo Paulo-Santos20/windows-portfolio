@@ -331,10 +331,10 @@ export const Taskbar = ({ isMobile = false }) => {
         <div
           className={`fixed bottom-0 w-full ${taskbarHeight} flex items-center justify-between z-[9999] select-none`}
           style={{
-            background: 'rgba(15, 15, 15, 0.92)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-            borderTop: '1px solid rgba(255,255,255,0.08)',
+            background: 'linear-gradient(to bottom, rgba(200,210,230,0.75) 0%, rgba(180,192,215,0.85) 3%, rgba(160,172,195,0.9) 97%, rgba(140,152,175,0.95) 100%)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            borderTop: '1px solid rgba(255,255,255,0.3)',
             fontFamily: '"Segoe UI", Tahoma, sans-serif',
           }}
         >
@@ -342,19 +342,20 @@ export const Taskbar = ({ isMobile = false }) => {
           <div className="relative start-menu-container z-50 h-full flex items-center">
             <button
               onClick={(e) => { e.stopPropagation(); setStartOpen(!startOpen); setIsStartActive(!startOpen); }}
-              className="h-full px-1 flex items-center justify-center hover:bg-white/10 transition-colors cursor-pointer touch-manipulation"
+              className="h-full flex items-center justify-center hover:brightness-110 transition-all cursor-pointer touch-manipulation"
               style={{ width: startOrbSize + 16 }}
             >
               <svg width={startOrbSize} height={startOrbSize} viewBox="0 0 50 50">
                 <defs>
-                  <radialGradient id="orbGrad" cx="40%" cy="35%">
-                    <stop offset="0%" stopColor="#8ce0ff"/>
-                    <stop offset="50%" stopColor="#3ca0e0"/>
-                    <stop offset="100%" stopColor="#1068b0"/>
+                  <radialGradient id="orbGrad" cx="35%" cy="30%">
+                    <stop offset="0%" stopColor="#a0e8ff"/>
+                    <stop offset="40%" stopColor="#50b8f0"/>
+                    <stop offset="80%" stopColor="#2080c8"/>
+                    <stop offset="100%" stopColor="#0f5090"/>
                   </radialGradient>
                 </defs>
-                <circle cx="25" cy="25" r="23" fill="url(#orbGrad)" stroke="rgba(255,255,255,0.3)" strokeWidth="0.5"/>
-                <path d="M15 20 L25 10 L35 20 L25 15 Z" fill="rgba(255,255,255,0.6)" opacity="0.4"/>
+                <circle cx="25" cy="25" r="23" fill="url(#orbGrad)" stroke="rgba(255,255,255,0.4)" strokeWidth="1"/>
+                <path d="M17 20 L25 8 L33 20 L25 14 Z" fill="rgba(255,255,255,0.7)"/>
               </svg>
             </button>
           </div>
@@ -377,35 +378,35 @@ export const Taskbar = ({ isMobile = false }) => {
                     style={{
                       width: isPhone ? '48px' : '52px',
                       minWidth: isPhone ? '48px' : '52px',
-                      background: isActive ? 'rgba(255,255,255,0.12)' : 'transparent',
+                      background: isActive ? 'rgba(255,255,255,0.3)' : 'transparent',
                     }}
-                    onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+                    onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; }}
                     onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
                   >
-                    <div className="w-5 h-5 flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>img]:w-full [&>img]:h-full opacity-80">
+                    <div className="w-5 h-5 flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>img]:w-full [&>img]:h-full">
                       {win.icon}
                     </div>
-                    {isActive && <div className="absolute bottom-0 left-1 right-1 h-[3px] bg-[#7bc5ff] rounded-full" />}
+                    {isActive && <div className="absolute bottom-0 left-1 right-1 h-[3px] bg-[#7bc5ff] rounded-full shadow-[0_0_4px_rgba(123,197,255,0.6)]" />}
                   </button>
                   {jumpList?.winId === win.id && items && (
                     <div
                       className="jump-list absolute bottom-full left-0 mb-1 z-[99999] py-1 min-w-[180px]"
                       style={{
-                        background: 'rgba(30, 30, 30, 0.95)',
+                        background: 'rgba(240,240,245,0.97)',
                         backdropFilter: 'blur(10px)',
-                        border: '1px solid rgba(255,255,255,0.1)',
+                        border: '1px solid rgba(0,0,0,0.15)',
                         borderRadius: '6px',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
                         fontFamily: '"Segoe UI", Tahoma, sans-serif',
                       }}
                     >
-                      <div className="px-3 py-1.5 text-white/50 text-[10px] font-semibold uppercase border-b border-white/10">
+                      <div className="px-3 py-1.5 text-gray-500 text-[10px] font-semibold uppercase border-b border-gray-200">
                         Recente
                       </div>
                       {items.map((item, i) => (
                         <button
                           key={i}
-                          className="w-full px-3 py-1.5 text-white text-[12px] flex items-center gap-2 hover:bg-white/10 cursor-pointer text-left"
+                          className="w-full px-3 py-1.5 text-gray-700 text-[12px] flex items-center gap-2 hover:bg-[#316ac5] hover:text-white cursor-pointer text-left"
                           onClick={() => setJumpList(null)}
                         >
                           <span>{item.icon}</span>
@@ -420,26 +421,26 @@ export const Taskbar = ({ isMobile = false }) => {
           </div>
 
           {/* System Tray */}
-          <div className="flex items-center gap-1.5 px-3 h-full border-l border-white/10">
+          <div className="flex items-center gap-1.5 px-3 h-full" style={{ borderLeft: '1px solid rgba(0,0,0,0.1)' }}>
             <div className="flex items-center gap-1.5 relative volume-container">
               <button
                 onClick={(e) => { e.stopPropagation(); setShowVolume(!showVolume); }}
-                className="text-white/70 hover:text-white transition-colors cursor-pointer"
+                className="text-gray-700 hover:text-black transition-colors cursor-pointer"
               >
                 {getVolumeIcon()}
               </button>
               <VolumeControl isOpen={showVolume} />
             </div>
-            <button className="text-white/70 hover:text-white transition-colors cursor-pointer">
+            <button className="text-gray-700 hover:text-black transition-colors cursor-pointer">
               <HardDrive size={iconSize - 2} />
             </button>
-            <div className="text-white/80 text-[11px] px-1 cursor-default whitespace-nowrap" style={{ fontFamily: '"Segoe UI", Tahoma, sans-serif' }}>
+            <div className="text-gray-800 text-[11px] px-1 cursor-default whitespace-nowrap drop-shadow-[0_1px_0_rgba(255,255,255,0.3)]" style={{ fontFamily: '"Segoe UI", Tahoma, sans-serif' }}>
               {time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
             </div>
           </div>
 
           {/* Aero Peek */}
-          <button className="w-[12px] h-full border-l border-white/10 hover:bg-white/10 cursor-pointer ml-0.5" title="Show desktop" />
+          <button className="w-[12px] h-full hover:bg-white/20 cursor-pointer ml-0.5" style={{ borderLeft: '1px solid rgba(0,0,0,0.1)' }} title="Show desktop" />
         </div>
       </>
     );
