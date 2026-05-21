@@ -1,16 +1,77 @@
-# React + Vite
+# Windows Portfolio 🪟
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Simulação interativa do **Windows 7** (Aero) e **Windows XP** rodando no navegador. Feita com React, Vite e Tailwind CSS.
 
-Currently, two official plugins are available:
+Inclui área de trabalho, barra de tarefas, menu iniciar e uma suíte de aplicativos clássicos — tudo rodando 100% no front-end.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Como rodar
 
-## React Compiler
+```bash
+npm install
+npm run dev
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Para build de produção:
 
-## Expanding the ESLint configuration
+```bash
+npm run build
+npm run preview
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🧰 Stack
+
+- **React 19** + **Vite 7**
+- **Tailwind CSS 3** — estilização
+- **Zustand** — gerenciamento de estado global
+- **Lucide React** — ícones
+- **react-rnd** — janelas redimensionáveis e arrastáveis
+
+## 🖥️ Aplicativos inclusos
+
+| App | Descrição |
+|-----|-----------|
+| **Internet Explorer** | Navegador com iframe, histórico, favoritos |
+| **Windows Live Messenger** | Chat com IA (Gemini) personificando Mr. Robot / fsociety |
+| **Windows Media Player** | Player de música com visualizações |
+| **Paint** | Editor de desenho com lápis, pincel e borracha |
+| **Calculadora** | Calculadora estilo Windows |
+| **Terminal** | Prompt de comando simulado |
+| **Bloco de Notas** | Editor de texto simples |
+| **Explorador de Arquivos** | Gerenciador de arquivos |
+| **Visualizador de PDF** | Leitor de PDF embutido |
+| **Jogos** | Jogo da velha, damas, xadrez |
+| **Painel de Controle** | Configurações do tema |
+| **Sobre Mim** | Portfólio profissional |
+
+## 🎨 Temas
+
+- **Windows 7 Aero** — vidro translúcido, superbar, orb, Aero Peek
+- **Windows XP** — tema clássico azul, start menu XP, taskbar XP
+
+Os ícones da área de trabalho e menu iniciar usam recursos reais extraídos de `shell32.dll`, `imageres.dll` e outros via [Visnalize/resources](https://github.com/Visnalize/resources).
+
+## 🤖 Mr. Robot / fsociety
+
+O MSN Messenger usa a **Gemini API** para conversar como **Mr. Robot** (Elliot Alderson). A IA é restrita a responder apenas sobre:
+- Paulo Cardoso (o desenvolvedor do sistema)
+- Projetos no GitHub
+- Currículo e habilidades
+- A série Mr. Robot e o fsociety
+
+Tópicos fora disso são bloqueados. Requer `VITE_GEMINI_API_KEY` no `.env`.
+
+## 📁 Estrutura
+
+```
+src/
+├── assets/         # Ícones .ico, wallpapers, PDF
+├── components/
+│   ├── apps/       # Aplicativos (Browser, Paint, MSG, etc.)
+│   └── os/         # Sistema (Desktop, Taskbar, WindowFrame, etc.)
+├── store/          # Zustand stores
+└── utils/          # Utilitários (sons WLM, etc.)
+```
+
+## 📄 Licença
+
+MIT
