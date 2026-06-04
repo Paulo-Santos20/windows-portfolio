@@ -4,6 +4,7 @@ import { BootSequence } from './components/os/BootSequence';
 import { Desktop } from './components/os/Desktop';
 import { Taskbar } from './components/os/Taskbar';
 import { WindowFrame } from './components/os/WindowFrame';
+import { WindowErrorBoundary } from './components/os/WindowErrorBoundary';
 import { AltTabSwitcher } from './components/os/AltTabSwitcher';
 
 const BREAKPOINTS = {
@@ -84,7 +85,13 @@ const App = () => {
               resizable={win.resizable}
               isMobile={isMobile}
             >
-              {win.component}
+              <WindowErrorBoundary>
+                {win.component || (
+                  <div className="flex-1 flex items-center justify-center bg-[#ece9d8] text-gray-500 text-xs font-tahoma">
+                    Application not available
+                  </div>
+                )}
+              </WindowErrorBoundary>
             </WindowFrame>
           ))}
 

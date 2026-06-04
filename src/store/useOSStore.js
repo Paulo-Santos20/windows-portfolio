@@ -1,22 +1,16 @@
-import { create } from 'zustand';
+﻿import { create } from 'zustand';
 import localWallpaper from '../assets/wallpaper.webp';
 
-// URL do wallpaper online (com fallback automático)
+// URL do wallpaper online (com fallback automÃ¡tico)
 export const WALLPAPER_URL = 'https://web.archive.org/web/20230607062923if_/https://upload.wikimedia.org/wikipedia/pt/2/2d/Bliss_%28Windows_XP%29.png';
 
 // Fallback: usa o wallpaper local se a URL online falhar
 const loadWallpaper = () => {
+  if (localStorage.getItem('wallpaper')) return;
   const img = new Image();
   img.onload = () => useOSStore.setState({ wallpaper: WALLPAPER_URL });
   img.onerror = () => useOSStore.setState({ wallpaper: localWallpaper });
   img.src = WALLPAPER_URL;
-  // Timeout para fallback após 3 segundos
-  setTimeout(() => {
-    const state = useOSStore.getState();
-    if (state.wallpaper !== localWallpaper && state.wallpaper !== WALLPAPER_URL) {
-      useOSStore.setState({ wallpaper: localWallpaper });
-    }
-  }, 3000);
 };
 
 // Iniciar carga do wallpaper
@@ -32,14 +26,14 @@ const initialFileSystem = {
   'windows': { id: 'windows', name: 'Windows', type: 'folder', parent: 'c_drive', children: ['system32'] },
   'system32': { id: 'system32', name: 'System32', type: 'folder', parent: 'windows', children: [] },
   
-  // USUÁRIOS
-  'users': { id: 'users', name: 'Usuários', type: 'folder', parent: 'c_drive', children: ['paulo'] },
+  // USUÃRIOS
+  'users': { id: 'users', name: 'UsuÃ¡rios', type: 'folder', parent: 'c_drive', children: ['paulo'] },
   'paulo': { id: 'paulo', name: 'Paulo', type: 'folder', parent: 'users', children: ['desktop_folder', 'downloads', 'docs', 'imgs', 'videos', 'musics'] },
 
-  // ÁREA DE TRABALHO (Com atalhos para Apps)
+  // ÃREA DE TRABALHO (Com atalhos para Apps)
   'desktop_folder': { 
       id: 'desktop_folder', 
-      name: 'Área de Trabalho', 
+      name: 'Ãrea de Trabalho', 
       type: 'folder', 
       parent: 'paulo', 
       children: ['calc', 'cmd', 'paint'] // Adicionados Calc, CMD e Paint
@@ -48,8 +42,8 @@ const initialFileSystem = {
   'downloads': { id: 'downloads', name: 'Downloads', type: 'folder', parent: 'paulo', children: [] },
   'docs': { id: 'docs', name: 'Documentos', type: 'folder', parent: 'paulo', children: ['cv', 'notes', 'techs'] },
   'imgs': { id: 'imgs', name: 'Imagens', type: 'folder', parent: 'paulo', children: ['perfil', 'wallpaper'] },
-  'videos': { id: 'videos', name: 'Vídeos', type: 'folder', parent: 'paulo', children: ['video_demo'] },
-  'musics': { id: 'musics', name: 'Músicas', type: 'folder', parent: 'paulo', children: ['song1'] },
+  'videos': { id: 'videos', name: 'VÃ­deos', type: 'folder', parent: 'paulo', children: ['video_demo'] },
+  'musics': { id: 'musics', name: 'MÃºsicas', type: 'folder', parent: 'paulo', children: ['song1'] },
 
   // --- ARQUIVOS E APPS ---
   'cv': { id: 'cv', name: 'Meu Currículo', type: 'pdf', parent: 'docs', src: 'data:application/pdf;base64,JVBERi0xLjcKCjEgMCBvYmoKICA8PCAvVHlwZSAvQ2F0YWxvZwogICAgIC9QYWdlcyAyIDAgUgogID4+CmVuZG9iagoKMiAwIG9iagogIDw8IC9UeXBlIC9QYWdlcwogICAgIC9LaWRzIFszIDAgUl0KICAgICAvQ291bnQgMQogICAgIC9NZWRpYUJveCBbMCAwIDU5NSA4NDJdCiAgPj4KZW5kb2JqCgozIDAgb2JqCiAgPDwgIC9UeXBlIC9QYWdlCiAgICAgIC9QYXJlbnQgMiAwIFIKICAgICAgL1Jlc291cmNlcwogICAgICAgPDwgL0ZvbnQKICAgICAgICAgIDw8IC9GMQogICAgICAgICAgICAgPDwgL1R5cGUgL0ZvbnQKICAgICAgICAgICAgICAgIC9TdWJ0eXBlIC9UeXBlMQogICAgICAgICAgICAgICAgL0Jhc2VGb250IC9IZWx2ZXRpY2EKICAgICAgICAgICAgID4+CiAgICAgICAgICA+PgogICAgICAgPj4KICAgICAgL0NvbnRlbnRzIDQgMCBSCiAgPj4KZW5kb2JqCgo0IDAgb2JqCiAgPDwgL0xlbmd0aCA1NQogID4+CnN0cmVhbQogIEJUKC9GMSAxMiBUZikgMTAwIDcwMCBUZCAoSGVsbG8hIEVzdGUgZSB1bSBQREYgZGUgVGVzdGUgbm8gc2V1IFBvcnRmb2xpbyBXaW5kb3dzIDcpIFRqIEVVCmVuZHN0cmVhbQplbmRvYmoKCnhyZWYKMCA1CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxMCAwMDAwMCBuIAowMDAwMDAwMDYwIDAwMDAwIG4gCjAwMDAwMDAxNTcgMDAwMDAgbiAKMDAwMDAwMDMwNiAwMDAwMCBuIAp0cmFpbGVyCiAgPDwgL1Jvb3QgMSAwIFIKICAgICAvU2l6ZSA1CiAgPj4Kc3RhcnR4cmVmCjQxMQolJUVPRgo=' },
@@ -58,7 +52,7 @@ const initialFileSystem = {
   'about': { id: 'about', name: 'Sobre Mim', type: 'app' },
   'browser': { id: 'browser', name: 'Internet Explorer', type: 'app' },
   'wmp': { id: 'wmp', name: 'Media Player', type: 'app' },
-  'video_demo': { id: 'video_demo', name: 'Vídeo Demo', type: 'video', parent: 'videos', src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4' },
+  'video_demo': { id: 'video_demo', name: 'VÃ­deo Demo', type: 'video', parent: 'videos', src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4' },
   'games_folder': { id: 'games_folder', name: 'Jogos', type: 'folder' },
   'settings': { id: 'settings', name: 'Personalizar', type: 'app' },
   'my_projects': { id: 'my_projects', name: 'Meus Projetos', type: 'app' },
@@ -69,7 +63,7 @@ const initialFileSystem = {
   'paint': { id: 'paint', name: 'Paint', type: 'app' }, // NOVO
 
   // Arquivos de Exemplo
-  'notes': { id: 'notes', name: 'Bem_Vindo.txt', type: 'txt', parent: 'docs', content: 'Bem vindo ao meu portfólio!' },
+  'notes': { id: 'notes', name: 'Bem_Vindo.txt', type: 'txt', parent: 'docs', content: 'Bem vindo ao meu portfÃ³lio!' },
   'techs': { id: 'techs', name: 'Stack.txt', type: 'txt', parent: 'docs', content: 'React, Tailwind, Zustand.' },
   'perfil': { id: 'perfil', name: 'Foto_Perfil.jpg', type: 'img', parent: 'imgs', src: '' },
   'wallpaper': { id: 'wallpaper', name: 'wallpaper.jpg', type: 'img', parent: 'imgs', src: '' },
@@ -83,7 +77,7 @@ export const useOSStore = create((set) => ({
   setDisplaySettings: (newSettings) => set((state) => ({ displaySettings: { ...state.displaySettings, ...newSettings } })),
   wallpaper: localStorage.getItem('wallpaper') || localWallpaper,
   themeMode: 'xp',
-  theme: (localStorage.getItem('theme') || 'win7'),
+  theme: (localStorage.getItem('theme') || 'winxp'),
   breakpoint: 'desktop',
   setWallpaper: (url) => { localStorage.setItem('wallpaper', url); set({ wallpaper: url }); },
   setThemeMode: (mode) => set({ themeMode: mode }),
@@ -101,9 +95,9 @@ export const useOSStore = create((set) => ({
   setBootStatus: (status) => set({ bootStatus: status }),
   setCursorType: (type) => set({ cursorType: type }),
 
-  // --- USUÁRIO & ÁUDIO ---
+  // --- USUÃRIO & ÃUDIO ---
   currentUser: { name: 'Convidado', avatar: '' },
-  globalVolume: 0.5,
+  globalVolume: parseFloat(localStorage.getItem('globalVolume')) || 0.5,
   msgNickname: localStorage.getItem('msgNickname') || '',
   setMsgNickname: (name) => { localStorage.setItem('msgNickname', name); set({ msgNickname: name }); },
   msgStatus: localStorage.getItem('msgStatus') || 'online',
@@ -112,12 +106,12 @@ export const useOSStore = create((set) => ({
   setMsgPersonalMessage: (m) => { localStorage.setItem('msgPersonalMessage', m); set({ msgPersonalMessage: m }); },
   msgSoundEnabled: localStorage.getItem('msgSoundEnabled') !== 'false',
   setMsgSoundEnabled: (v) => { localStorage.setItem('msgSoundEnabled', v); set({ msgSoundEnabled: v }); },
-  setGlobalVolume: (vol) => set({ globalVolume: vol }),
+  setGlobalVolume: (vol) => { localStorage.setItem('globalVolume', vol); set({ globalVolume: vol }); },
   setCurrentUser: (name, avatar) => set({ currentUser: { name, avatar } }),
 
   // --- SISTEMA DE ARQUIVOS (CRUD) ---
   fileSystem: initialFileSystem,
-  refreshKey: 0, // Gatilho de atualização visual
+  refreshKey: 0, // Gatilho de atualizaÃ§Ã£o visual
   
   createItem: (parentId, type, nameBase) => set((state) => { 
       const id = `new_${Date.now()}`; 
@@ -136,7 +130,7 @@ export const useOSStore = create((set) => ({
       return { renamingId: null, fileSystem: { ...state.fileSystem, [id]: { ...state.fileSystem[id], name: newName } } }; 
   }),
 
-  // --- SELEÇÃO E ORDENAÇÃO ---
+  // --- SELEÃ‡ÃƒO E ORDENAÃ‡ÃƒO ---
   selectedItemId: null,
   selectItem: (id) => set({ selectedItemId: id }),
   desktopSort: 'name',
@@ -151,7 +145,7 @@ export const useOSStore = create((set) => ({
       return { activeWindowId: id, zIndexCounter: newZIndex, windows: state.windows.map((w) => w.id === id ? { ...w, isMinimized: false, zIndex: newZIndex } : w) };
     }
 
-    // -- CONFIGURAÇÕES ESPECÍFICAS DE CADA APP --
+    // -- CONFIGURAÃ‡Ã•ES ESPECÃFICAS DE CADA APP --
     let winWidth = options.isSkin ? 600 : 800;
     let winHeight = options.isSkin ? 400 : 600;
     let hasMenuBar = true;
@@ -163,10 +157,10 @@ export const useOSStore = create((set) => ({
     // CMD (Fixo)
     if (id === 'cmd') { winWidth = 600; winHeight = 350; hasMenuBar = false; resizable = false; }
     
-    // Paint (Redimensionável)
+    // Paint (RedimensionÃ¡vel)
     if (id === 'paint') { winWidth = 800; winHeight = 600; hasMenuBar = false; resizable = true; } 
     
-    // Media Player (Redimensionável) -> AQUI O AJUSTE
+    // Media Player (RedimensionÃ¡vel) -> AQUI O AJUSTE
     if (id === 'wmp') { winWidth = 700; winHeight = 500; hasMenuBar = false; resizable = true; }
 
     // MSG Main (lista de contatos)
@@ -202,8 +196,9 @@ export const useOSStore = create((set) => ({
     activeWindowId: id, 
     windows: state.windows.map((w) => w.id === id ? { ...w, isMaximized: !w.isMaximized } : w) 
   })),
-  focusWindow: (id) => set((state) => { const newZIndex = state.zIndexCounter + 1; return { activeWindowId: id, zIndexCounter: newZIndex, windows: state.windows.map((w) => w.id === id ? { ...w, zIndex: newZIndex } : w) }; }),
+  focusWindow: (id) => set((state) => { const newZIndex = state.zIndexCounter + 1; return { activeWindowId: id, zIndexCounter: newZIndex, windows: state.windows.map((w) => w.id === id ? { ...w, isMinimized: false, zIndex: newZIndex } : w) }; }),
   restoreWindow: (id) => set((state) => { const newZIndex = state.zIndexCounter + 1; return { activeWindowId: id, zIndexCounter: newZIndex, windows: state.windows.map((w) => w.id === id ? { ...w, isMinimized: false, zIndex: newZIndex } : w) }; }),
+  clearWindows: () => set({ windows: [], activeWindowId: null }),
   minimizeOthers: (exceptId) => set((state) => ({ windows: state.windows.map((w) => w.id !== exceptId ? { ...w, isMinimized: true } : w) })),
   handleShake: (id) => set((state) => {
     if (state.lastShakenWindow === id) {

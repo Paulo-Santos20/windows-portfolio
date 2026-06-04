@@ -19,7 +19,7 @@ const USERS = [
 ];
 
 export const BootSequence = () => {
-  const { bootStatus, setBootStatus, setCurrentUser, breakpoint } = useOSStore();
+  const { bootStatus, setBootStatus, setCurrentUser, breakpoint, globalVolume } = useOSStore();
   
   const [selectedUser, setSelectedUser] = useState(null);
   const [passwordInput, setPasswordInput] = useState('');
@@ -53,7 +53,7 @@ export const BootSequence = () => {
   const executeLogin = (user) => {
       setLoginStatus('logging_in');
       setCurrentUser(user.name, user.avatar);
-      startupAudio.volume = 0.5;
+      startupAudio.volume = globalVolume;
       startupAudio.play().catch(() => {});
       setTimeout(() => setBootStatus('desktop'), 1500);
   };
@@ -247,7 +247,7 @@ export const BootSequence = () => {
             <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-[#003399] to-[#5A7EDC] opacity-30 pointer-events-none"></div>
             
             {/* Botão Desligar */}
-            <button className="flex items-center gap-3 group relative z-10 cursor-pointer">
+            <button onClick={() => { setBootStatus('booting'); setTimeout(() => window.location.reload(), 500); }} className="flex items-center gap-3 group relative z-10 cursor-pointer">
                 <div className="w-8 h-8 bg-gradient-to-b from-[#E98B64] to-[#D22E04] border border-white/40 rounded-[3px] flex items-center justify-center shadow-lg group-hover:brightness-110 transition-all">
                     <Power size={18} className="text-white drop-shadow-md" />
                 </div>

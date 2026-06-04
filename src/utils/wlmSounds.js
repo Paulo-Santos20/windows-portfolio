@@ -19,19 +19,22 @@ function playTone(freq, duration, type = 'sine', volume = 0.15) {
   osc.stop(ctx.currentTime + duration);
 }
 
-export function playLoginSound() {
-  playTone(523, 0.15, 'sine', 0.12);
-  setTimeout(() => playTone(659, 0.15, 'sine', 0.12), 100);
-  setTimeout(() => playTone(784, 0.3, 'sine', 0.12), 200);
+export function playLoginSound(globalVolume = 1) {
+  const v = (base) => base * globalVolume;
+  playTone(523, 0.15, 'sine', v(0.12));
+  setTimeout(() => playTone(659, 0.15, 'sine', v(0.12)), 100);
+  setTimeout(() => playTone(784, 0.3, 'sine', v(0.12)), 200);
 }
 
-export function playMessageSound() {
-  playTone(880, 0.08, 'sine', 0.1);
-  setTimeout(() => playTone(1109, 0.15, 'sine', 0.1), 80);
+export function playMessageSound(globalVolume = 1) {
+  const v = (base) => base * globalVolume;
+  playTone(880, 0.08, 'sine', v(0.1));
+  setTimeout(() => playTone(1109, 0.15, 'sine', v(0.1)), 80);
 }
 
-export function playNudgeSound() {
-  playTone(200, 0.2, 'sawtooth', 0.08);
-  setTimeout(() => playTone(150, 0.2, 'sawtooth', 0.08), 120);
-  setTimeout(() => playTone(120, 0.3, 'sawtooth', 0.08), 240);
+export function playNudgeSound(globalVolume = 1) {
+  const v = (base) => base * globalVolume;
+  playTone(200, 0.2, 'sawtooth', v(0.08));
+  setTimeout(() => playTone(150, 0.2, 'sawtooth', v(0.08)), 120);
+  setTimeout(() => playTone(120, 0.3, 'sawtooth', v(0.08)), 240);
 }

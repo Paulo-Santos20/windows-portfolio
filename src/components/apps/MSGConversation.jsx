@@ -112,7 +112,7 @@ const ChatBubble = ({ text, fromUser, time, isNudge }) => (
 );
 
 export const MSGConversation = ({ windowId }) => {
-  const { msgNickname, msgPersonalMessage, msgSoundEnabled, msgStatus } = useOSStore();
+  const { msgNickname, msgPersonalMessage, msgSoundEnabled, msgStatus, globalVolume } = useOSStore();
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
@@ -130,11 +130,11 @@ export const MSGConversation = ({ windowId }) => {
 
   const playSound = useCallback(async (type) => {
     try {
-      if (type === 'login') playLoginSound();
-      else if (type === 'message') playMessageSound();
-      else if (type === 'nudge') playNudgeSound();
+      if (type === 'login') playLoginSound(globalVolume);
+      else if (type === 'message') playMessageSound(globalVolume);
+      else if (type === 'nudge') playNudgeSound(globalVolume);
     } catch (e) {}
-  }, []);
+  }, [globalVolume]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });

@@ -17,6 +17,7 @@ import curriculoPdf from '../../assets/Curriculo.pdf';
 export const ContextMenu = () => {
   const { contextMenu, closeContextMenu, openWindow, triggerRefresh, createItem, setRenamingId, fileSystem, selectItem } = useOSStore();
   const [showNewSubmenu, setShowNewSubmenu] = useState(false);
+  const [menuPos, setMenuPos] = useState({});
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -24,6 +25,18 @@ export const ContextMenu = () => {
     window.addEventListener('mousedown', handleClick);
     return () => window.removeEventListener('mousedown', handleClick);
   }, [closeContextMenu]);
+
+  useEffect(() => {
+    if (!contextMenu.isOpen || !menuRef.current) { setMenuPos({}); return; }
+    requestAnimationFrame(() => {
+      if (!menuRef.current) return;
+      const rect = menuRef.current.getBoundingClientRect();
+      setMenuPos({
+        top: Math.min(contextMenu.y, window.innerHeight - rect.height - 4),
+        left: Math.min(contextMenu.x, window.innerWidth - rect.width - 4),
+      });
+    });
+  }, [contextMenu.isOpen, contextMenu.x, contextMenu.y]);
 
   if (!contextMenu.isOpen) return null;
 
@@ -68,7 +81,7 @@ export const ContextMenu = () => {
   // --- SUBMENU NOVO CORRIGIDO ---
   const NewSubmenu = () => (
       <div 
-        className="absolute left-[98%] -top-1 w-48 bg-white border border-gray-400 shadow-[2px_2px_5px_rgba(0,0,0,0.4)] py-1 z-[100000]"
+        className="absolute left-[98%] -top-1 w-48 bg-white border border-[#808080] shadow-[2px_2px_5px_rgba(0,0,0,0.5)] py-1 z-[100000]"
         onMouseEnter={() => setShowNewSubmenu(true)}
       >
           {/* Força texto preto e hover azul/branco */}
@@ -136,8 +149,8 @@ export const ContextMenu = () => {
   return (
     <div 
       ref={menuRef}
-      className="fixed z-[99999] bg-white border border-gray-400 shadow-[2px_2px_5px_rgba(0,0,0,0.4)] py-1 w-56 rounded-[2px] text-[11px] font-tahoma select-none text-black" // Force text-black
-      style={{ top: contextMenu.y, left: contextMenu.x }}
+      className="fixed z-[99999] bg-white border border-[#808080] shadow-[2px_2px_5px_rgba(0,0,0,0.5)] py-1 w-56 rounded-[2px] text-[11px] font-tahoma select-none text-black" // Force text-black
+      style={menuPos.top !== undefined ? menuPos : { top: contextMenu.y, left: contextMenu.x }}
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex flex-col relative">

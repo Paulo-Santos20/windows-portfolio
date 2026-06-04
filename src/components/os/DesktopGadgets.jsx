@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useOSStore } from '../../store/useOSStore';
 
 const ClockGadget = () => {
   const [time, setTime] = useState(new Date());
@@ -130,8 +131,9 @@ const CPUGadget = () => {
 };
 
 export const DesktopGadgets = () => {
+  const { breakpoint } = useOSStore();
   const { gadgetsEnabled } = { gadgetsEnabled: localStorage.getItem('gadgetsEnabled') !== 'false' };
-  if (!gadgetsEnabled) return null;
+  if (!gadgetsEnabled || breakpoint === 'phone') return null;
 
   return (
     <div

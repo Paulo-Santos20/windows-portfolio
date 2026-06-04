@@ -1,7 +1,13 @@
 import React from 'react';
 import { useOSStore } from '../../store/useOSStore';
 import { Browser } from './Browser';
-import { Github, Globe, FolderGit2 } from 'lucide-react';
+import { Github, Globe, FolderGit2, Lock } from 'lucide-react';
+import mrPlayerImg from '../../assets/projects/mr-player.png';
+import controleAtivosImg from '../../assets/projects/controle-ativos.png';
+import qualyMixImg from '../../assets/projects/qualy-mix.png';
+import baratinhoImg from '../../assets/projects/baratinho.png';
+import prospectorImg from '../../assets/projects/prospector.png';
+import windowsPortfolioImg from '../../assets/projects/windows-portfolio.png';
 
 // --- DADOS DOS PROJETOS REAIS ---
 const PROJECT_LIST = [
@@ -9,55 +15,61 @@ const PROJECT_LIST = [
     id: 1,
     title: "Mr. Player",
     description: "Player IPTV para Windows e Android com Tauri, relay proxy, bypass DNS e split tunnel VPN. Suporte a HLS, MPV, Next Episode e PIX.",
-    image: "https://images.unsplash.com/photo-1626379953822-baec19c3accd?auto=format&fit=crop&w=600&q=80",
+    image: mrPlayerImg,
     tags: ["React", "TypeScript", "Tauri", "Rust", "Firebase", "HLS"],
     githubUrl: "https://github.com/Paulo-Santos20/Mr-player",
-    liveUrl: "https://mr-player-five.vercel.app"
+    liveUrl: "https://mr-player-five.vercel.app",
+    private: false
   },
   {
     id: 2,
     title: "Controle de Ativos Hospitalares",
     description: "Sistema completo de gestão de ativos de TI para ambientes hospitalares com dashboard, inventário, movimentação e relatórios.",
-    image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=600&q=80",
+    image: controleAtivosImg,
     tags: ["React", "Firebase", "Firestore", "CSS Modules"],
     githubUrl: "https://github.com/Paulo-Santos20/controle-ativos",
-    liveUrl: "https://controle-ativos.vercel.app"
+    liveUrl: "https://controle-ativos.vercel.app",
+    private: false
   },
   {
     id: 3,
     title: "QualyMix",
     description: "Marketplace de supermercado com carrinho, CMS completo e gerador de posts Instagram com IA (Gemini + Groq).",
-    image: "https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?auto=format&fit=crop&w=600&q=80",
+    image: qualyMixImg,
     tags: ["React", "Vite", "Tailwind CSS", "Gemini AI", "Groq"],
     githubUrl: "https://github.com/Paulo-Santos20/qualy-mix",
-    liveUrl: "https://qualy-mix.vercel.app"
+    liveUrl: "https://qualy-mix.vercel.app",
+    private: false
   },
   {
     id: 4,
     title: "Baratinho",
     description: "Plataforma de comparação de preços em tempo real com web scraping, gráficos interativos e ofertas automatizadas.",
-    image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&w=600&q=80",
+    image: baratinhoImg,
     tags: ["Next.js", "TypeScript", "Firebase", "Web Scraping", "Recharts"],
     githubUrl: "https://github.com/Paulo-Santos20/Baratinho",
-    liveUrl: "https://baratinho.vercel.app"
+    liveUrl: "https://baratinho.vercel.app",
+    private: false
   },
   {
     id: 5,
     title: "Prospector",
     description: "Sistema de captação de leads com inteligência artificial usando OpenAI e Groq para qualificação automatizada.",
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80",
+    image: prospectorImg,
     tags: ["React", "Node.js", "Express", "OpenAI", "Groq", "Firebase"],
     githubUrl: "https://github.com/Paulo-Santos20/Prospector",
-    liveUrl: "https://prospector-dun.vercel.app"
+    liveUrl: "https://prospector-dun.vercel.app",
+    private: false
   },
   {
     id: 6,
     title: "Windows Portfolio",
     description: "Portfólio interativo no estilo Windows XP com área de trabalho, janelas, jogos, calculadora, paint e terminal.",
-    image: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=600&q=80",
+    image: windowsPortfolioImg,
     tags: ["React", "Vite", "Tailwind CSS", "Zustand", "react-rnd"],
     githubUrl: "https://github.com/Paulo-Santos20/windows-portfolio",
-    liveUrl: "https://windows-portfolio-paulo.vercel.app"
+    liveUrl: "https://windows-portfolio-paulo.vercel.app",
+    private: false
   }
 ];
 
@@ -149,13 +161,18 @@ export const Projects = () => {
                                   <Globe size={14} /> Ver Online
                               </button>
                               
-                              {/* Botão GitHub agora abre janela interna */}
-                              <button 
-                                onClick={() => handleOpenGithub(project)}
-                                className="flex-1 flex items-center justify-center gap-2 bg-slate-800 hover:bg-black text-white py-2 rounded-lg text-xs font-bold transition-colors shadow-sm"
-                              >
+                              {project.private ? (
+                                <div className="flex-1 flex items-center justify-center gap-2 bg-slate-400 text-white py-2 rounded-lg text-xs font-bold cursor-not-allowed shadow-sm">
+                                  <Lock size={14} /> Privado
+                                </div>
+                              ) : (
+                                <button 
+                                  onClick={() => handleOpenGithub(project)}
+                                  className="flex-1 flex items-center justify-center gap-2 bg-slate-800 hover:bg-black text-white py-2 rounded-lg text-xs font-bold transition-colors shadow-sm"
+                                >
                                   <Github size={14} /> Código
-                              </button>
+                                </button>
+                              )}
                           </div>
                       </div>
                   </div>

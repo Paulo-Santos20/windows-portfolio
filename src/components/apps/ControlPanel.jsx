@@ -25,7 +25,7 @@ export const ControlPanel = ({ windowId }) => {
   const { 
       displaySettings, setDisplaySettings, 
       wallpaper, setWallpaper, 
-      themeMode, setThemeMode, 
+      themeMode, theme, setTheme, setThemeMode, 
       cursorType, setCursorType,
       closeWindow // IMPORTANTE
   } = useOSStore();
@@ -104,13 +104,26 @@ export const ControlPanel = ({ windowId }) => {
                 <div className="flex flex-col gap-4">
                     <fieldset className="border border-[#d4d0c8] p-3 rounded-sm">
                         <legend className="ml-1 px-1 text-blue-800">Tema</legend>
-                        <div className="flex gap-4 items-center">
-                            <button onClick={() => setThemeMode('xp')} className={`flex items-center gap-2 px-3 py-2 border rounded w-full text-left ${themeMode === 'xp' ? 'bg-blue-100 border-blue-500 ring-1 ring-blue-200' : 'border-gray-300 hover:bg-gray-50'}`}>
-                                <div className="w-4 h-4 bg-blue-600 rounded-full border border-white shadow-sm"></div><div className="flex flex-col"><span className="font-bold">Windows XP</span><span className="text-gray-500 text-[9px]">Padrão (Azul)</span></div>
-                            </button>
-                            <button onClick={() => setThemeMode('dark')} className={`flex items-center gap-2 px-3 py-2 border rounded w-full text-left ${themeMode === 'dark' ? 'bg-gray-200 border-gray-600' : 'border-gray-300 hover:bg-gray-50'}`}>
-                                <div className="w-4 h-4 bg-black rounded-full border border-gray-500 shadow-sm"></div><div className="flex flex-col"><span className="font-bold">Dark Mode</span><span className="text-gray-500 text-[9px]">Estilo Escuro</span></div>
-                            </button>
+                        <div className="flex flex-col gap-3">
+                            <span className="text-[10px] font-bold text-gray-500 uppercase">Estilo Visual</span>
+                            <div className="flex gap-2 items-center">
+                                <button onClick={() => setTheme('winxp')} className={`flex items-center gap-2 px-3 py-2 border rounded w-full text-left ${theme === 'winxp' ? 'bg-blue-100 border-blue-500 ring-1 ring-blue-200' : 'border-gray-300 hover:bg-gray-50'}`}>
+                                    <div className="flex gap-[2px]"><div className="w-2 h-2 bg-[#f2552e] rounded-tl-sm"></div><div className="w-2 h-2 bg-[#8bc43d] rounded-tr-sm"></div></div><div className="flex flex-col"><span className="font-bold">Windows XP</span><span className="text-gray-500 text-[9px]">Luna (Azul)</span></div>
+                                </button>
+                                <button onClick={() => setTheme('win7')} className={`flex items-center gap-2 px-3 py-2 border rounded w-full text-left ${theme === 'win7' ? 'bg-blue-100 border-blue-500 ring-1 ring-blue-200' : 'border-gray-300 hover:bg-gray-50'}`}>
+                                    <div className="w-4 h-4 rounded-full" style={{background: 'linear-gradient(135deg, #a0e8ff, #2080c8)'}}></div><div className="flex flex-col"><span className="font-bold">Windows 7</span><span className="text-gray-500 text-[9px]">Aero (Vidro)</span></div>
+                                </button>
+                            </div>
+                            <div className="h-[1px] bg-gray-200 my-1"></div>
+                            <span className="text-[10px] font-bold text-gray-500 uppercase">Modo de Cor</span>
+                            <div className="flex gap-2 items-center">
+                                <button onClick={() => setThemeMode('xp')} className={`flex items-center gap-2 px-3 py-2 border rounded w-full text-left ${themeMode === 'xp' ? 'bg-blue-100 border-blue-500 ring-1 ring-blue-200' : 'border-gray-300 hover:bg-gray-50'}`}>
+                                    <div className="w-4 h-4 bg-blue-600 rounded-full border border-white shadow-sm"></div><div className="flex flex-col"><span className="font-bold">Padrão</span><span className="text-gray-500 text-[9px]">Claro</span></div>
+                                </button>
+                                <button onClick={() => setThemeMode('dark')} className={`flex items-center gap-2 px-3 py-2 border rounded w-full text-left ${themeMode === 'dark' ? 'bg-gray-200 border-gray-600' : 'border-gray-300 hover:bg-gray-50'}`}>
+                                    <div className="w-4 h-4 bg-black rounded-full border border-gray-500 shadow-sm"></div><div className="flex flex-col"><span className="font-bold">Dark Mode</span><span className="text-gray-500 text-[9px]">Estilo Escuro</span></div>
+                                </button>
+                            </div>
                         </div>
                     </fieldset>
                 </div>

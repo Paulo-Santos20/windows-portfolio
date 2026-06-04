@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, ArrowLeft, ArrowRight, RotateCw, Home, Lock, Star, Globe } from 'lucide-react';
+import { Search, ArrowLeft, ArrowRight, RotateCw, Home, Lock, Star, Globe, ExternalLink } from 'lucide-react';
 import { clsx } from 'clsx';
 
 export const Browser = ({ initialUrl }) => {
@@ -10,6 +10,7 @@ export const Browser = ({ initialUrl }) => {
   const [history, setHistory] = useState([HOME_PAGE]);
   const [historyIndex, setHistoryIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [iframeError, setIframeError] = useState(false);
 
   const iframeRef = useRef(null);
 
@@ -19,6 +20,7 @@ export const Browser = ({ initialUrl }) => {
 
   const navigateTo = (url) => {
     if (url === currentUrl) return;
+    setIframeError(false);
     setIsLoading(true);
     const newHistory = history.slice(0, historyIndex + 1);
     newHistory.push(url);
@@ -48,6 +50,7 @@ export const Browser = ({ initialUrl }) => {
     if (historyIndex > 0) {
       const newIndex = historyIndex - 1;
       setHistoryIndex(newIndex);
+      setIframeError(false);
       setCurrentUrl(history[newIndex]);
       setIsLoading(true);
     }
@@ -57,12 +60,14 @@ export const Browser = ({ initialUrl }) => {
     if (historyIndex < history.length - 1) {
       const newIndex = historyIndex + 1;
       setHistoryIndex(newIndex);
+      setIframeError(false);
       setCurrentUrl(history[newIndex]);
       setIsLoading(true);
     }
   };
 
   const handleRefresh = () => {
+    setIframeError(false);
     setIsLoading(true);
     if (iframeRef.current) {
       const currentSrc = iframeRef.current.src;
@@ -73,6 +78,30 @@ export const Browser = ({ initialUrl }) => {
 
   const handleHome = () => {
     navigateTo(HOME_PAGE);
+  };
+
+  const detectIframeBlocked = () => {
+    setIsLoading(false);
+    try {
+      if (!iframeRef.current) return;
+      const doc = iframeRef.current.contentDocument;
+      if (doc && doc.body) {
+        const bodyText = doc.body.innerText || '';
+        if (
+          bodyText.includes('frame-ancestors') ||
+          bodyText.includes('X-Frame-Options') ||
+          bodyText.includes('Refused to display') ||
+          bodyText.includes('Refused to frame') ||
+          bodyText.includes('ERR_BLOCKED_BY_RESPONSE')
+        ) {
+          setIframeError(true);
+        } else {
+          setIframeError(false);
+        }
+      }
+    } catch {
+      setIframeError(false);
+    }
   };
 
   return (
@@ -139,16 +168,51 @@ export const Browser = ({ initialUrl }) => {
             </div>
         )}
 
-        <iframe
-            ref={iframeRef}
-            src={currentUrl}
-            title="Browser"
-            className="w-full h-full border-none"
-            sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-presentation"
-            onLoad={() => setIsLoading(false)}
-        />
+        {iframeError ? (
+          <div className="absolute inset-0 bg-[#ece9d8] flex flex-col items-center justify-center p-8 font-tahoma">
+            <div className="w-20 h-20 mb-4 flex items-center justify-center">
+              <svg viewBox="0 0 80 80" className="w-full h-full">
+                <circle cx="40" cy="40" r="38" fill="none" stroke="#003399" strokeWidth="3" />
+                <path d="M25 25 L55 55 M55 25 L25 55" stroke="#003399" strokeWidth="4" strokeLinecap="round" />
+              </svg>
+            </div>
+            <h2 className="text-[#003399] text-lg font-bold mb-2" style={{ fontFamily: 'Tahoma, sans-serif' }}>
+              Internet Explorer cannot display the webpage
+            </h2>
+            <p className="text-gray-700 text-sm mb-1 text-center max-w-md" style={{ fontFamily: 'Tahoma, sans-serif' }}>
+              This site uses security restrictions (X-Frame-Options) that prevent it from being displayed in a frame.
+            </p>
+            <p className="text-gray-500 text-xs mb-6 text-center max-w-md" style={{ fontFamily: 'Tahoma, sans-serif' }}>
+              Most sites like GitHub, Google and social networks block framing for security reasons.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => window.open(currentUrl, '_blank')}
+                className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-b from-[#87b3ff] to-[#1647b3] text-white text-sm border border-[#003399] rounded-[3px] cursor-pointer hover:brightness-110 shadow-md font-tahoma"
+              >
+                <ExternalLink size={14} />
+                <span>Open in new tab</span>
+              </button>
+              <button
+                onClick={handleRefresh}
+                className="px-4 py-2 bg-gradient-to-b from-[#fff] to-[#ccc] text-gray-800 text-sm border border-gray-400 rounded-[3px] cursor-pointer hover:brightness-110 shadow-sm font-tahoma"
+              >
+                Try again
+              </button>
+            </div>
+          </div>
+        ) : (
+          <iframe
+              ref={iframeRef}
+              src={currentUrl}
+              title="Browser"
+              className="w-full h-full border-none"
+              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-presentation"
+              onLoad={() => { setTimeout(detectIframeBlocked, 1500); }}
+          />
+        )}
 
-        <div className="absolute bottom-0 right-0 bg-white/90 px-2 py-0.5 text-[9px] text-slate-400 pointer-events-none rounded-tl">
+        <div className="absolute bottom-0 right-0 bg-white/90 px-2 py-0.5 text-[9px] text-slate-400 pointer-events-none rounded-tl" style={{ fontFamily: 'Tahoma, sans-serif' }}>
             Powered by React OS
         </div>
       </div>

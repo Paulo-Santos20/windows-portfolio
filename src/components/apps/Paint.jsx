@@ -191,6 +191,14 @@ export const Paint = () => {
     mousePosRef.current = { x, y };
     setMousePos({ x, y });
 
+    if (tool === 'eraser' && isDrawing) {
+      applySettings();
+      contextRef.current.lineTo(x, y);
+      contextRef.current.stroke();
+      drawEraserPreview(x, y);
+      return;
+    }
+
     if (tool === 'eraser' && !isDrawing) {
       drawEraserPreview(x, y);
       return;

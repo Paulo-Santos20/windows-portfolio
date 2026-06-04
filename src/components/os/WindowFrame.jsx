@@ -6,12 +6,13 @@ const SNAP_THRESHOLD = 20;
 const SHAKE_WINDOW = 500;
 const SHAKE_THRESHOLD = 4;
 
-const Win7Button = ({ type, onClick, isMaximized }) => {
+const Win7Button = ({ type, onClick, isMaximized, phone }) => {
   const [hover, setHover] = useState(false);
   const isClose = type === 'close';
   
   const baseStyle = {
-    width: '34px', height: '22px',
+    width: phone ? '44px' : '34px',
+    height: phone ? '44px' : '22px',
     marginLeft: '1px',
     border: 'none',
     background: hover
@@ -171,7 +172,7 @@ export const WindowFrame = ({ id, title, icon, children, zIndex, isMinimized, is
   const isDark = false;
   const xpHeaderBg = isActive
     ? 'linear-gradient(to bottom, #0058ee 0%, #3593ff 4%, #288eff 18%, #127dff 44%, #036dff 100%)'
-    : 'linear-gradient(to bottom, #7697c8 0%, #7697c8 100%)';
+    : 'linear-gradient(to bottom, #a8bcd0 0%, #8aa8c8 50%, #7b9fc0 100%)';
   const xpBorderColor = '#00138c';
   const bodyBg = '#ece9d8';
 
@@ -199,7 +200,7 @@ export const WindowFrame = ({ id, title, icon, children, zIndex, isMinimized, is
         minWidth={phone ? window.innerWidth : (resizable ? 300 : defaultW)}
         minHeight={phone ? window.innerHeight : (resizable ? 200 : defaultH)}
         bounds="parent"
-        disableDragging={isMaximized || isFullscreen}
+        disableDragging={isSkin || isMaximized || isFullscreen}
         enableResizing={!isMaximized && resizable && !isFullscreen}
         dragHandleClassName="window-header"
         onDragStart={() => focusWindow(id)}
@@ -207,14 +208,13 @@ export const WindowFrame = ({ id, title, icon, children, zIndex, isMinimized, is
         onDragStop={handleDragStop}
         onResizeStop={handleResizeStop}
         onMouseDown={() => focusWindow(id)}
-        className={`flex flex-col overflow-hidden ${isActive ? 'z-50' : 'z-0'} ${isSkin ? 'pointer-events-none' : ''} ${isFullscreen ? '!absolute !inset-0 !w-full !h-full' : ''}`}
+        className={`flex flex-col overflow-hidden ${isActive ? 'z-50' : 'z-0'} ${isFullscreen ? '!absolute !inset-0 !w-full !h-full' : ''}`}
         style={{
           zIndex: zIndex || 1,
           display: 'flex',
           background: isSkin ? 'transparent' : (isWin7 ? 'transparent' : xpBorderColor),
           borderRadius: (isMaximized || isSkin || isFullscreen) ? '0' : (isWin7 ? '8px 8px 0 0' : '8px 8px 0 0'),
-          padding: (isSkin || isMaximized || isFullscreen) ? '0' : (isWin7 ? '0' : '3px'),
-          paddingTop: 0,
+          padding: (isSkin || isMaximized || isFullscreen) ? '0' : (isWin7 ? '0' : '3px 3px 0 3px'),
           boxShadow: isSkin ? 'none' : (isWin7 ? '0 2px 20px rgba(0,0,0,0.3), 0 0 0 1px rgba(0,0,0,0.1)' : '2px 2px 10px rgba(0,0,0,0.5)'),
           ...(isWin7 && !isSkin && !isMaximized && !isFullscreen ? { ...AERO_STYLE } : {}),
         }}
@@ -224,7 +224,7 @@ export const WindowFrame = ({ id, title, icon, children, zIndex, isMinimized, is
             className="window-header flex-shrink-0 flex items-center justify-between cursor-default select-none"
             onDoubleClick={() => resizable && !isFullscreen && toggleMaximize(id)}
             style={{
-              height: isWin7 ? '22px' : '30px',
+              height: phone ? '44px' : (isWin7 ? '22px' : '30px'),
               padding: isWin7 ? '0 0 0 8px' : '0 8px',
               background: isWin7 ? (isActive ? WIN7_TITLE_ACTIVE : WIN7_TITLE_GRADIENT) : xpHeaderBg,
               borderRadius: (isMaximized || isFullscreen) ? 0 : (isWin7 ? '7px 7px 0 0' : '6px 6px 0 0'),
@@ -247,12 +247,12 @@ export const WindowFrame = ({ id, title, icon, children, zIndex, isMinimized, is
             <div className="flex items-stretch h-full no-drag" onMouseDown={(e) => e.stopPropagation()}>
               {isWin7 ? (
                 <>
-                  <Win7Button type="minimize" onClick={() => minimizeWindow(id)} />
-                  {resizable && <Win7Button type="maximize" onClick={() => toggleMaximize(id)} isMaximized={isMaximized} />}
-                  <Win7Button type="close" onClick={() => closeWindow(id)} />
+                  <Win7Button type="minimize" onClick={() => minimizeWindow(id)} phone={phone} />
+                  {resizable && <Win7Button type="maximize" onClick={() => toggleMaximize(id)} isMaximized={isMaximized} phone={phone} />}
+                  <Win7Button type="close" onClick={() => closeWindow(id)} phone={phone} />
                 </>
               ) : (
-                <XPButtonGroup minimize={() => minimizeWindow(id)} maximize={() => toggleMaximize(id)} close={() => closeWindow(id)} resizable={resizable} isMaximized={isMaximized} />
+                <XPButtonGroup minimize={() => minimizeWindow(id)} maximize={() => toggleMaximize(id)} close={() => closeWindow(id)} resizable={resizable} isMaximized={isMaximized} phone={phone} />
               )}
             </div>
           </div>
@@ -288,21 +288,40 @@ export const WindowFrame = ({ id, title, icon, children, zIndex, isMinimized, is
 };
 
 // XP buttons (mantido para tema winxp)
-const XPButton = ({ type, onClick, isMaximized }) => {
+const XPButton = ({ type, onClick, isMaximized, phone }) => {
+  const [hover, setHover] = useState(false);
   const isClose = type === 'close';
+
+  const getBackground = () => {
+    if (isClose) {
+      return hover
+        ? 'linear-gradient(to bottom, #f08a7a 0%, #e85a45 40%, #c03020 51%, #a81508 100%)'
+        : 'linear-gradient(to bottom, #e97d6d 0%, #e24c36 50%, #af1f0e 51%, #a20b00 100%)';
+    }
+    return hover
+      ? 'linear-gradient(to bottom, #a8c6ff 0%, #6098f0 50%, #2a60c8 51%, #2848b0 100%)'
+      : 'linear-gradient(to bottom, #87b3ff 0%, #4882e8 50%, #1647b3 51%, #193da5 100%)';
+  };
+
   const style = {
-    width: '21px', height: '21px', marginLeft: '1px', borderRadius: '3px',
+    width: phone ? '38px' : '21px', height: phone ? '38px' : '21px',
+    marginLeft: '1px', borderRadius: phone ? '6px' : '3px',
     border: '1px solid white',
-    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 1px rgba(0,0,0,0.3)',
-    background: isClose
-      ? 'linear-gradient(to bottom, #e97d6d 0%, #e24c36 50%, #af1f0e 51%, #a20b00 100%)'
-      : 'linear-gradient(to bottom, #87b3ff 0%, #4882e8 50%, #1647b3 51%, #193da5 100%)',
+    boxShadow: hover
+      ? 'inset 0 1px 2px rgba(255,255,255,0.6), 0 1px 2px rgba(0,0,0,0.4)'
+      : 'inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 1px rgba(0,0,0,0.3)',
+    background: getBackground(),
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     cursor: 'pointer',
   };
 
   return (
-    <button onClick={(e) => { e.stopPropagation(); onClick(); }} style={style}>
+    <button
+      onClick={(e) => { e.stopPropagation(); onClick(); }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={style}
+    >
       {type === 'minimize' && <div style={{ width: '8px', height: '2px', background: 'white', marginTop: '5px', boxShadow: '0 1px 0 rgba(0,0,0,0.4)' }} />}
       {type === 'maximize' && (isMaximized
         ? <div style={{ width: '11px', height: '10px', position: 'relative' }}>
@@ -316,10 +335,10 @@ const XPButton = ({ type, onClick, isMaximized }) => {
   );
 };
 
-const XPButtonGroup = ({ minimize, maximize, close, resizable, isMaximized }) => (
-  <div className="flex items-start pt-[2px]">
-    <XPButton type="minimize" onClick={minimize} />
-    {resizable && <XPButton type="maximize" onClick={maximize} isMaximized={isMaximized} />}
-    <XPButton type="close" onClick={close} />
+const XPButtonGroup = ({ minimize, maximize, close, resizable, isMaximized, phone }) => (
+  <div className="flex items-start" style={{ paddingTop: phone ? '4px' : '2px' }}>
+    <XPButton type="minimize" onClick={minimize} phone={phone} />
+    {resizable && <XPButton type="maximize" onClick={maximize} isMaximized={isMaximized} phone={phone} />}
+    <XPButton type="close" onClick={close} phone={phone} />
   </div>
 );

@@ -72,7 +72,10 @@ const XPIcon = ({ type, className = "" }) => {
 // --- ÍCONE UNITÁRIO ---
 const AeroIcon = ({ type, className = "" }) => {
   const { theme } = useOSStore();
-  if (theme !== 'win7') return <XPIcon type={type} className={className} />;
+  if (theme !== 'win7') {
+    if (type === 'user' || type === 'projects' || type === 'msn') return <Win7Icon type={type} className={className} />;
+    return <XPIcon type={type} className={className} />;
+  }
   return <Win7Icon type={type} className={className} />;
 };
 
@@ -92,7 +95,7 @@ const DesktopIcon = ({ id, label, icon, onDoubleClick, onContextMenu, isRenaming
     };
 
     const iconSize = isPhone ? 'w-12 h-12' : (isMobile ? 'w-9 h-9' : (isWin7 ? 'w-12 h-12' : 'w-11 h-11'));
-    const containerSize = isPhone ? 'w-[80px] h-[96px]' : (isMobile ? 'w-[70px] h-[80px]' : (isWin7 ? 'w-[92px] h-[102px]' : 'w-[86px] h-[98px]'));
+    const containerSize = isPhone ? 'w-full min-w-0' : (isMobile ? 'w-[70px] h-[80px]' : (isWin7 ? 'w-[92px] h-[102px]' : 'w-[86px] h-[98px]'));
     const fontSize = isPhone ? 'text-xs' : (isMobile ? 'text-[10px]' : 'text-[11px]');
 
     return (
@@ -164,7 +167,7 @@ export const Desktop = ({ isMobile = false }) => {
     const musicUrl = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
 
     return (
-        <div className={`absolute inset-0 z-0 ${isPhone ? 'p-3 pt-4 pb-14 grid grid-cols-4 gap-3 overflow-y-auto' : 'p-2 flex flex-col flex-wrap content-start items-start gap-y-0 gap-x-1 pt-3 pl-2 pb-14 overflow-hidden'} ${isMobile ? 'pb-12' : 'pb-14'}`} onContextMenu={(e) => openContextMenu(e, 'desktop')}>
+        <div className={`absolute inset-0 z-0 ${isPhone ? 'p-3 pt-4 pb-14 grid grid-cols-3 sm:grid-cols-4 gap-3 overflow-y-auto' : 'p-2 flex flex-col flex-wrap content-start items-start gap-y-0 gap-x-1 pt-3 pl-2 pb-14 overflow-hidden'} ${isMobile ? 'pb-12' : 'pb-14'}`} onContextMenu={(e) => openContextMenu(e, 'desktop')}>
             {isVisible && <>
               <DesktopIcon id="cv" label={getName('cv', "Meu Currículo")} icon={<AeroIcon type="pdf" />} isRenaming={renamingId === 'cv'} onRename={renameItem} onDoubleClick={() => openWindow('cv', 'Meu Currículo.pdf', <AeroIcon type="pdf" />, <PDFViewer src={curriculoPdf} />)} onContextMenu={(e) => openContextMenu(e, 'file', 'cv')} isMobile={isMobile} />
               <DesktopIcon id="about" label={getName('about', "Sobre Mim")} icon={<AeroIcon type="user" />} isRenaming={renamingId === 'about'} onRename={renameItem} onDoubleClick={() => openWindow('about', 'Sobre Mim', <AeroIcon type="user" />, <AboutMe />)} onContextMenu={(e) => openContextMenu(e, 'file', 'about')} isMobile={isMobile} />

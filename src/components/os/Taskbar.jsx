@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useOSStore } from '../../store/useOSStore';
+import { Browser } from '../apps/Browser';
 import { 
   Volume2, Volume1, VolumeX, ChevronRight, LogOut, Power, 
   HardDrive, Atom, Database, Layout, Smartphone, Code2, Layers, Cpu, 
@@ -8,10 +9,29 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
-// --- CONTROLE DE VOLUME ---
-const VolumeControl = ({ isOpen }) => {
+// --- VOLUME SPEAKER SVG (XP STYLE) ---
+const XPSpeakerIcon = ({ size = 14, volume = 0.5 }) => {
+  const w = size;
+  const h = size;
+  return (
+    <svg width={w} height={h} viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="6" width="3" height="6" fill="currentColor"/>
+      <polygon points="6,6 12,3 12,15 6,12" fill="currentColor"/>
+      {volume > 0 && (
+        <>
+          <path d="M13 7 Q16 9 13 11" stroke="currentColor" strokeWidth="1.2" fill="none"/>
+          <path d="M14 5 Q18 9 14 13" stroke="currentColor" strokeWidth="1.2" fill="none"/>
+        </>
+      )}
+    </svg>
+  );
+};
+
+// --- CONTROLE DE VOLUME XP ---
+const VolumeControl = ({ isOpen, isWin7 }) => {
     const { globalVolume, setGlobalVolume } = useOSStore();
     const trackRef = useRef(null);
+    const prevVolumeRef = useRef(globalVolume || 0.5);
     const [isDragging, setIsDragging] = useState(false);
 
     const handleInteraction = (e) => {
@@ -41,29 +61,45 @@ const VolumeControl = ({ isOpen }) => {
         };
     }, [isDragging]);
 
+    const handleMuteToggle = () => {
+        if (globalVolume === 0) {
+            setGlobalVolume(prevVolumeRef.current);
+        } else {
+            prevVolumeRef.current = globalVolume;
+            setGlobalVolume(0);
+        }
+    };
+
     if (!isOpen) return null;
 
     return (
         <div 
-            className="absolute bottom-8 right-0 mb-1 w-[80px] h-[200px] bg-[#ece9d8] border border-[#aca899] shadow-[2px_2px_5px_rgba(0,0,0,0.5)] z-[100] select-none flex flex-col items-center pt-2 pb-2 rounded-t-md cursor-default"
+            className="absolute bottom-8 right-0 mb-1 w-[96px] h-[200px] bg-[#ece9d8] border border-[#aca899] shadow-[2px_2px_5px_rgba(0,0,0,0.5)] z-[100] select-none flex flex-col items-center pt-2 pb-2 cursor-default"
             onClick={(e) => e.stopPropagation()}
         >
-            <span className="text-[10px] text-black mb-2 font-tahoma">Volume</span>
+            <div className="flex items-center gap-1 mb-2">
+                <XPSpeakerIcon size={12} volume={globalVolume} />
+                <span className="text-[10px] text-black font-tahoma">Volume</span>
+            </div>
             <div className="flex-1 flex justify-center py-2">
-                <div ref={trackRef} onMouseDown={handleMouseDown} className="relative w-[4px] h-full bg-[#dcdcdc] border border-[#808080] shadow-[inset_1px_1px_0_#fff] cursor-pointer">
+                <div ref={trackRef} onMouseDown={handleMouseDown} className="relative w-[12px] h-full bg-[#d4d0c8] border-t border-l border-[#666] border-b border-r border-white shadow-[inset_1px_1px_0_#999,inset_-1px_-1px_0_#fff] cursor-pointer">
                     <div 
-                        className="absolute left-1/2 -translate-x-1/2 w-[20px] h-[10px] bg-[#ece9d8] border-t border-l border-white border-b border-r border-[#aca899] shadow-sm pointer-events-none"
-                        style={{ bottom: `calc(${globalVolume * 100}% - 5px)` }}
+                        className="absolute left-1/2 -translate-x-1/2 w-[22px] h-[14px] bg-[#ece9d8] border-t border-l border-white border-b border-r border-[#666] shadow-[1px_1px_0_rgba(0,0,0,0.3)] pointer-events-none"
+                        style={{ bottom: `calc(${globalVolume * 100}% - 7px)` }}
                     >
-                        <div className="w-full h-full border border-[#aca899] opacity-50"></div>
+                        <div className="w-full h-full border border-[#aca899]/60"></div>
                     </div>
                 </div>
             </div>
-            <div className="mt-2 flex items-center gap-1">
-                <div className="w-3 h-3 border border-[#1c5180] bg-white flex items-center justify-center cursor-pointer" onClick={() => setGlobalVolume(globalVolume === 0 ? 0.5 : 0)}>
-                    {globalVolume === 0 && <div className="w-2 h-2 bg-black"></div>}
+            <div className="mt-2 flex items-center gap-1.5">
+                <div className="relative w-[13px] h-[13px] bg-white border border-[#666] shadow-[inset_1px_1px_0_#fff] flex items-center justify-center cursor-pointer" onClick={handleMuteToggle}>
+                    {globalVolume === 0 && (
+                        <svg viewBox="0 0 10 10" className="w-[10px] h-[10px]" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round">
+                            <path d="M2 2 L8 8 M8 2 L2 8"/>
+                        </svg>
+                    )}
                 </div>
-                <span className="text-[9px] text-black">Mute</span>
+                <span className="text-[11px] text-black font-tahoma">Mudo</span>
             </div>
         </div>
     );
@@ -91,13 +127,16 @@ const ConceptItem = ({ icon, label, isMobile = false }) => (
 
 // --- MENU INICIAR ---
 const StartMenu = ({ isOpen, onClose, onCloseComplete, isMobile = false }) => {
-  const { setBootStatus, currentUser, theme, breakpoint, openWindow } = useOSStore();
+  const { setBootStatus, currentUser, theme, breakpoint, openWindow, clearWindows } = useOSStore();
+  const [logoffConfirm, setLogoffConfirm] = useState(false);
   if (!isOpen) return null;
 
   const isWin7 = theme === 'win7';
   const isPhone = breakpoint === 'phone';
 
-  const handleLogoff = () => { onClose(); onCloseComplete?.(); setTimeout(() => setBootStatus('login'), 500); };
+  const handleLogoff = () => { setLogoffConfirm(true); };
+  const confirmLogoff = () => { setLogoffConfirm(false); onClose(); onCloseComplete?.(); clearWindows(); setTimeout(() => setBootStatus('login'), 500); };
+  const cancelLogoff = () => { setLogoffConfirm(false); };
   const handleShutdown = () => { onClose(); onCloseComplete?.(); setTimeout(() => window.location.reload(), 500); };
 
   const handleOpen = (id, title, icon, component) => {
@@ -126,8 +165,9 @@ const StartMenu = ({ isOpen, onClose, onCloseComplete, isMobile = false }) => {
 
   if (isWin7) {
     return (
-      <div
-        className={`absolute bottom-0 left-0 overflow-hidden z-50 flex flex-col cursor-default ${isPhone ? 'fixed inset-0 !w-full !h-full rounded-none' : (isMobile ? 'w-[95vw] max-w-[500px] h-[80vh] max-h-[560px]' : 'w-[400px] h-[480px]')}`}
+      <>
+        <div
+          className={`absolute bottom-0 left-0 overflow-hidden z-50 flex flex-col cursor-default ${isPhone ? 'fixed inset-0 !w-full !h-full rounded-none' : (isMobile ? 'w-[95vw] max-w-[500px] h-[80vh] max-h-[560px]' : 'w-[400px] h-[480px]')}`}
         onClick={(e) => e.stopPropagation()}
         style={{
           background: 'rgba(245, 245, 245, 0.97)',
@@ -206,16 +246,30 @@ const StartMenu = ({ isOpen, onClose, onCloseComplete, isMobile = false }) => {
           </div>
           <button onClick={handleShutdown} className="flex items-center gap-1 px-3 py-1 text-[11px] hover:bg-[#D0D0D0] rounded cursor-pointer text-[#333]">
             <Power size={14} />
-          </button>
+           </button>
+         </div>
         </div>
-      </div>
+       {logoffConfirm && (
+        <div className="fixed inset-0 bg-black/40 z-[99999] flex items-center justify-center" onClick={cancelLogoff}>
+          <div className="bg-[#ece9d8] border-2 border-[#003399] rounded-lg shadow-2xl p-6 w-80" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-[#003399] font-bold text-sm mb-3">Log Off</h3>
+            <p className="text-[11px] text-gray-700 mb-4">Deseja realmente fazer log off?</p>
+            <div className="flex justify-end gap-2">
+              <button onClick={confirmLogoff} className="px-4 py-1.5 text-[11px] bg-gradient-to-b from-[#87b3ff] to-[#1647b3] text-white border border-[#003399] rounded-[3px] cursor-pointer hover:brightness-110">Sim</button>
+              <button onClick={cancelLogoff} className="px-4 py-1.5 text-[11px] bg-gradient-to-b from-[#fff] to-[#ccc] text-black border border-[#808080] rounded-[3px] cursor-pointer hover:brightness-110">Não</button>
+            </div>
+          </div>
+        </div>
+      )}
+      </>
     );
   }
 
   // XP Start Menu
   return (
+    <>
     <div 
-        className={`absolute bottom-0 left-0 rounded-tr-[8px] rounded-tl-[8px] overflow-hidden font-sans shadow-[4px_4px_12px_rgba(0,0,0,0.5)] z-50 flex flex-col animate-in slide-in-from-bottom-2 origin-bottom-left cursor-default ${isMobile ? 'w-[95vw] max-w-[400px] h-[80vh] max-h-[500px]' : 'w-[420px] h-[485px]'}`}
+        className={`absolute bottom-0 left-0 overflow-hidden font-sans shadow-[4px_4px_12px_rgba(0,0,0,0.5)] z-50 flex flex-col animate-in slide-in-from-bottom-2 origin-bottom-left cursor-default ${isPhone ? 'fixed inset-0 !w-full !h-full rounded-none' : `${isMobile ? 'w-[95vw] max-w-[400px] h-[80vh] max-h-[500px] rounded-tr-[8px] rounded-tl-[8px]' : 'w-[420px] h-[485px] rounded-tr-[8px] rounded-tl-[8px]'}`}`}
         onClick={(e) => e.stopPropagation()} 
         style={{ border: '2px solid #003399', borderBottom: 'none', fontFamily: 'Tahoma, sans-serif' }}
     >
@@ -260,10 +314,23 @@ const StartMenu = ({ isOpen, onClose, onCloseComplete, isMobile = false }) => {
               <div className="bg-[#e0422e] p-1 rounded-[2px] border border-white/20 shadow-sm">
                   <Power size={12} className="text-white" strokeWidth={2.5}/>
               </div>
-              <span>Turn Off Computer</span>
-          </button>
-      </div>
-    </div>
+               <span>Turn Off Computer</span>
+           </button>
+       </div>
+       </div>
+       {logoffConfirm && (
+         <div className="fixed inset-0 bg-black/40 z-[99999] flex items-center justify-center" onClick={cancelLogoff}>
+           <div className="bg-[#ece9d8] border-2 border-[#003399] rounded-lg shadow-2xl p-6 w-80" onClick={(e) => e.stopPropagation()}>
+             <h3 className="text-[#003399] font-bold text-sm mb-3">Log Off</h3>
+             <p className="text-[11px] text-gray-700 mb-4">Deseja realmente fazer log off?</p>
+             <div className="flex justify-end gap-2">
+               <button onClick={confirmLogoff} className="px-4 py-1.5 text-[11px] bg-gradient-to-b from-[#87b3ff] to-[#1647b3] text-white border border-[#003399] rounded-[3px] cursor-pointer hover:brightness-110">Sim</button>
+               <button onClick={cancelLogoff} className="px-4 py-1.5 text-[11px] bg-gradient-to-b from-[#fff] to-[#ccc] text-black border border-[#808080] rounded-[3px] cursor-pointer hover:brightness-110">Não</button>
+             </div>
+           </div>
+         </div>
+       )}
+    </>
   );
 };
 
@@ -301,9 +368,12 @@ export const Taskbar = ({ isMobile = false }) => {
   const startOrbSize = isPhone ? 40 : (isWin7 ? 34 : 28);
 
   const getVolumeIcon = () => {
-      if (globalVolume === 0) return <VolumeX size={iconSize}/>;
-      if (globalVolume < 0.5) return <Volume1 size={iconSize}/>;
-      return <Volume2 size={iconSize}/>;
+      if (isWin7) {
+          if (globalVolume === 0) return <VolumeX size={iconSize}/>;
+          if (globalVolume < 0.5) return <Volume1 size={iconSize}/>;
+          return <Volume2 size={iconSize}/>;
+      }
+      return <XPSpeakerIcon size={iconSize} volume={globalVolume} />;
   };
 
   useEffect(() => { const t = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(t); }, []);
@@ -407,7 +477,12 @@ export const Taskbar = ({ isMobile = false }) => {
                         <button
                           key={i}
                           className="w-full px-3 py-1.5 text-gray-700 text-[12px] flex items-center gap-2 hover:bg-[#316ac5] hover:text-white cursor-pointer text-left"
-                          onClick={() => setJumpList(null)}
+                          onClick={() => {
+                            setJumpList(null);
+                            if (typeof item.onClick === 'string' && item.onClick.startsWith('http')) {
+                              openWindow('browser', 'Internet Explorer', null, <Browser initialUrl={item.onClick} />);
+                            }
+                          }}
                         >
                           <span>{item.icon}</span>
                           <span>{item.label}</span>
@@ -429,7 +504,7 @@ export const Taskbar = ({ isMobile = false }) => {
               >
                 {getVolumeIcon()}
               </button>
-              <VolumeControl isOpen={showVolume} />
+              <VolumeControl isOpen={showVolume} isWin7={isWin7} />
             </div>
             <button className="text-gray-700 hover:text-black transition-colors cursor-pointer">
               <HardDrive size={iconSize - 2} />
@@ -479,14 +554,14 @@ export const Taskbar = ({ isMobile = false }) => {
                     borderBottomRightRadius: '16px'
                 }}
             >
-                <div className="w-7 h-[26px] ml-0.5 italic font-bold text-white bg-gradient-to-b from-white/50 via-transparent to-transparent rounded-[12px] flex items-center justify-center border border-white/30 shadow-sm relative overflow-hidden">
+                <div className="w-7 h-[26px] ml-0.5 italic font-bold text-white bg-gradient-to-b from-white/50 via-transparent to-transparent rounded-[10px] flex items-center justify-center border border-white/30 shadow-sm relative overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent"></div>
-                    <div className="grid grid-cols-2 gap-[1px] transform -rotate-12 scale-90">
-                        <div className="w-2 h-2 bg-[#f2552e] rounded-tl-sm shadow-sm"></div>
-                        <div className="w-2 h-2 bg-[#8bc43d] rounded-tr-sm shadow-sm"></div>
-                        <div className="w-2 h-2 bg-[#2d9fe6] rounded-bl-sm shadow-sm"></div>
-                        <div className="w-2 h-2 bg-[#fdbd08] rounded-br-sm shadow-sm"></div>
-                    </div>
+                    <svg viewBox="0 0 20 20" className="w-4 h-4 transform -rotate-12">
+                        <rect x="1" y="1" width="8" height="8" rx="1" fill="#f2552e"/>
+                        <rect x="11" y="1" width="8" height="8" rx="1" fill="#8bc43d"/>
+                        <rect x="1" y="11" width="8" height="8" rx="1" fill="#2d9fe6"/>
+                        <rect x="11" y="11" width="8" height="8" rx="1" fill="#fdbd08"/>
+                    </svg>
                 </div>
                 <span className="text-white font-bold italic text-[13px] drop-shadow-[1px_1px_1px_rgba(0,0,0,0.6)] pr-1" style={{fontFamily: "'Trebuchet MS', sans-serif"}}>start</span>
            </button>
@@ -500,12 +575,12 @@ export const Taskbar = ({ isMobile = false }) => {
                   <button 
                      key={win.id} 
                      onClick={() => { if (win.isMinimized) restoreWindow(win.id); else if (isActive) minimizeWindow(win.id); else focusWindow(win.id); }} 
-                     className={clsx(
-                         "relative h-[24px] px-2 min-w-[140px] w-[150px] rounded-[3px] flex items-center justify-start gap-1.5 text-shadow overflow-hidden transition-all font-sans cursor-pointer",
-                         isActive 
-                             ? "bg-[#1e52b7] shadow-[inset_1px_1px_2px_rgba(0,0,0,0.6)] text-white border border-[#103375] opacity-90" 
-                             : "bg-[#3c81f0] hover:bg-[#5394f7] text-white border-t border-l border-[#6eb0f8] border-b border-r border-[#1941a5] shadow-[1px_1px_0_rgba(0,0,0,0.2)]"
-                     )}
+                      className={clsx(
+                          "relative h-[24px] px-2 min-w-[140px] w-[150px] rounded-[3px] flex items-center justify-start gap-1.5 text-shadow overflow-hidden transition-all font-sans cursor-pointer",
+                          isActive 
+                              ? "bg-[#1e52b7] shadow-[inset_1px_1px_2px_rgba(0,0,0,0.6)] text-white border border-[#103375]" 
+                              : "bg-[#3c81f0] hover:bg-[#4a8ef5] text-white border-t border-l border-[#6eb0f8] border-b border-r border-[#1941a5] shadow-[1px_1px_0_rgba(0,0,0,0.2)]"
+                      )}
                   >
                     <div className="w-4 h-4 min-w-[16px] flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>img]:w-full [&>img]:h-full drop-shadow-md">
                         {win.icon}
@@ -523,7 +598,7 @@ export const Taskbar = ({ isMobile = false }) => {
            </div>
             <div className="flex gap-1.5 text-white drop-shadow-md mx-1 items-center relative">
                 <div onClick={(e) => { e.stopPropagation(); setShowVolume(!showVolume); }} className="cursor-pointer hover:scale-110 transition-transform">{getVolumeIcon()}</div>
-                <VolumeControl isOpen={showVolume} />
+                <VolumeControl isOpen={showVolume} isWin7={isWin7} />
                 <HardDrive size={14} className="cursor-pointer hover:scale-110 transition-transform"/>
             </div>
             <div className="text-white text-[11px] font-sans px-2 py-1 cursor-default">{time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>

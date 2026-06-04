@@ -13,6 +13,7 @@ const VIDEO_PLAYLIST = [
 export const VideoPlayer = ({ src, title, onClose, onMinimize, onMaximize, isMaximized }) => {
   const { globalVolume, setGlobalVolume } = useOSStore();
   const videoRef = useRef(null);
+  const prevVolumeRef = useRef(globalVolume || 0.5);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -32,6 +33,14 @@ export const VideoPlayer = ({ src, title, onClose, onMinimize, onMaximize, isMax
   
   const handleSeek = (e) => { const time = parseFloat(e.target.value); videoRef.current.currentTime = time; setCurrentTime(time); };
   const handleVolumeChange = (e) => { const vol = parseFloat(e.target.value); setGlobalVolume(vol); };
+  const handleMuteToggle = () => {
+    if (globalVolume === 0) {
+      setGlobalVolume(prevVolumeRef.current);
+    } else {
+      prevVolumeRef.current = globalVolume;
+      setGlobalVolume(0);
+    }
+  };
 
   const sidebarBtnStyle = "w-full text-left px-3 py-1.5 text-[11px] font-bold cursor-pointer border-b border-[#5d8bc6] hover:text-orange-300 transition-colors relative overflow-hidden";
   const controlBtnStyle = "rounded-full bg-gradient-to-b from-[#ffffff] to-[#dcdcdc] border border-[#808080] shadow-[inset_0_1px_2px_rgba(255,255,255,1),0_2px_2px_rgba(0,0,0,0.3)] hover:brightness-110 active:scale-95 flex items-center justify-center active:shadow-inner";
@@ -98,7 +107,7 @@ export const VideoPlayer = ({ src, title, onClose, onMinimize, onMaximize, isMax
                    <button className={`${controlBtnStyle} w-7 h-7`}><SkipForward fill="#1d3b67" size={10} className="text-[#1d3b67]"/></button>
               </div>
               <div className="flex items-center gap-2 mr-2">
-                  <button onClick={() => setGlobalVolume(globalVolume === 0 ? 0.5 : 0)}>{globalVolume === 0 ? <VolumeX size={16} className="text-[#1d3b67]"/> : <Volume2 size={16} className="text-[#1d3b67]"/>}</button>
+                   <button onClick={handleMuteToggle}>{globalVolume === 0 ? <VolumeX size={16} className="text-[#1d3b67]"/> : <Volume2 size={16} className="text-[#1d3b67]"/>}</button>
                   <div className="w-16 h-3 bg-[#333] border border-gray-500 relative rounded-sm overflow-hidden">
                       <div className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#006600] to-[#00ff00]" style={{ width: `${globalVolume * 100}%` }}></div>
                       <input type="range" min="0" max="1" step="0.01" value={globalVolume} onChange={handleVolumeChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
