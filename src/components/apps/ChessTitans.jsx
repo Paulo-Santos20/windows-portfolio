@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { RotateCcw, Brain, Shield, Swords, AlertTriangle, Crown, Skull } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { RotateCcw, Brain, Shield, Swords, AlertTriangle, Crown, Skull, Trash2, Zap } from 'lucide-react';
 
 // --- CONSTANTES ---
 const PIECES = {
@@ -284,29 +284,30 @@ export const ChessTitans = () => {
   const [difficulty, setDifficulty] = useState('medium');
   const [status, setStatus] = useState('playing');
   const [aiThinking, setAiThinking] = useState(false);
+  const [lastMove, setLastMove] = useState(null);
+  const [premoves, setPremoves] = useState([]);
+  const [premoveFrom, setPremoveFrom] = useState(null);
+  const [premoveTargets, setPremoveTargets] = useState([]);
 
-  const executeMove = (from, to) => {
-    const newBoard = ChessEngine.cloneBoard(board);
+  const executeMove = useCallback((from, to, currentBoard, currentCastling) => {
+    const newBoard = ChessEngine.cloneBoard(currentBoard);
     const piece = newBoard[from.r][from.c];
-    const newCastling = JSON.parse(JSON.stringify(castling));
+    const newCastling = JSON.parse(JSON.stringify(currentCastling));
 
     newBoard[to.r][to.c] = piece;
     newBoard[from.r][from.c] = null;
 
-    // Roque
     if (to.isCastle) {
         if (to.isCastle === 'king') { newBoard[from.r][5] = newBoard[from.r][7]; newBoard[from.r][7] = null; }
         else { newBoard[from.r][3] = newBoard[from.r][0]; newBoard[from.r][0] = null; }
     }
 
-    // Atualiza direitos de Roque
     if (piece[1] === 'k') { if(newCastling[piece[0]]) { newCastling[piece[0]].k = false; newCastling[piece[0]].q = false; } }
     if (piece[1] === 'r') {
         if (from.c === 0 && newCastling[piece[0]]) newCastling[piece[0]].q = false;
         if (from.c === 7 && newCastling[piece[0]]) newCastling[piece[0]].k = false;
     }
 
-    // Promoção
     if (piece[1] === 'p') {
         if ((piece[0] === 'w' && to.r === 0) || (piece[0] === 'b' && to.r === 7)) {
             newBoard[to.r][to.c] = piece[0] + 'q';
@@ -316,29 +317,33 @@ export const ChessTitans = () => {
     setBoard(newBoard);
     setCastling(newCastling);
     setTurn(prev => prev === 'w' ? 'b' : 'w');
+    setLastMove({ from, to });
     setSelected(null);
     setPossibleMoves([]);
-  };
+    setPremoveFrom(null);
+    setPremoveTargets([]);
+  }, []);
 
   // IA Joga
+  const aiBusyRef = useRef(false);
   useEffect(() => {
-    if (turn === 'b' && status === 'playing') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (turn === 'b' && status === 'playing' && !aiBusyRef.current) {
+      aiBusyRef.current = true;
       setAiThinking(true);
       setTimeout(() => {
         const aiMove = ChessEngine.getBestMove(board, difficulty);
         if (aiMove) {
-          executeMove(aiMove.from, aiMove.to);
+          executeMove(aiMove.from, aiMove.to, board, castling);
         } else {
-          // Se IA não tem movimentos, verifica fim de jogo
           const kingPos = ChessEngine.findKing(board, 'b');
           if (kingPos && ChessEngine.isSquareAttacked(board, kingPos.r, kingPos.c, 'b')) setStatus('checkmate');
           else setStatus('stalemate');
         }
         setAiThinking(false);
+        aiBusyRef.current = false;
       }, 100);
     }
-  }, [turn, status, board]); // board é dependência para recálculo
+  }, [turn, status, board, castling, difficulty, executeMove]);
 
   // Verifica Xeque/Mate após cada turno
   useEffect(() => {
@@ -354,18 +359,62 @@ export const ChessTitans = () => {
       else if (inCheck) setStatus('check');
       else setStatus('playing');
       /* eslint-enable react-hooks/set-state-in-effect */
-  }, [turn, board]); // Depende do turno atual e do tabuleiro
+  }, [turn, board, castling]);
+
+  // Executa pré-moves automaticamente quando turno do branco
+  useEffect(() => {
+    if (turn === 'w' && premoves.length > 0 && status === 'playing' && !aiThinking) {
+      const pm = premoves[0];
+      const piece = board[pm.from.r]?.[pm.from.c];
+      if (piece && piece[0] === 'w') {
+        const validMoves = ChessEngine.getValidMoves(board, pm.from.r, pm.from.c, castling);
+        const target = validMoves.find(m => m.r === pm.to.r && m.c === pm.to.c);
+        if (target) {
+          executeMove(pm.from, target, board, castling);
+          setPremoves(prev => prev.slice(1));
+        } else {
+          setPremoves([]);
+        }
+      } else {
+        setPremoves([]);
+      }
+    }
+  }, [turn, premoves, board, castling, aiThinking, status, executeMove]);
 
   const handleSquareClick = (r, c) => {
-    if (turn !== 'w' || aiThinking || status === 'checkmate') return;
+    if (status === 'checkmate' || status === 'stalemate') return;
 
     const clickedPiece = board[r][c];
-    
+
+    // --- Modo pré-move (turno da IA) ---
+    if (turn !== 'w' || aiThinking) {
+      if (clickedPiece && clickedPiece[0] === 'w') {
+        if (premoveFrom && premoveFrom.r === r && premoveFrom.c === c) {
+          setPremoveFrom(null);
+          setPremoveTargets([]);
+        } else {
+          setPremoveFrom({ r, c });
+          setPremoveTargets(ChessEngine.getValidMoves(board, r, c, castling));
+        }
+      } else if (premoveFrom) {
+        const target = premoveTargets.find(m => m.r === r && m.c === c);
+        if (target) {
+          setPremoves(prev => [...prev, { from: premoveFrom, to: target }]);
+          setPremoveFrom(null);
+          setPremoveTargets([]);
+        } else {
+          setPremoveFrom(null);
+          setPremoveTargets([]);
+        }
+      }
+      return;
+    }
+
     // 1. TENTA EXECUTAR MOVIMENTO (Captura ou Deslocamento)
     // Se a casa clicada é um destino válido para a peça selecionada, MOVA.
     const move = possibleMoves.find(m => m.r === r && m.c === c);
     if (move) {
-      executeMove(selected, move);
+      executeMove(selected, move, board, castling);
       return; // Importante: Sai da função aqui para não selecionar a peça inimiga
     }
 
@@ -393,6 +442,10 @@ export const ChessTitans = () => {
     setSelected(null);
     setPossibleMoves([]);
     setAiThinking(false);
+    setLastMove(null);
+    setPremoves([]);
+    setPremoveFrom(null);
+    setPremoveTargets([]);
   };
 
   return (
@@ -435,6 +488,11 @@ export const ChessTitans = () => {
                 const isSelected = selected && selected.r === r && selected.c === c;
                 const move = possibleMoves.find(m => m.r === r && m.c === c);
                 const isCheck = piece && piece[1] === 'k' && piece[0] === turn && (status === 'check' || status === 'checkmate');
+                const isLastMoveFrom = lastMove && lastMove.from.r === r && lastMove.from.c === c;
+                const isLastMoveTo = lastMove && lastMove.to.r === r && lastMove.to.c === c;
+                const isPremoveFrom = premoveFrom && premoveFrom.r === r && premoveFrom.c === c;
+                const ptarget = premoveTargets.find(m => m.r === r && m.c === c);
+                const isPremoved = premoves.some(p => p.from.r === r && p.from.c === c);
 
                 return (
                   <div 
@@ -443,10 +501,12 @@ export const ChessTitans = () => {
                     className={`relative flex items-center justify-center cursor-pointer transition-colors duration-150
                       ${isBlack ? 'bg-[#779556]' : 'bg-[#ebecd0]'}
                       ${isSelected ? '!bg-[#baca44]' : ''}
+                      ${isPremoveFrom ? '!bg-blue-400/40' : ''}
+                      ${isLastMoveFrom || isLastMoveTo ? '!bg-[#f5e68b]/60' : ''}
                       ${isCheck ? '!bg-red-500/50 ring-inset ring-4 ring-red-600' : ''}
                     `}
                   >
-                    {/* Indicador de Movimento/Captura (Pointer Events None para o clique vazar para a Div Pai) */}
+                    {/* Movimento normal */}
                     {move && (
                       <div className={`absolute z-20 pointer-events-none rounded-full
                         ${move.capture 
@@ -455,12 +515,26 @@ export const ChessTitans = () => {
                         }
                       `}></div>
                     )}
+                    {/* Target de pré-move */}
+                    {ptarget && !move && (
+                      <div className={`absolute z-20 pointer-events-none rounded-full
+                        ${ptarget.capture 
+                          ? 'inset-0 border-[6px] border-blue-400/50' 
+                          : 'w-4 h-4 bg-blue-400/50'
+                        }
+                      `}></div>
+                    )}
+                    {/* Peça com pré-move agendado */}
+                    {isPremoved && (
+                      <div className="absolute top-0.5 right-0.5 z-30 w-2.5 h-2.5 bg-blue-400 rounded-full border border-white/50 pointer-events-none"></div>
+                    )}
 
                     {/* Peça (Pointer Events None para não bloquear o clique da casa) */}
                     {piece && (
                       <span className={`text-4xl sm:text-5xl select-none z-10 drop-shadow-sm transition-transform duration-200 pointer-events-none
-                        ${piece[0] === 'w' ? 'text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.3)]' : 'text-black drop-shadow-[0_2px_2px_rgba(255,255,255,0.3)]'}
+                        ${piece[0] === 'w' ? 'text-[#3d2b1f] drop-shadow-[0_1px_1px_rgba(255,255,255,0.4)]' : 'text-black drop-shadow-[0_2px_2px_rgba(255,255,255,0.3)]'}
                         ${isSelected ? '-translate-y-1 scale-110' : ''}
+                        ${isPremoveFrom ? 'drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]' : ''}
                       `}
                       >
                         {PIECES[piece[0]][piece[1]]}
@@ -474,9 +548,24 @@ export const ChessTitans = () => {
         </div>
       </div>
 
-      <div className="h-10 bg-slate-800 flex items-center justify-between px-4 text-white text-xs border-t border-white/5 shrink-0">
-         <div className="flex items-center gap-2">{aiThinking ? <span className="flex items-center gap-2 text-blue-300 animate-pulse"><Brain size={14} className="animate-spin"/> Pensando...</span> : <span className="flex items-center gap-2 text-gray-400 font-medium">Aguardando...</span>}</div>
-         <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold ${turn === 'w' ? 'bg-white text-slate-900' : 'bg-black text-white border border-white/20'}`}>{turn === 'w' ? <Shield size={12}/> : <Swords size={12}/>} {turn === 'w' ? 'Sua Vez' : 'Vez das Pretas'}</div>
+      <div className="h-10 bg-slate-800 flex items-center justify-between px-4 text-white text-xs border-t border-white/5 shrink-0 gap-2">
+         <div className="flex items-center gap-2 min-w-0">
+           {aiThinking ? (
+             <span className="flex items-center gap-2 text-blue-300 animate-pulse"><Brain size={14} className="animate-spin"/> Pensando...</span>
+           ) : (turn !== 'w' || premoves.length > 0) ? (
+             <span className="flex items-center gap-1.5 text-blue-300"><Zap size={12}/> Pré-move</span>
+           ) : (
+             <span className="flex items-center gap-2 text-gray-400 font-medium">Aguardando...</span>
+           )}
+         </div>
+         <div className="flex items-center gap-2">
+           {premoves.length > 0 && (
+             <button onClick={() => setPremoves([])} className="flex items-center gap-1 px-2 py-1 bg-red-500/20 hover:bg-red-500/40 text-red-300 rounded transition-colors" title="Limpar pré-moves">
+               <Trash2 size={12}/> <span className="font-mono">{premoves.length}</span>
+             </button>
+           )}
+           <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold shrink-0 ${turn === 'w' ? 'bg-white text-slate-900' : 'bg-black text-white border border-white/20'}`}>{turn === 'w' ? <Shield size={12}/> : <Swords size={12}/>} {turn === 'w' ? 'Sua Vez' : 'Vez das Pretas'}</div>
+         </div>
       </div>
     </div>
   );

@@ -75,11 +75,15 @@ const SettingsPopup = ({ onClose }) => {
 };
 
 export const MSGMain = ({ windowId }) => {
-  const { msgNickname, setMsgNickname, msgStatus, setMsgStatus, msgPersonalMessage, openWindow } = useOSStore();
+  const { msgNickname, setMsgNickname, msgStatus, setMsgStatus, msgPersonalMessage, setMsgPersonalMessage, openWindow } = useOSStore();
   const [nickname, setNickname] = useState(msgNickname || '');
   const [loggedIn, setLoggedIn] = useState(!!msgNickname);
   const [showSettings, setShowSettings] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [editingNick, setEditingNick] = useState(false);
+  const [editingMsg, setEditingMsg] = useState(false);
+  const [editNickVal, setEditNickVal] = useState('');
+  const [editMsgVal, setEditMsgVal] = useState('');
 
   const statusColor = STATUS_COLORS[msgStatus];
   const statusLabel = STATUS_LABELS[msgStatus];
@@ -136,7 +140,7 @@ export const MSGMain = ({ windowId }) => {
   return (
     <div className="flex flex-col h-full select-none" style={{ fontFamily: '"Segoe UI", Tahoma, sans-serif' }}>
       {/* User header */}
-      <div className="p-3 border-b border-[#E0E0E0]" style={{ background: 'linear-gradient(to bottom, #E8F0FA, #D0E4F5)' }}>
+      <div className="p-3 border-b border-[#B0C8E0]" style={{ background: 'linear-gradient(to bottom, #DEEAF6, #C4D8EE)' }}>
         <div className="flex items-start gap-3">
           <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-[#4d9de0] to-[#1c5eb8] flex items-center justify-center text-white text-lg font-bold flex-shrink-0 border-2 border-white shadow-sm">
             {nickname[0]?.toUpperCase()}
@@ -144,7 +148,25 @@ export const MSGMain = ({ windowId }) => {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
-              <span className="text-[13px] font-semibold text-[#1A1A2E]">{nickname}</span>
+              {editingNick ? (
+                <input
+                  autoFocus
+                  value={editNickVal}
+                  onChange={(e) => setEditNickVal(e.target.value)}
+                  onBlur={() => { setMsgNickname(editNickVal); setNickname(editNickVal); setEditingNick(false); }}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.target.blur(); } if (e.key === 'Escape') { setEditingNick(false); } }}
+                  className="text-[13px] font-semibold border border-[#0078D7] rounded-sm px-1 py-0.5 outline-none w-32 bg-white"
+                  maxLength={30}
+                />
+              ) : (
+                <span
+                  className="text-[13px] font-semibold text-[#1A1A2E] cursor-pointer hover:bg-[#D8E4F0] px-1 rounded-sm"
+                  onClick={() => { setEditNickVal(nickname); setEditingNick(true); setEditingMsg(false); }}
+                  title="Clique para editar seu nome"
+                >
+                  {nickname}
+                </span>
+              )}
               <div className="relative">
                 <button
                   onClick={() => setMsgStatus(STATUS_ORDER[(STATUS_ORDER.indexOf(msgStatus) + 1) % 4])}
@@ -154,7 +176,26 @@ export const MSGMain = ({ windowId }) => {
                 </button>
               </div>
             </div>
-            <div className="text-[10px] text-[#888] italic truncate">{msgPersonalMessage || 'Clique para definir sua mensagem...'}</div>
+            {editingMsg ? (
+              <input
+                autoFocus
+                value={editMsgVal}
+                onChange={(e) => setEditMsgVal(e.target.value)}
+                onBlur={() => { setMsgPersonalMessage(editMsgVal); setEditingMsg(false); }}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.target.blur(); } if (e.key === 'Escape') { setEditingMsg(false); } }}
+                className="text-[10px] border border-[#0078D7] rounded-sm px-1 py-0.5 outline-none w-full bg-white text-[#888] italic"
+                maxLength={100}
+                placeholder="Digite sua mensagem pessoal..."
+              />
+            ) : (
+              <div
+                className="text-[10px] text-[#888] italic truncate cursor-pointer hover:bg-[#D8E4F0] px-1 rounded-sm"
+                onClick={() => { setEditMsgVal(msgPersonalMessage || ''); setEditingMsg(true); setEditingNick(false); }}
+                title="Clique para editar sua mensagem"
+              >
+                {msgPersonalMessage || 'Clique para definir sua mensagem...'}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -174,9 +215,9 @@ export const MSGMain = ({ windowId }) => {
 
       {/* Contact list */}
       <div className="flex-1 overflow-y-auto bg-white">
-        <div className="px-3 py-1.5 text-[10px] font-semibold text-[#0078D7] uppercase">Online</div>
+        <div className="px-3 py-1.5 text-[10px] font-bold text-[#0078D7]" style={{ background: '#F7FAFE' }}>● Online</div>
         <ContactItem name="Fsociety" lastMsg="Online" status="online" onClick={openConversation} />
-        <div className="px-3 py-1.5 text-[10px] font-semibold text-[#888] uppercase mt-2">Offline</div>
+        <div className="px-3 py-1.5 text-[10px] font-bold text-[#888] mt-2" style={{ background: '#F7FAFE' }}>● Offline</div>
         <div className="px-3 py-3 text-[10px] text-[#AAA] text-center italic">Nenhum contato offline</div>
       </div>
 

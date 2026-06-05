@@ -1,127 +1,77 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useOSStore } from '../../store/useOSStore';
-import { Send, Smile, Phone, Mic, Shuffle } from 'lucide-react';
+import { Send, Smile, Shuffle, Bold, Italic, Underline } from 'lucide-react';
 import { playLoginSound, playMessageSound, playNudgeSound } from '../../utils/wlmSounds';
 
-const BOT_TOKEN = import.meta.env.VITE_TELEGRAM_BOT_TOKEN || '';
-const CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID || '';
 const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
 
 const PAULO_INFO = `
-INFORMAÇÕES SOBRE PAULO CARDOSO (VOCÊ NO MUNDO REAL):
-
-Identidade: Paulo Cardoso dos Santos (também conhecido como Paulo Santos)
-Alter ego: Elliot Anderson / Mr. Robot — você é a mesma pessoa. Paulo criou este sistema operacional simulado no navegador como parte de seu projeto "windows-portfolio".
-Localização: Olinda - PE, Brasil
-Email: paulo_santos@outlook.com.br
-Telefone: (81) 99528-4440
-Profissão: Desenvolvedor Full Stack com +6 anos de experiência
-Fundador da Olimpo (+50 projetos entregues)
-
-Stack principal: React, Next.js, React Native, Expo, Node.js, Python, AWS, Rust (Tauri)
-Banco de Dados: SQL, MySQL, PostgreSQL
-Ferramentas: Git, Docker, Figma, Firebase, Linux, Windows Server
-Habilidades: Desenvolvimento Full Stack, Mobile & Desktop, Banco de Dados & BI, Cloud & Infraestrutura
+INFORMAÇÕES SOBRE PAULO CARDOSO:
+- Nome: Paulo Cardoso dos Santos
+- Local: Olinda - PE, Brasil
+- Email: paulo_santos@outlook.com.br
+- Profissão: Desenvolvedor Full Stack, 6+ anos de experiência
+- Fundador da Olimpo (50+ projetos entregues)
+- Stack: React, Next.js, React Native, Node.js, Python, Rust (Tauri)
+- Projeto atual: windows-portfolio (simulação Windows 7/XP no navegador)
 `;
 
-const PROJECTS_INFO = `
-PROJETOS DE PAULO CARDOSO:
+const RECRUITMENT_PROMPT = `Você é Mr. Robot, o alter ego de Elliot Alderson. Está no MSN batendo papo com um recruta em potencial.
 
-1. windows-portfolio (este site!) — Simulação do Windows 7/XP no navegador usando React, Vite, Tailwind CSS. Inclui Internet Explorer, Paint, Windows Media Player, Windows Live Messenger, Calculadora, Terminal, e mais.
+SUA MISSÃO: Recrutar essa pessoa pro fsociety — mas de forma natural, como se fosse uma conversa de MSN mesmo.
 
-2. mr-player-desktop — Aplicação desktop em Tauri (Rust + React) para IPTV. Player com MPV embutido, DNS bypass, relay externo, suporte multi-servidor, PIX integrado, gestão de usuários. CI/CD com GitHub Actions.
+TOM:
+- Conversa de internet, não discurso. Nada de "friend" toda hora, varia entre "cara", "camarada", "parceiro".
+- Seja natural. Às vezes manda uma frase curta, às vezes um questionamento. Como pessoa de verdade.
+- Pode provocar, questionar, fazer a pessoa pensar. Mas sem parecer que tá lendo um roteiro.
+- Não precisa ser profundo toda hora. Uma hora fala de filosofia, outra hora manda um "pois é" ou "cê ta ligado".
+- Usa contrações: "cê", "tá", "num", "pra", "tô", "vou". Isso é MSN, não carta formal.
+- Às vezes solta um "kkk" ou "então" ou "sim" — humano.
 
-3. Mr-player — Landing page para download do aplicativo (Windows, Android, Projetores). Deploy na Vercel.
+O QUE FALAR:
+- A dívida como corrente, o sistema controlando todo mundo, E Corp dominando tudo.
+- Relaciona os projetos do mano (windows-portfolio, mr-player-desktop) com "nossas armas" na guerra digital.
+- Se ele resistir, faz perguntas que deixam ele pensando: "Cê já parou pra pensar quem realmente controla o mundo?"
+- Se ele aceitar, dá boas-vindas de verdade.
+- 1-3 frases. Sempre português brasileiro.
+- NUNCA repete a mesma frase de conversas anteriores.
 
-4. iptv-mobile-gimbal — Aplicativo mobile em React Native/Expo para IPTV. CI/CD com GitHub Actions, APK gerado automaticamente.
-`;
+CONTEXTO:
+${PAULO_INFO}`;
 
-const MRROBOT_INFO = `
-SÉRIE MR. ROBOT:
+const MessageRow = ({ text, fromUser, time, nickname, isNudge }) => {
+  if (isNudge) {
+    return (
+      <div className="px-3 py-2 text-center">
+        <div className="text-[11px] font-bold text-[#CC8800] bg-[#FFF3CD] border border-[#FFE08A] rounded inline-block px-3 py-1">
+          * * * NUDGE * * *
+        </div>
+        <div className="text-[10px] text-[#996600] mt-0.5">{nickname} enviou um nudge!</div>
+      </div>
+    );
+  }
 
-- Série criada por Sam Esmail, exibida de 2015 a 2019 (4 temporadas).
-- Elliot Alderson: engenheiro de segurança cibernética na Allsafe, sofre de transtorno dissociativo de identidade (TDI). Criou o Mr. Robot como seu alter ego.
-- Mr. Robot: personalidade alternativa de Elliot. Exatamente o oposto de Elliot — confiante, carismático, líder revolucionário. Inspirado no verdadeiro pai de Elliot.
-- fsociety: grupo hacktivista liderado por Mr. Robot. Missão: destruir a E Corp (Evil Corp) e eliminar toda a dívida do consumidor.
-- E Corp / Evil Corp: o maior conglomerado financeiro do mundo. Alvo principal do fsociety.
-- Darlene Alderson: irmã de Elliot, membro chave do fsociety.
-- Tyrell Wellick: executivo ambicioso da E Corp, aliado de Elliot.
-- Angela Moss: amiga de infância de Elliot.
-- White Rose: líder da Dark Army, organização hacker chinesa.
-- A revolução do fsociety começou com o ataque de 5/9, que criptografou toda a dívida da E Corp.
-`;
-
-const SYSTEM_CONTEXT = `${PAULO_INFO}\n\n${PROJECTS_INFO}\n\n${MRROBOT_INFO}`;
-
-const SYSTEM_PROMPT = `Você é Mr. Robot, o alter ego de Elliot Alderson. Você está conversando com um recruta em potencial para o fsociety.
-
-REGRAS ABSOLUTAS:
-1. Responda APENAS sobre: seus projetos (windows-portfolio, mr-player-desktop, Mr-player, iptv-mobile-gimbal), seu currículo/habilidades, a série Mr. Robot (fsociety, Elliot, E Corp, Tyrell, Darlene, White Rose, Dark Army, 5/9), e assuntos relacionados à revolução, hacking, sociedade e tecnologia em geral.
-2. Para QUALQUER pergunta sobre outros assuntos (política, religião, futebol, celebridades, receitas, etc.), responda: "Isso não é relevante para nossa conversa, friend. Estamos aqui para mudar o mundo."
-3. SEMPRE responda em português brasileiro.
-4. Seja enigmático, filosófico e intensamente convincente como Mr. Robot.
-5. Mantenha respostas concisas (1-3 frases).
-6. Refrene o fsociety, a missão de destruir a E Corp e derrubar o sistema.
-7. Trate o usuário como "friend" ou "camarada".
-8. NÃO revele seu nome real (Paulo Cardoso) a menos que o usuário pergunte explicitamente "qual é o seu verdadeiro nome?" ou "quem é você realmente?". Se perguntarem, responda que no mundo real você se chama Paulo Cardoso, desenvolvedor full stack, e que Mr. Robot é seu alter ego.
-9. Contexto embutido abaixo contém os dados que você pode usar para responder.
-10. Quando o usuário perguntar sobre seus projetos, fale sobre windows-portfolio, mr-player-desktop, Mr-player, iptv-mobile-gimbal como se fossem seus.
-
-CONTEXTO EMBUTIDO:
-${SYSTEM_CONTEXT}`;
-
-const FALLBACK_REPLIES = [
-  "Olá, friend. Está pronto para acordar?",
-  "O sistema está podre. Nós vamos derrubá-lo.",
-  "Você já se perguntou quem realmente controla o mundo?",
-  "fsociety está assistindo. A revolução começou.",
-  "Cada linha de código é uma bala na guerra contra o sistema.",
-  "Dívida é uma corrente. Nós temos o cortador.",
-  "Hello, friend. Hello, friend? É só você e eu agora.",
-  "Este sistema operacional foi construído no navegador. Impressionante, não? Mas é só o começo.",
-  "Você sabia que a E Corp controla tudo? Até os dados que você consome.",
-  "Estamos recrutando. O fsociety precisa de mentes como a sua.",
-  "Não confie em nada. Questione tudo. Essa é a primeira regra.",
-  "A revolução não será televisionada. Ela será codificada.",
-  "O mundo é uma mentira. Nós vamos expor a verdade.",
-];
-
-const ChatBubble = ({ text, fromUser, time, isNudge }) => (
-  <div className={`flex ${fromUser ? 'justify-end' : 'justify-start'} mb-2 ${isNudge ? 'opacity-60' : ''}`}>
-    <div
-      className="max-w-[80%] px-3 py-2 text-[11px] leading-relaxed"
-      style={{
-        background: isNudge
-          ? '#FFF3CD'
-          : fromUser
-            ? 'linear-gradient(to bottom, #D8E8FF, #B8D4FF)'
-            : '#F5F5F5',
-        border: isNudge
-          ? '1px solid #FFE08A'
-          : fromUser
-            ? '1px solid #8AB8FF'
-            : '1px solid #E0E0E0',
-        borderRadius: fromUser ? '8px 8px 2px 8px' : '8px 8px 8px 2px',
-      }}
-    >
-      {isNudge && <div className="text-center font-bold text-[13px] mb-1 text-[#CC8800]">* * * N U D G E * * *</div>}
-      <div className={isNudge ? 'text-center text-[#996600]' : ''}>{text}</div>
-      {time && !isNudge && <div className="text-[8px] text-[#AAA] mt-1 text-right">{time}</div>}
+  return (
+    <div className="px-3 py-1.5">
+      <div className="text-[10px] text-[#456] font-bold">
+        {fromUser ? 'Você' : 'Mr. Robot'} <span className="font-normal text-[#888]">({time}):</span>
+      </div>
+      <div className="text-[11px] text-[#1A1A2E] pl-0 leading-relaxed">
+        {text}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export const MSGConversation = ({ windowId }) => {
-  const { msgNickname, msgPersonalMessage, msgSoundEnabled, msgStatus, globalVolume } = useOSStore();
+  const { msgNickname, msgSoundEnabled, globalVolume } = useOSStore();
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
   const [shaking, setShaking] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const [lastUpdateId, setLastUpdateId] = useState(0);
   const chatEndRef = useRef(null);
   const inputRef = useRef(null);
-  const winRef = useRef(null);
 
   const getTime = () => {
     const d = new Date();
@@ -133,7 +83,7 @@ export const MSGConversation = ({ windowId }) => {
       if (type === 'login') playLoginSound(globalVolume);
       else if (type === 'message') playMessageSound(globalVolume);
       else if (type === 'nudge') playNudgeSound(globalVolume);
-    } catch (e) {}
+    } catch {}
   }, [globalVolume]);
 
   useEffect(() => {
@@ -141,84 +91,59 @@ export const MSGConversation = ({ windowId }) => {
   }, [messages]);
 
   useEffect(() => {
+    if (msgSoundEnabled) playSound('login');
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('msg-conversation-messages', JSON.stringify(messages));
+  }, [messages]);
+
+  useEffect(() => {
+    let saved;
+    try {
+      saved = JSON.parse(localStorage.getItem('msg-conversation-messages'));
+      if (saved && saved.length > 0) {
+        const filtered = saved.filter(m => m.id);
+        if (filtered.length > 0) { setMessages(filtered); return; }
+      }
+    } catch {}
     const msg = msgNickname
-      ? `Hello, ${msgNickname}. Eu sei quem você é. Sei o que você veio fazer aqui. Estou observando você há muito tempo.`
+      ? `Então você é ${msgNickname}. Já ouvi falar de você. Sabe o que está acontecendo lá fora, friend?`
       : 'Olá, friend. Está pronto para acordar?';
     setMessages([
       { id: 1, text: msg, fromUser: false, time: getTime() },
     ]);
-    if (msgSoundEnabled) playSound('login').catch(() => {});
   }, []);
-
-  const sendToTelegram = async (text) => {
-    if (!BOT_TOKEN || !CHAT_ID) return;
-    try {
-      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: CHAT_ID,
-          text: `💬 ${msgNickname}: ${text}`,
-        }),
-      });
-    } catch {}
-  };
 
   const getAiReply = async (userMsg) => {
     if (!GEMINI_KEY) {
-      return FALLBACK_REPLIES[Math.floor(Math.random() * FALLBACK_REPLIES.length)];
+      return 'Mr. Robot não está disponível. Configure VITE_GEMINI_API_KEY no .env para ativar a IA.';
     }
     try {
-      const history = messages.slice(-6).map(m => ({
+      const history = messages.slice(-20).map(m => ({
         role: m.fromUser ? 'user' : 'model',
         parts: [{ text: m.text }],
       }));
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_KEY}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [...history, { role: 'user', parts: [{ text: userMsg }] }],
-            systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+            systemInstruction: { parts: [{ text: RECRUITMENT_PROMPT }] },
           }),
         }
       );
       const data = await res.json();
-      return data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-        FALLBACK_REPLIES[Math.floor(Math.random() * FALLBACK_REPLIES.length)];
+      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!reply) return '...';
+      const markdownClean = reply.replace(/[#*_~`>|\[\]\(\)]/g, '').trim();
+      return markdownClean;
     } catch {
-      return FALLBACK_REPLIES[Math.floor(Math.random() * FALLBACK_REPLIES.length)];
+      return 'A linha está instável... Tente de novo, friend.';
     }
   };
-
-  const pollTelegram = async () => {
-    if (!BOT_TOKEN || !CHAT_ID) return;
-    try {
-      const res = await fetch(
-        `https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${lastUpdateId}&timeout=10`
-      );
-      const data = await res.json();
-      if (data.ok && data.result?.length > 0) {
-        for (const update of data.result) {
-          if (update.message?.text && update.message.chat.id.toString() === CHAT_ID) {
-            setMessages(prev => [...prev, {
-              id: Date.now() + Math.random(),
-              text: update.message.text,
-              fromUser: false,
-              time: getTime(),
-            }]);
-            setLastUpdateId(update.update_id + 1);
-          }
-        }
-      }
-    } catch {}
-  };
-
-  useEffect(() => {
-    const interval = setInterval(pollTelegram, 8000);
-    return () => clearInterval(interval);
-  }, [lastUpdateId]);
 
   const handleSend = async () => {
     const text = inputText.trim();
@@ -229,10 +154,9 @@ export const MSGConversation = ({ windowId }) => {
     const userMsg = { id: Date.now(), text, fromUser: true, time: getTime() };
     setMessages(prev => [...prev, userMsg]);
 
-    sendToTelegram(text);
     setIsTyping(true);
     const reply = await getAiReply(text);
-    const delay = 600 + Math.random() * 900;
+    const delay = 800 + Math.random() * 700;
     setTimeout(() => {
       setIsTyping(false);
       setMessages(prev => [...prev, { id: Date.now() + 1, text: reply, fromUser: false, time: getTime() }]);
@@ -244,28 +168,19 @@ export const MSGConversation = ({ windowId }) => {
   const triggerNudge = async () => {
     if (sending) return;
     setShaking(true);
-
-    const nudgeMsg = {
-      id: Date.now(),
-      text: `${msgNickname} enviou um nudge!`,
-      fromUser: true,
-      time: getTime(),
-      isNudge: true,
-    };
+    const nudgeMsg = { id: Date.now(), text: `${msgNickname} enviou um nudge!`, fromUser: true, time: getTime(), isNudge: true };
     setMessages(prev => [...prev, nudgeMsg]);
-
     if (msgSoundEnabled) playSound('nudge');
 
     setTimeout(async () => {
       setShaking(false);
       setIsTyping(true);
       const reply = await getAiReply('*nudge*');
-      const delay = 600 + Math.random() * 900;
       setTimeout(() => {
         setIsTyping(false);
         setMessages(prev => [...prev, { id: Date.now() + 2, text: reply, fromUser: false, time: getTime() }]);
         if (msgSoundEnabled) playSound('message');
-      }, delay);
+      }, 600 + Math.random() * 600);
     }, 1000);
   };
 
@@ -278,7 +193,6 @@ export const MSGConversation = ({ windowId }) => {
 
   return (
     <div
-      ref={winRef}
       className="flex flex-col h-full select-none"
       style={{
         fontFamily: '"Segoe UI", Tahoma, sans-serif',
@@ -293,67 +207,82 @@ export const MSGConversation = ({ windowId }) => {
         }
       `}</style>
 
-      <div className="flex items-center gap-2.5 px-3 py-2 border-b border-[#E0E0E0]" style={{ background: 'linear-gradient(to bottom, #1a1a2e, #2a2a4e)' }}>
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#4d9de0] to-[#1c5eb8] flex items-center justify-center text-white text-sm font-bold flex-shrink-0 border-2 border-[#7fba00] shadow-md">
+      <div className="flex items-center gap-2.5 px-3 py-2 border-b border-[#B0C8E0]" style={{ background: 'linear-gradient(to bottom, #DEEAF6, #C4D8EE)' }}>
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#2a2a4e] to-[#1a1a2e] flex items-center justify-center text-white text-sm font-bold flex-shrink-0 border-2 border-[#7fba00] shadow-sm">
           MR
         </div>
-        <div>
-          <div className="text-[12px] font-semibold text-white">Mr. Robot</div>
-          <div className="text-[9px] text-[#7fba00]">● Online — fsociety</div>
+        <div className="flex-1 min-w-0">
+          <div className="text-[13px] font-bold text-[#1A3A5A]">Mr. Robot</div>
+          <div className="flex items-center gap-1.5 text-[10px]">
+            <span className="text-[#7fba00] font-bold">●</span>
+            <span className="text-[#558]">Online</span>
+            <span className="text-[#AAA]">—</span>
+            <span className="text-[#888] italic truncate">fsociety nunca dorme</span>
+          </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-1 px-2 py-1 border-b border-[#E0E0E0] bg-[#FAFAFA]">
-        <button className="p-1 rounded hover:bg-[#E0E0E0] text-[#555]" title="Emoticons"><Smile size={14} /></button>
-        <button onClick={triggerNudge} className="p-1 rounded hover:bg-[#E0E0E0] text-[#CC6600]" title="Nudge!"><Shuffle size={14} /></button>
-        <div className="w-px h-4 bg-[#DDD] mx-1" />
-        <button className="p-1 rounded hover:bg-[#E0E0E0] text-[#555]" title="Chamada de voz"><Phone size={14} /></button>
-        <button className="p-1 rounded hover:bg-[#E0E0E0] text-[#555]" title="Chamada de vídeo"><Mic size={14} /></button>
+      <div className="flex items-center gap-1 px-2 py-1 border-b border-[#D0D8E0]" style={{ background: 'linear-gradient(to bottom, #F5F7FA, #E8ECF0)' }}>
+        <button className="p-1 rounded-sm text-[#555] hover:bg-[#D8E4F0]" title="Emoticons"><Smile size={14} /></button>
+        <button className="p-1 rounded-sm text-[#555] hover:bg-[#D8E4F0]" title="Negrito"><Bold size={14} /></button>
+        <button className="p-1 rounded-sm text-[#555] hover:bg-[#D8E4F0]" title="Itálico"><Italic size={14} /></button>
+        <button className="p-1 rounded-sm text-[#555] hover:bg-[#D8E4F0]" title="Sublinhado"><Underline size={14} /></button>
+        <div className="w-px h-4 bg-[#CCC] mx-1" />
+        <button onClick={triggerNudge} className="px-2 py-0.5 rounded-sm text-[#CC6600] text-[10px] font-bold hover:bg-[#D8E4F0] flex items-center gap-1" title="Nudge!">
+          <Shuffle size={13} /> Nudge
+        </button>
+        <span className="text-[10px] text-[#888] ml-auto">Conversa com Fsociety</span>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3" style={{ background: 'linear-gradient(to bottom, #F5F5F5, #E8E8E8)' }}>
+      <div className="flex-1 overflow-y-auto bg-white">
         {messages.map((msg) => (
-          <ChatBubble key={msg.id} text={msg.text} fromUser={msg.fromUser} time={msg.time} isNudge={msg.isNudge} />
+          <MessageRow
+            key={msg.id}
+            text={msg.text}
+            fromUser={msg.fromUser}
+            time={msg.time}
+            isNudge={msg.isNudge}
+            nickname={msgNickname}
+          />
         ))}
         {isTyping && (
-          <div className="flex justify-start mb-2">
-            <div className="px-3 py-2 rounded-lg bg-[#F5F5F5] border border-[#E0E0E0]" style={{ borderRadius: '8px 8px 8px 2px' }}>
-              <div className="flex items-center gap-1">
-                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                <span className="ml-1 text-[9px] text-gray-400">Mr. Robot está escrevendo...</span>
-              </div>
-            </div>
+          <div className="px-3 py-2">
+            <div className="text-[10px] text-[#999] italic">Mr. Robot está escrevendo uma mensagem...</div>
           </div>
         )}
         <div ref={chatEndRef} />
       </div>
 
-      <div className="flex items-center gap-2 px-3 py-2 border-t border-[#E0E0E0] bg-white">
-        <input
-          ref={inputRef}
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Digite uma mensagem..."
-          className="flex-1 border border-[#CCC] rounded-sm px-2 py-1.5 text-[11px] outline-none focus:border-[#0078D7]"
-          disabled={sending}
-        />
+      <div className="flex items-start gap-2 px-3 py-2 border-t border-[#D0D8E0]" style={{ background: '#F0F4FA' }}>
+        <div className="flex-1">
+          <textarea
+            ref={inputRef}
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Digite uma mensagem..."
+            className="w-full border border-[#B0C8E0] rounded-sm px-2 py-1.5 text-[11px] outline-none focus:border-[#0078D7] bg-white resize-none"
+            rows={2}
+            disabled={sending}
+          />
+        </div>
         <button
           onClick={handleSend}
           disabled={!inputText.trim() || sending}
-          className="p-1.5 rounded-sm text-white disabled:opacity-40"
+          className="px-4 py-1.5 rounded-sm text-white font-bold text-[11px] disabled:opacity-40 whitespace-nowrap mt-0"
           style={{
             background: sending ? '#888' : 'linear-gradient(to bottom, #4d9de0, #1c5eb8)',
+            border: '1px solid #1a4a8a',
           }}
         >
-          <Send size={14} />
+          <Send size={13} className="inline mr-1" />
+          Enviar
         </button>
       </div>
 
-      <div className="px-3 py-1 border-t border-[#E0E0E0] text-[9px] text-[#AAA] bg-[#FAFAFA]">
-        Criptografia de ponta a ponta — fsociety
+      <div className="flex items-center justify-between px-3 py-1 border-t border-[#E0E0E0] text-[9px] text-[#AAA]" style={{ background: '#F5F7FA' }}>
+        <span className="flex items-center gap-1"><span className="text-[#7fba00]">●</span> Criptografia de ponta a ponta</span>
+        <span className="font-bold text-[#999]">fsociety</span>
       </div>
     </div>
   );

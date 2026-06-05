@@ -94,7 +94,7 @@ export const BootSequence = () => {
                 </div>
             </div>
             <h1 className="text-white font-sans text-2xl font-bold tracking-tighter">
-                Microsoft <span className="text-4xl font-extrabold italic">Windows</span><span className="text-orange-500 text-xl align-top">XP Dev Edition</span>
+                Microsoft <span className="text-4xl font-extrabold italic">Windows</span><span className="text-orange-500 text-xl align-top">XP Paulo Edition</span>
             </h1>
             <div className="w-48 h-4 border border-gray-500 rounded-[3px] p-0.5 mt-10 relative overflow-hidden">
                 <div className="h-full w-16 bg-gradient-to-r from-blue-900 via-blue-500 to-blue-900 rounded-[2px] animate-[slide-right_1.5s_linear_infinite]"></div>
@@ -146,7 +146,7 @@ export const BootSequence = () => {
                         <div className="flex flex-col items-end leading-none">
                             <span className="text-white text-sm font-bold drop-shadow-md">Microsoft</span>
                             <span className="text-white text-[42px] font-extrabold italic drop-shadow-md leading-[0.8] tracking-tighter">
-                                Windows<span className="text-[#F26D08] text-[28px] align-top ml-1">xp Dev Edition</span>
+                                Windows<span className="text-[#F26D08] text-[28px] align-top ml-1">xp Paulo Edition</span>
                             </span>
                         </div>
                     </div>
